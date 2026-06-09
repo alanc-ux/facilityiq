@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Inperium — Pod Owner Platform</title>
+<title>FacilityIQ — Pod Owner Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
@@ -16,116 +16,126 @@
   --text:#E8EAF2;--muted:#7B7F99;--muted2:#4E5270;
   --accent:#4F7EFF;--accent2:#6B96FF;
   --green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#A78BFA;--cyan:#22D3EE;
-  --sidebar-w:220px;--topbar-h:56px;
+  --sidebar-w:224px;--topbar-h:56px;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
 #root{display:flex;height:100vh;overflow:hidden}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
-.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow:hidden}
-.sidebar-logo{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;min-height:var(--topbar-h)}
-.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
-.logo-text{font-size:15px;font-weight:700;letter-spacing:-.3px;color:var(--text)}
-.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
-.nav-section{padding:12px 12px 4px;flex:1;overflow-y:auto}
-.nav-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);padding:0 8px 6px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all .15s;position:relative;white-space:nowrap;border:1px solid transparent;margin-bottom:1px}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-logo{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;min-height:var(--topbar-h)}
+.logo-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.logo-word{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.4px}
+.logo-word span{color:var(--accent2)}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+.nav-section{padding:10px 10px 4px;flex:1;overflow-y:auto}
+.nav-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--muted2);padding:0 8px 5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:12.5px;font-weight:500;position:relative;white-space:nowrap;border:1px solid transparent;margin-bottom:1px;transition:all .12s}
 .nav-item:hover{background:rgba(79,126,255,.07);color:var(--text)}
-.nav-item.active{background:rgba(79,126,255,.12);color:var(--accent2);border-color:rgba(79,126,255,.2)}
-.nav-item.active::before{content:'';position:absolute;left:-12px;top:6px;bottom:6px;width:3px;background:var(--accent);border-radius:0 3px 3px 0;box-shadow:0 0 8px var(--accent)}
-.nav-item .ti{font-size:17px;flex-shrink:0}
-.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;min-width:18px;text-align:center}
+.nav-item.active{background:rgba(79,126,255,.13);color:var(--accent2);border-color:rgba(79,126,255,.22)}
+.nav-item.active::before{content:'';position:absolute;left:-10px;top:5px;bottom:5px;width:3px;background:var(--accent);border-radius:0 3px 3px 0;box-shadow:0 0 7px var(--accent)}
+.nav-item .ti{font-size:16px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:99px;min-width:16px;text-align:center}
 .nav-badge.amber{background:var(--amber);color:#000}
-.sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding:12px}
-.user-chip{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding:10px}
+.user-chip{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;cursor:pointer}
 .user-chip:hover{background:rgba(255,255,255,.04)}
-.avatar{width:32px;height:32px;border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
-.user-name{font-size:13px;font-weight:600;color:var(--text)}
-.user-role{font-size:11px;color:var(--muted)}
+.avatar{width:30px;height:30px;border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text)}
+.user-role{font-size:10px;color:var(--muted)}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.topbar{height:var(--topbar-h);min-height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px}
-.topbar-bread{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.topbar{height:var(--topbar-h);min-height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:12px}
+.topbar-bread{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px}
 .topbar-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
-.topbar-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:18px}
+.topbar-icon-btn{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px}
 .topbar-icon-btn:hover{background:rgba(255,255,255,.04);color:var(--text)}
-.content{flex:1;overflow-y:auto;padding:24px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
-.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
-.grid{display:grid;gap:16px}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;display:flex;align-items:center;gap:5px}
+.grid{display:grid;gap:14px}
 .g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
 .g4{grid-template-columns:repeat(4,1fr)}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:6px}
-.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
-.stat-value{font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--text);line-height:1}
-.stat-delta{font-size:11px;font-weight:500;display:flex;align-items:center;gap:3px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:5px}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.stat-value{font-size:26px;font-weight:700;letter-spacing:-1px;color:var(--text);line-height:1}
+.stat-delta{font-size:10px;font-weight:500;display:flex;align-items:center;gap:3px}
 .stat-delta.up{color:var(--green)}.stat-delta.down{color:var(--red)}
-.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:4px}
-.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.stat-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:3px}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700}
 .badge-green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25)}
 .badge-red{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
 .badge-amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
 .badge-blue{background:rgba(79,126,255,.12);color:var(--accent2);border:1px solid rgba(79,126,255,.25)}
 .badge-purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
 .badge-muted{background:rgba(123,127,153,.1);color:var(--muted);border:1px solid var(--border)}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .12s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.9}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{background:rgba(255,255,255,.04);color:var(--text)}
-.btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)}
-.btn-sm{padding:4px 10px;font-size:12px}
+.btn-green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3)}.btn-green:hover{background:rgba(34,197,94,.2)}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-sm{padding:3px 9px;font-size:11px}
 .tbl{width:100%;border-collapse:collapse}
-.tbl th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 16px 10px;text-align:left}
-.tbl td{padding:11px 16px;border-top:1px solid var(--border);font-size:13px;vertical-align:middle}
-.tbl tr:hover td{background:rgba(255,255,255,.02)}
-.progress-bar{height:6px;border-radius:99px;background:var(--border2);overflow:hidden}
-.progress-fill{height:100%;border-radius:99px;transition:width .4s ease}
-.zone-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:default;transition:all .15s}
-.zone-card:hover{border-color:var(--border2)}
-.tier-pill{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;font-size:11px;font-weight:700}
-.tier-a{background:rgba(239,68,68,.15);color:var(--red)}
-.tier-b{background:rgba(245,158,11,.15);color:var(--amber)}
-.tier-c{background:rgba(79,126,255,.15);color:var(--accent2)}
-.tier-d{background:rgba(34,197,94,.15);color:var(--green)}
-.chat-msg{display:flex;gap:10px;max-width:85%}
-.chat-msg.user{align-self:flex-end;flex-direction:row-reverse}
-.chat-bubble{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.55}
-.chat-msg.user .chat-bubble{background:rgba(79,126,255,.15);border-color:rgba(79,126,255,.3)}
-.chat-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:inherit;font-size:13px;resize:none;outline:none;min-height:42px;max-height:120px}
-.chat-input:focus{border-color:var(--accent)}
-.chat-input::placeholder{color:var(--muted2)}
-.worker-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--border)}
-.worker-row:hover{background:rgba(255,255,255,.02)}
-.worker-avatar{width:34px;height:34px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
-.status-dot{width:8px;height:8px;border-radius:99px;flex-shrink:0}
-.status-dot.green{background:var(--green);box-shadow:0 0 0 2px rgba(34,197,94,.2)}
-.status-dot.red{background:var(--red)}.status-dot.muted{background:var(--muted2)}
-.hs-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:rgba(255,91,46,.12);color:#FF5B2E;border:1px solid rgba(255,91,46,.25);font-size:10px;font-weight:700}
-.pm-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);font-size:13px}
-.ticket-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
-.ticket-card:hover{border-color:var(--border2)}
-.priority-bar{width:3px;border-radius:99px;align-self:stretch;flex-shrink:0}
-.field-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;width:100%}
+.tbl th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 14px 8px;text-align:left}
+.tbl td{padding:10px 14px;border-top:1px solid var(--border);font-size:12.5px;vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,.015)}
+.progress-bar{height:5px;border-radius:99px;background:var(--border2);overflow:hidden}
+.progress-fill{height:100%;border-radius:99px}
+.field-input{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 11px;color:var(--text);font-family:inherit;font-size:12.5px;outline:none;width:100%}
 .field-input:focus{border-color:var(--accent)}
 select.field-input{cursor:pointer}
 select.field-input option{background:var(--card)}
-.score-btn{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;cursor:pointer;border:1.5px solid var(--border2);background:var(--surface);color:var(--muted);font-family:inherit}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;width:680px;max-width:100%;max-height:85vh;overflow-y:auto}
+.modal-lg{width:900px}
+.modal-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.score-btn{width:38px;height:38px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;cursor:pointer;border:1.5px solid var(--border2);background:var(--surface);color:var(--muted);font-family:inherit}
 .score-btn:hover{border-color:var(--muted);color:var(--text)}
 .score-btn.active{color:#fff;border-color:transparent}
 .s1.active{background:var(--red)}.s2.active{background:#F97316}.s3.active{background:var(--amber)}.s4.active{background:#84CC16}.s5.active{background:var(--green)}
-.qr-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:520px;max-width:95vw;max-height:80vh;overflow-y:auto}
-.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.typing-dots{display:flex;gap:4px;align-items:center;padding:4px 0}
-.typing-dots span{width:6px;height:6px;border-radius:99px;background:var(--muted);animation:db .9s infinite ease-in-out}
+.ticket-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.ticket-card:hover{border-color:var(--border2)}
+.priority-bar{width:3px;border-radius:99px;align-self:stretch;flex-shrink:0}
+.worker-row{display:flex;align-items:center;gap:11px;padding:9px 14px;border-top:1px solid var(--border)}
+.worker-row:hover{background:rgba(255,255,255,.015)}
+.worker-avatar{width:32px;height:32px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.status-dot{width:7px;height:7px;border-radius:99px;flex-shrink:0}
+.status-dot.green{background:var(--green);box-shadow:0 0 0 2px rgba(34,197,94,.2)}
+.status-dot.red{background:var(--red)}.status-dot.amber{background:var(--amber)}.status-dot.muted{background:var(--muted2)}
+.pm-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border);font-size:12.5px}
+.hs-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:5px;background:rgba(255,91,46,.12);color:#FF5B2E;border:1px solid rgba(255,91,46,.25);font-size:9px;font-weight:700}
+.chat-msg{display:flex;gap:9px;max-width:88%}
+.chat-msg.user{align-self:flex-end;flex-direction:row-reverse}
+.chat-bubble{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:9px 13px;font-size:12.5px;line-height:1.55}
+.chat-msg.user .chat-bubble{background:rgba(79,126,255,.15);border-color:rgba(79,126,255,.3)}
+.chat-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:inherit;font-size:12.5px;resize:none;outline:none;min-height:40px;max-height:110px}
+.chat-input:focus{border-color:var(--accent)}
+.chat-input::placeholder{color:var(--muted2)}
+.typing-dots{display:flex;gap:4px;align-items:center;padding:3px 0}
+.typing-dots span{width:5px;height:5px;border-radius:99px;background:var(--muted);animation:db .9s infinite ease-in-out}
 .typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.3s}
 @keyframes db{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
-.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.4);font-size:13px;font-weight:500;animation:su .25s ease}
-@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.highlight-chip{background:rgba(79,126,255,.08);border:1px solid rgba(79,126,255,.18);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted)}
-.highlight-chip strong{color:var(--accent2)}
-.spark-line{display:flex;align-items:flex-end;gap:2px;height:28px}
-.spark-bar{width:5px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.6;min-height:3px}
-.tag{display:inline-flex;align-items:center;background:rgba(123,127,153,.08);border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:11px;color:var(--muted);font-weight:500}
-.live-pill{font-size:11px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);padding:3px 10px;border-radius:99px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.toast{position:fixed;bottom:22px;right:22px;z-index:999;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:11px 15px;display:flex;gap:9px;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.45);font-size:12.5px;font-weight:500;animation:su .2s ease}
+@keyframes su{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+.chip{background:rgba(79,126,255,.08);border:1px solid rgba(79,126,255,.18);border-radius:7px;padding:9px 13px;font-size:12px;color:var(--muted)}
+.chip strong{color:var(--accent2)}
+.tag{display:inline-flex;align-items:center;background:rgba(123,127,153,.08);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:10px;color:var(--muted);font-weight:600}
+.spark-line{display:flex;align-items:flex-end;gap:2px;height:24px}
+.spark-bar{width:4px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.6;min-height:2px}
+.live-pill{font-size:10px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);padding:2px 9px;border-radius:99px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-select{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--text);font-family:inherit;font-size:12px;outline:none;cursor:pointer}
+.filter-select option{background:var(--card)}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-hdr-title{font-size:13px;font-weight:700;color:var(--text)}
+.qr-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start}
+.acct-mini-card{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 14px}
+.bench-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid var(--border)}
+.tab-bar{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab-btn{padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent)}
+.tab-btn:hover{color:var(--text)}
+.stars{display:flex;gap:2px}
+.star-f{color:var(--amber);font-size:12px}.star-e{color:var(--border2);font-size:12px}
 </style>
 </head>
 <body>
@@ -136,292 +146,500 @@ const {createElement:h,useState,useEffect,useRef,Fragment} = React;
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 const ACCOUNTS=[
-  {id:1,name:'Highmark Health',addr:'Fifth Ave Place, Pittsburgh',sqft:'312,000',tier:'Platinum',status:'Active',score:91,pod:'Pod 3'},
-  {id:2,name:'Penn State Health',addr:'1850 E Park Dr, Harrisburg',sqft:'248,000',tier:'Gold',status:'Active',score:87,pod:'Pod 3'},
-  {id:3,name:'Commonwealth PA',addr:'400 North St, Harrisburg',sqft:'580,000',tier:'Platinum',status:'Active',score:83,pod:'Pod 3'},
-  {id:4,name:'Capital Region Water',addr:'3003 N Front St, Harrisburg',sqft:'64,000',tier:'Silver',status:'Proposal',score:0,pod:'Pod 3'},
-  {id:5,name:'Armstrong Flooring',addr:'2500 Columbia Ave, Lancaster',sqft:'190,000',tier:'Gold',status:'Active',score:79,pod:'Pod 3'},
+  {id:1,name:'Highmark Health',addr:'Fifth Ave Place, Pittsburgh',sqft:'312,000',tier:'Platinum',status:'Active',score:91,pod:'Pod 3',industry:'Healthcare',workers:[1,2],areas:['Main Lobby','Floor 2 East','Floor 2 West','Floor 3','Loading']},
+  {id:2,name:'Penn State Health',addr:'1850 E Park Dr, Harrisburg',sqft:'248,000',tier:'Gold',status:'Active',score:87,pod:'Pod 3',industry:'Healthcare',workers:[3,4],areas:['Lobby','Floor 1','Floor 2','Cafeteria']},
+  {id:3,name:'Commonwealth PA',addr:'400 North St, Harrisburg',sqft:'580,000',tier:'Platinum',status:'Active',score:83,pod:'Pod 3',industry:'Government',workers:[5,6],areas:['Atrium','Wing A','Wing B','Floor 3','Parking']},
+  {id:4,name:'Capital Region Water',addr:'3003 N Front St, Harrisburg',sqft:'64,000',tier:'Silver',status:'Proposal',score:0,pod:'Pod 3',industry:'Utilities',workers:[],areas:['Office Floor','Lab Area','Break Room']},
+  {id:5,name:'Armstrong Flooring',addr:'2500 Columbia Ave, Lancaster',sqft:'190,000',tier:'Gold',status:'Active',score:79,pod:'Pod 3',industry:'Manufacturing',workers:[7],areas:['Production Floor','Admin Wing','Restrooms','Warehouse']},
 ];
+
 const INIT_TICKETS=[
-  {id:'TKT-1041',title:'Lobby floor buffing missed — Level 1',acct:'Commonwealth PA',priority:'High',status:'Open',assigned:'Marcus Johnson',created:'2h ago',source:'QR Feedback',hubspot:true},
-  {id:'TKT-1040',title:'Restroom supply restock — 3rd floor',acct:'Highmark Health',priority:'Medium',status:'In Progress',assigned:'Dana Reyes',created:'4h ago',source:'Walkthrough',hubspot:true},
-  {id:'TKT-1039',title:'Zone B break room odor complaint',acct:'Penn State Health',priority:'High',status:'Open',assigned:'Sharlene Torres',created:'6h ago',source:'QR Feedback',hubspot:false},
-  {id:'TKT-1038',title:'PM — HVAC filter check overdue',acct:'Armstrong Flooring',priority:'Medium',status:'Open',assigned:'Unassigned',created:'1d ago',source:'PM Schedule',hubspot:false},
-  {id:'TKT-1037',title:'Entrance glass not streak-free',acct:'Highmark Health',priority:'Low',status:'Resolved',assigned:'Marcus Johnson',created:'2d ago',source:'Walkthrough',hubspot:true},
+  {id:'TKT-1041',title:'Lobby floor buffing missed — Level 1',acct:3,priority:'High',status:'Open',assigned:'Marcus Johnson',created:'2h ago',source:'QR Feedback',hubspot:true,comments:[]},
+  {id:'TKT-1040',title:'Restroom supply restock — 3rd floor',acct:1,priority:'Medium',status:'In Progress',assigned:'Dana Reyes',created:'4h ago',source:'Walkthrough',hubspot:true,comments:['Ordered supplies, ETA 2hrs']},
+  {id:'TKT-1039',title:'Zone B break room odor complaint',acct:2,priority:'High',status:'Open',assigned:'Sharlene Torres',created:'6h ago',source:'QR Feedback',hubspot:false,comments:[]},
+  {id:'TKT-1038',title:'PM — HVAC filter check overdue',acct:5,priority:'Medium',status:'Open',assigned:'Unassigned',created:'1d ago',source:'PM Schedule',hubspot:false,comments:[]},
+  {id:'TKT-1037',title:'Entrance glass not streak-free',acct:1,priority:'Low',status:'Resolved',assigned:'Marcus Johnson',created:'2d ago',source:'Walkthrough',hubspot:true,comments:['Cleaned and verified']},
 ];
+
 const INIT_WORKERS=[
-  {id:1,name:'Marcus Johnson',role:'Crew Lead',site:'Highmark Health',status:'On Site',shift:'6a–2p',callouts:1,color:'#4F7EFF'},
-  {id:2,name:'Dana Reyes',role:'Janitor II',site:'Highmark Health',status:'On Site',shift:'6a–2p',callouts:0,color:'#22C55E'},
-  {id:3,name:'Sharlene Torres',role:'Crew Lead',site:'Penn State Health',status:'On Site',shift:'7a–3p',callouts:2,color:'#A78BFA'},
-  {id:4,name:'Elton Craig',role:'Janitor I',site:'Penn State Health',status:'Called Out',shift:'7a–3p',callouts:4,color:'#EF4444'},
-  {id:5,name:'Priya Nair',role:'Floor Tech',site:'Commonwealth PA',status:'On Site',shift:'5a–1p',callouts:0,color:'#F59E0B'},
-  {id:6,name:'James Okafor',role:'Janitor II',site:'Commonwealth PA',status:'Off Shift',shift:'3p–11p',callouts:1,color:'#22D3EE'},
-  {id:7,name:'Mia Santos',role:'Day Porter',site:'Armstrong Flooring',status:'On Site',shift:'8a–4p',callouts:0,color:'#F472B6'},
+  {id:1,name:'Marcus Johnson',role:'Crew Lead',site:1,status:'On Site',shift:'6a–2p',callouts:1,color:'#4F7EFF',bench:false,trained:[1,3]},
+  {id:2,name:'Dana Reyes',role:'Janitor II',site:1,status:'On Site',shift:'6a–2p',callouts:0,color:'#22C55E',bench:false,trained:[1,2]},
+  {id:3,name:'Sharlene Torres',role:'Crew Lead',site:2,status:'On Site',shift:'7a–3p',callouts:2,color:'#A78BFA',bench:false,trained:[1,2,3]},
+  {id:4,name:'Elton Craig',role:'Janitor I',site:2,status:'Called Out',shift:'7a–3p',callouts:4,color:'#EF4444',bench:false,trained:[2]},
+  {id:5,name:'Priya Nair',role:'Floor Tech',site:3,status:'On Site',shift:'5a–1p',callouts:0,color:'#F59E0B',bench:false,trained:[3,5]},
+  {id:6,name:'James Okafor',role:'Janitor II',site:3,status:'Off Shift',shift:'3p–11p',callouts:1,color:'#22D3EE',bench:false,trained:[3]},
+  {id:7,name:'Mia Santos',role:'Day Porter',site:5,status:'On Site',shift:'8a–4p',callouts:0,color:'#F472B6',bench:false,trained:[5]},
+  {id:8,name:'Tony Reeves',role:'Janitor I',site:null,status:'Available',shift:'Flex',callouts:0,color:'#6B96FF',bench:true,trained:[1,2,3,5]},
+  {id:9,name:'Carmen Wells',role:'Floor Tech',site:null,status:'Available',shift:'Flex',callouts:1,color:'#34D399',bench:true,trained:[1,3]},
+  {id:10,name:'Darnell Fox',role:'Janitor II',site:null,status:'Available',shift:'Flex',callouts:2,color:'#FB923C',bench:true,trained:[2,4,5]},
 ];
-const QA_TASKS={
-  A:[{id:'A1',task:'Emergency biohazard response & containment',freq:'As Needed',last:'N/A'},{id:'A2',task:'Blood/bodily fluid cleanup protocol',freq:'As Needed',last:'N/A'},{id:'A3',task:'Critical area sterility inspection (labs/OR)',freq:'Daily',last:'Today'},{id:'A4',task:'Elevator call escalation — injury risk',freq:'Immediate',last:'N/A'}],
-  B:[{id:'B1',task:'High-touch surface disinfection — lobbies',freq:'2× Daily',last:'Today 7a'},{id:'B2',task:'Restroom deep clean & restock',freq:'Daily',last:'Today 6a'},{id:'B3',task:'Entrance glass cleaning',freq:'Daily',last:'Yesterday'},{id:'B4',task:'Stairwell sweep & mop',freq:'Daily',last:'Today 6a'},{id:'B5',task:'Trash removal all floors',freq:'Daily',last:'Today 7a'}],
-  C:[{id:'C1',task:'Carpet spot treatment & extraction',freq:'Weekly',last:'Mon'},{id:'C2',task:'Window interior cleaning (above 6ft)',freq:'Weekly',last:'Last Fri'},{id:'C3',task:'Conference room deep wipe-down',freq:'Weekly',last:'Mon'},{id:'C4',task:'Floor buffing & polish — Level 1',freq:'Weekly',last:'Last Wed'},{id:'C5',task:'Break room appliance exteriors',freq:'Weekly',last:'Mon'}],
-  D:[{id:'D1',task:'Strip & wax hard floors',freq:'Quarterly',last:'Feb 2025'},{id:'D2',task:'High-dusting (ceilings, vents, fixtures)',freq:'Monthly',last:'May 2025'},{id:'D3',task:'Pressure wash exterior entry',freq:'Monthly',last:'Apr 2025'},{id:'D4',task:'HVAC diffuser cleaning',freq:'Quarterly',last:'Jan 2025'},{id:'D5',task:'Deep carpet extraction — full building',freq:'Semi-annual',last:'Jan 2025'}],
+
+const QA_TEMPLATES={
+  Healthcare:['Verify restroom cleanliness & supplies','Inspect high-touch surfaces disinfected','Check biohazard disposal compliance','Review staff sign-in logs','Spot-check sterile areas','Review occupant feedback responses'],
+  Government:['Inspect lobby & public areas','Verify security area cleaning protocol','Check restroom standards','Review contractor compliance logs','Inspect conference rooms post-use','Audit supply inventory'],
+  Manufacturing:['Inspect production floor cleanliness','Verify hazmat disposal compliance','Check break room standards','Review shift handoff logs','Inspect loading dock area','Check PPE compliance for cleaning staff'],
+  Utilities:['Inspect office & lab cleanliness','Check chemical storage areas','Verify restroom standards','Review inspection logs','Spot-check equipment areas'],
+  Default:['Inspect main lobby & entry','Verify restroom cleanliness','Check trash removal completed','Review occupant complaints','Inspect high-traffic areas','Confirm task completion with crew lead'],
 };
-const ZONES=[
-  {id:1,name:'Main Lobby',areas:['Entry Doors','Reception Desk','Elevators','Waiting Area']},
-  {id:2,name:'Floor 2 – East Wing',areas:['Corridor A','Restrooms 2E','Break Room','Conference 201']},
-  {id:3,name:'Floor 2 – West Wing',areas:['Corridor B','Restrooms 2W','Copy Room','Stairwell A']},
-  {id:4,name:'Floor 3',areas:['Open Office','Restrooms 3N','Kitchen','Elevator Lobby 3']},
-  {id:5,name:'Loading / Utility',areas:['Loading Dock','Janitor Closet','Utility Corridor','Dumpster Area']},
-];
+
 const QR_FEED=[
-  {id:1,location:'Restroom 2E',rating:1,comment:'Out of paper towels, smells bad',time:'18 min ago',auto:true},
-  {id:2,location:'Main Lobby',rating:4,comment:'Looks great today!',time:'1h ago',auto:false},
-  {id:3,location:'Break Room L3',rating:2,comment:'Microwave needs cleaning',time:'2h ago',auto:true},
-  {id:4,location:'Conference 201',rating:5,comment:'Spotless before our 9am meeting',time:'3h ago',auto:false},
-  {id:5,location:'Stairwell A',rating:2,comment:'Spill on landing, still there from yesterday',time:'4h ago',auto:true},
+  {id:1,acct:1,location:'Restroom 2E',rating:1,comment:'Out of paper towels, smells bad',time:'18 min ago',auto:true},
+  {id:2,acct:1,location:'Main Lobby',rating:4,comment:'Looks great today!',time:'1h ago',auto:false},
+  {id:3,acct:2,location:'Break Room L3',rating:2,comment:'Microwave needs cleaning',time:'2h ago',auto:true},
+  {id:4,acct:2,location:'Conference 201',rating:5,comment:'Spotless before our 9am meeting',time:'3h ago',auto:false},
+  {id:5,acct:3,location:'Stairwell A',rating:2,comment:'Spill on landing, still there',time:'4h ago',auto:true},
+  {id:6,acct:3,location:'Elevator Lobby 3',rating:3,comment:'Fingerprints on glass panels',time:'5h ago',auto:false},
 ];
-const SAT_TREND=[{m:'Jan',v:81},{m:'Feb',v:79},{m:'Mar',v:82},{m:'Apr',v:84},{m:'May',v:87},{m:'Jun',v:89}];
-const NPS_TREND=[{m:'Jan',v:42},{m:'Feb',v:38},{m:'Mar',v:44},{m:'Apr',v:47},{m:'May',v:52},{m:'Jun',v:55}];
+
 const INIT_PM=[
-  {id:'PM-01',task:'HVAC Filter Replacement — Building A',acct:'Highmark Health',due:'Jun 14',freq:'90 days',status:'Due Soon',last:'Mar 15'},
-  {id:'PM-02',task:'Carpet Deep Extraction — All Floors',acct:'Penn State Health',due:'Jun 18',freq:'Semi-annual',status:'Scheduled',last:'Dec 2024'},
-  {id:'PM-03',task:'Floor Strip & Wax — Lobby',acct:'Commonwealth PA',due:'Jul 01',freq:'Quarterly',status:'Scheduled',last:'Apr 2025'},
-  {id:'PM-04',task:'Exterior Pressure Wash',acct:'Armstrong Flooring',due:'Jun 10',freq:'Monthly',status:'Overdue',last:'May 9'},
-  {id:'PM-05',task:'High-Dust — Vents & Ceilings',acct:'Highmark Health',due:'Jun 22',freq:'Monthly',status:'Scheduled',last:'May 22'},
-  {id:'PM-06',task:'Drain Treatment — Kitchen & Break Rooms',acct:'Penn State Health',due:'Jun 15',freq:'Monthly',status:'Due Soon',last:'May 15'},
+  {id:'PM-01',task:'HVAC Filter Replacement',acct:1,due:'Jun 14',freq:'90 days',status:'Due Soon',last:'Mar 15'},
+  {id:'PM-02',task:'Carpet Deep Extraction — All Floors',acct:2,due:'Jun 18',freq:'Semi-annual',status:'Scheduled',last:'Dec 2024'},
+  {id:'PM-03',task:'Floor Strip & Wax — Lobby',acct:3,due:'Jul 01',freq:'Quarterly',status:'Scheduled',last:'Apr 2025'},
+  {id:'PM-04',task:'Exterior Pressure Wash',acct:5,due:'Jun 10',freq:'Monthly',status:'Overdue',last:'May 9'},
+  {id:'PM-05',task:'High-Dust — Vents & Ceilings',acct:1,due:'Jun 22',freq:'Monthly',status:'Scheduled',last:'May 22'},
+  {id:'PM-06',task:'Drain Treatment — Kitchen & Break Rooms',acct:2,due:'Jun 15',freq:'Monthly',status:'Due Soon',last:'May 15'},
+  {id:'PM-07',task:'Parking Lot Sweep & Pressure Wash',acct:3,due:'Jun 28',freq:'Monthly',status:'Scheduled',last:'May 28'},
+  {id:'PM-08',task:'Floor Strip & Wax — Production',acct:5,due:'Jul 15',freq:'Semi-annual',status:'Scheduled',last:'Jan 2025'},
 ];
+
+const SAT_TREND=[{m:'Jan',v:81},{m:'Feb',v:79},{m:'Mar',v:82},{m:'Apr',v:84},{m:'May',v:87},{m:'Jun',v:89}];
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-const pc = p => p==='High'?'#EF4444':p==='Medium'?'#F59E0B':'#7B7F99';
-const ico = (cls, s) => h('i', {className:'ti '+cls, style:s||{}});
-const Badge = ({cls, children}) => h('span', {className:'badge badge-'+cls}, children);
-const Tag = ({t}) => h('span', {className:'tag'}, t);
+const pc=p=>p==='High'?'#EF4444':p==='Medium'?'#F59E0B':'#7B7F99';
+const ico=(cls,s)=>h('i',{className:'ti '+cls,style:s||{}});
+const acctName=id=>{const a=ACCOUNTS.find(x=>x.id===id);return a?a.name:'—';};
 
-function Toast({msg, onDone}){
+function Badge({cls,children}){return h('span',{className:'badge badge-'+cls},children);}
+function Tag({t}){return h('span',{className:'tag'},t);}
+function Toast({msg,onDone}){
   useEffect(()=>{const t=setTimeout(onDone,3200);return()=>clearTimeout(t);},[]);
-  return h('div',{className:'toast'}, ico('ti-check',{fontSize:18,color:'var(--green)'}), h('span',null,msg));
+  return h('div',{className:'toast'},ico('ti-check',{fontSize:16,color:'var(--green)'}),h('span',null,msg));
 }
-
 function Stars({n}){
-  return h('div',{className:'rating-stars',style:{display:'flex',gap:3}},
-    [1,2,3,4,5].map(i=>h('span',{key:i,style:{fontSize:13,color:i<=n?'var(--amber)':'var(--border2)'}}, '★'))
-  );
+  return h('div',{className:'stars'},[1,2,3,4,5].map(i=>h('span',{key:i,className:i<=n?'star-f':'star-e'},'★')));
 }
 function SparkBars({data}){
-  const mx=Math.max(...data);
-  return h('div',{className:'spark-line'},
-    data.map((v,i)=>h('div',{key:i,className:'spark-bar',style:{height:Math.max(3,(v/mx)*28)+'px'}}))
+  const mx=Math.max(...data)||1;
+  return h('div',{className:'spark-line'},data.map((v,i)=>h('div',{key:i,className:'spark-bar',style:{height:Math.max(2,(v/mx)*24)+'px'}})));
+}
+function AccountFilter({value,onChange,label,all}){
+  return h('select',{className:'filter-select',value,onChange:e=>onChange(e.target.value)},
+    h('option',{value:''},(label||'All Accounts')),
+    ACCOUNTS.filter(a=>all||a.status==='Active').map(a=>h('option',{key:a.id,value:a.id},a.name))
   );
 }
 
-// ── SVG CHARTS (no deps) ──────────────────────────────────────────────────────
-function LineChartSVG({data, color, h2}){
-  const W=400, H=h2||140, pad={t:10,r:10,b:24,l:30};
-  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
-  const mn=Math.min(...data.map(d=>d.v))-2, mx=Math.max(...data.map(d=>d.v))+2;
-  const px=(i)=>pad.l+i*(iw/(data.length-1));
-  const py=(v)=>pad.t+ih-(((v-mn)/(mx-mn))*ih);
+// ── SVG CHARTS ────────────────────────────────────────────────────────────────
+function LineChartSVG({data,color,ht}){
+  const W=380,H=ht||130,p={t:8,r:8,b:22,l:28};
+  const iw=W-p.l-p.r,ih=H-p.t-p.b;
+  const mn=Math.min(...data.map(d=>d.v))-2,mx=Math.max(...data.map(d=>d.v))+2;
+  const px=i=>p.l+i*(iw/(data.length-1));
+  const py=v=>p.t+ih-(((v-mn)/(mx-mn))*ih);
   const pts=data.map((d,i)=>px(i)+','+py(d.v)).join(' ');
-  const fill=data.map((d,i)=>px(i)+','+py(d.v)).join(' ')+' '+px(data.length-1)+','+(pad.t+ih)+' '+pad.l+','+(pad.t+ih);
-  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H}},
-    h('defs',null,h('linearGradient',{id:'lg'+color.replace('#',''),x1:'0',y1:'0',x2:'0',y2:'1'},
-      h('stop',{offset:'0%',stopColor:color,stopOpacity:'0.25'}),
+  const fill=pts+' '+px(data.length-1)+','+(p.t+ih)+' '+p.l+','+(p.t+ih);
+  const gid='g'+color.replace(/[^a-z0-9]/gi,'');
+  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H},xmlns:'http://www.w3.org/2000/svg'},
+    h('defs',null,h('linearGradient',{id:gid,x1:'0',y1:'0',x2:'0',y2:'1'},
+      h('stop',{offset:'0%',stopColor:color,stopOpacity:'0.22'}),
       h('stop',{offset:'100%',stopColor:color,stopOpacity:'0'})
     )),
-    [0,1,2].map(i=>h('line',{key:i,x1:pad.l,y1:pad.t+ih*(i/2),x2:W-pad.r,y2:pad.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
-    h('polygon',{points:fill,fill:'url(#lg'+color.replace('#','')+')'}),
+    [0,1,2].map(i=>h('line',{key:i,x1:p.l,y1:p.t+ih*(i/2),x2:W-p.r,y2:p.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
+    h('polygon',{points:fill,fill:'url(#'+gid+')'}),
     h('polyline',{points:pts,fill:'none',stroke:color,strokeWidth:'2'}),
-    data.map((d,i)=>h('text',{key:i,x:px(i),y:H-6,textAnchor:'middle',fill:'#7B7F99',fontSize:'10'},d.m))
+    data.map((d,i)=>h('text',{key:i,x:px(i),y:H-5,textAnchor:'middle',fill:'#7B7F99',fontSize:'9.5'},d.m||d.l))
   );
 }
-
-function BarChartSVG({data, colors}){
-  const W=400, H=140, pad={t:10,r:10,b:24,l:30};
-  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
-  const mx=Math.max(...data.map(d=>d.v));
-  const bw=Math.floor(iw/data.length*0.55);
-  const gap=iw/data.length;
-  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H}},
-    [0,1,2].map(i=>h('line',{key:i,x1:pad.l,y1:pad.t+ih*(i/2),x2:W-pad.r,y2:pad.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
+function BarChartSVG({data,colors,ht}){
+  const W=380,H=ht||130,p={t:8,r:8,b:22,l:28};
+  const iw=W-p.l-p.r,ih=H-p.t-p.b;
+  const mx=Math.max(...data.map(d=>d.v),1);
+  const slot=iw/data.length,bw=Math.max(6,slot*0.55);
+  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H},xmlns:'http://www.w3.org/2000/svg'},
+    [0,1,2].map(i=>h('line',{key:i,x1:p.l,y1:p.t+ih*(i/2),x2:W-p.r,y2:p.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
     data.map((d,i)=>{
       const bh=Math.max(2,(d.v/mx)*ih);
-      const x=pad.l+gap*i+(gap-bw)/2;
-      const y=pad.t+ih-bh;
-      const col=colors?colors[i%colors.length]:'#4F7EFF';
+      const x=p.l+slot*i+(slot-bw)/2;
       return h(Fragment,{key:i},
-        h('rect',{x,y,width:bw,height:bh,fill:col,opacity:'0.8',rx:'3'}),
-        h('text',{x:x+bw/2,y:H-6,textAnchor:'middle',fill:'#7B7F99',fontSize:'10'},d.l||d.m||'')
+        h('rect',{x,y:p.t+ih-bh,width:bw,height:bh,fill:colors?colors[i%colors.length]:'#4F7EFF',opacity:'0.85',rx:'3'}),
+        h('text',{x:x+bw/2,y:H-5,textAnchor:'middle',fill:'#7B7F99',fontSize:'9'},d.l||d.m||'')
       );
     })
   );
 }
 
-function DualBarChartSVG({data}){
-  const W=400, H=140, pad={t:10,r:10,b:24,l:30};
-  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
-  const mx=Math.max(...data.flatMap(d=>[d.a,d.b]));
-  const slot=iw/data.length, bw=Math.floor(slot*0.3);
-  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H}},
-    [0,1,2].map(i=>h('line',{key:i,x1:pad.l,y1:pad.t+ih*(i/2),x2:W-pad.r,y2:pad.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
-    data.map((d,i)=>{
-      const x=pad.l+slot*i+slot*0.1;
-      const ah=Math.max(2,(d.a/mx)*ih), bh=Math.max(2,(d.b/mx)*ih);
-      return h(Fragment,{key:i},
-        h('rect',{x,y:pad.t+ih-ah,width:bw,height:ah,fill:'#EF4444',opacity:'0.75',rx:'2'}),
-        h('rect',{x:x+bw+2,y:pad.t+ih-bh,width:bw,height:bh,fill:'#22C55E',opacity:'0.75',rx:'2'}),
-        h('text',{x:x+bw,y:H-6,textAnchor:'middle',fill:'#7B7F99',fontSize:'9'},d.l)
-      );
-    })
+// ── ACCOUNT DETAIL MODAL ──────────────────────────────────────────────────────
+function AccountDetailModal({acct,tickets,workers,pm,onClose,onToast}){
+  const [tab,setTab]=useState('overview');
+  const acctTickets=tickets.filter(t=>t.acct===acct.id);
+  const acctWorkers=workers.filter(w=>w.site===acct.id);
+  const acctPM=pm.filter(p=>p.acct===acct.id);
+  const qrItems=QR_FEED.filter(q=>q.acct===acct.id);
+  const qaTasks=(QA_TEMPLATES[acct.industry]||QA_TEMPLATES.Default);
+  const tabs=['overview','qa','tickets','workers','pm','qr','walkthrough'];
+
+  return h('div',{className:'modal-backdrop',onClick:onClose},
+    h('div',{className:'modal modal-lg',onClick:e=>e.stopPropagation(),style:{width:880}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:14}},
+        h('div',{style:{width:36,height:36,borderRadius:9,background:'rgba(79,126,255,.15)',display:'flex',alignItems:'center',justifyContent:'center'}},
+          ico('ti-building',{color:'var(--accent2)',fontSize:18})
+        ),
+        h('div',null,
+          h('div',{style:{fontWeight:700,fontSize:15}},acct.name),
+          h('div',{style:{fontSize:11,color:'var(--muted)'}},acct.addr+' · '+acct.sqft+' sq ft · '+acct.tier)
+        ),
+        acct.score>0&&h('div',{style:{marginLeft:'auto',textAlign:'right'}},
+          h('div',{style:{fontSize:22,fontWeight:700,color:acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'}},''+acct.score),
+          h('div',{style:{fontSize:10,color:'var(--muted)'}},acct.score>=85?'On Track':acct.score>=70?'Watch':'At Risk')
+        ),
+        h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:acct.score>0?8:'auto'},onClick:onClose},ico('ti-x'))
+      ),
+      h('div',{className:'tab-bar'},
+        tabs.map(t=>h('button',{key:t,className:'tab-btn '+(tab===t?'active':''),onClick:()=>setTab(t)},t.charAt(0).toUpperCase()+t.slice(1)))
+      ),
+
+      tab==='overview'&&h(Fragment,null,
+        h('div',{className:'grid g4',style:{marginBottom:14}},
+          [{l:'Satisfaction',v:acct.score||'N/A',c:acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'},{l:'Open Tickets',v:acctTickets.filter(t=>t.status==='Open').length,c:'var(--red)'},{l:'Workers',v:acctWorkers.length,c:'var(--accent2)'},{l:'PM Items',v:acctPM.filter(p=>p.status!=='Completed').length,c:'var(--amber)'}]
+          .map(s=>h('div',{key:s.l,className:'stat-card'},
+            h('div',{className:'stat-label'},s.l),
+            h('div',{className:'stat-value',style:{color:s.c}},s.v)
+          ))
+        ),
+        h('div',{className:'grid g2'},
+          h('div',null,
+            h('div',{className:'card-title'},ico('ti-map-pin'),' Areas / QR Zones'),
+            acct.areas.map((a,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderTop:i?'1px solid var(--border)':'none'}},
+              h('span',{style:{fontSize:12.5}},a),
+              h('div',{style:{display:'flex',gap:5}},
+                h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('QR code generated for '+a)},ico('ti-qrcode'),' QR'),
+                h('button',{className:'btn btn-ghost btn-sm'},ico('ti-scan'))
+              )
+            ))
+          ),
+          h('div',null,
+            h('div',{className:'card-title'},ico('ti-users'),' Assigned Workers'),
+            acctWorkers.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'8px 0'}},'No workers assigned'):
+            acctWorkers.map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'7px 0',borderTop:'1px solid var(--border)'}},
+              h('div',{className:'worker-avatar',style:{background:w.color,width:28,height:28,fontSize:10}},w.name.split(' ').map(p=>p[0]).join('')),
+              h('div',{style:{flex:1}},
+                h('div',{style:{fontSize:12,fontWeight:500}},w.name),
+                h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role+' · '+w.shift)
+              ),
+              h('div',{className:'status-dot '+(w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted')})
+            ))
+          )
+        )
+      ),
+
+      tab==='qa'&&h('div',null,
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
+          h('div',{style:{fontSize:12,color:'var(--muted)'}},acct.industry+' — Quality Assurance Checklist'),
+          h('button',{className:'btn btn-primary btn-sm'},ico('ti-plus'),' Add Task')
+        ),
+        qaTasks.map((task,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderTop:i?'1px solid var(--border)':'none'}},
+          h('div',{style:{width:20,height:20,borderRadius:5,border:'1.5px solid var(--border2)',flexShrink:0,cursor:'pointer'}}),
+          h('span',{style:{flex:1,fontSize:12.5}},task),
+          h(Badge,{cls:'muted'},'Pending'),
+          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Task marked complete')},ico('ti-check'))
+        ))
+      ),
+
+      tab==='tickets'&&h('div',null,
+        acctTickets.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'16px 0'}},'No tickets for this account'):
+        acctTickets.map(t=>h('div',{key:t.id,className:'ticket-card',style:{marginBottom:8}},
+          h('div',{className:'priority-bar',style:{background:pc(t.priority)}}),
+          h('div',{style:{flex:1}},
+            h('div',{style:{fontSize:12,fontWeight:600}},t.title),
+            h('div',{style:{fontSize:10,color:'var(--muted)',marginTop:2}},t.assigned+' · '+t.created)
+          ),
+          h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status)
+        ))
+      ),
+
+      tab==='workers'&&h('div',null,
+        h('div',{style:{marginBottom:12}},
+          h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:10}},'Assigned workers'),
+          acctWorkers.map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'8px 0',borderTop:'1px solid var(--border)'}},
+            h('div',{className:'worker-avatar',style:{background:w.color}},w.name.split(' ').map(p=>p[0]).join('')),
+            h('div',{style:{flex:1}},h('div',{style:{fontSize:12,fontWeight:500}},w.name),h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role)),
+            h(Badge,{cls:w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted'},w.status)
+          ))
+        ),
+        h('div',{style:{borderTop:'1px solid var(--border)',paddingTop:12,marginTop:4}},
+          h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}},
+            h('div',{style:{fontSize:12,color:'var(--muted)'}},'Available bench — trained on this account'),
+            h('button',{className:'btn btn-primary btn-sm',onClick:()=>onToast('Coverage request sent to all available bench workers')},ico('ti-send'),' Request Coverage (All)')
+          ),
+          INIT_WORKERS.filter(w=>w.bench&&w.trained.includes(acct.id)).map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'7px 0',borderTop:'1px solid var(--border)'}},
+            h('div',{className:'worker-avatar',style:{background:w.color,width:28,height:28,fontSize:10}},w.name.split(' ').map(p=>p[0]).join('')),
+            h('div',{style:{flex:1}},h('div',{style:{fontSize:12,fontWeight:500}},w.name),h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role+' · Flex')),
+            h('button',{className:'btn btn-green btn-sm',onClick:()=>onToast('Coverage request sent to '+w.name)},ico('ti-send'),' Request')
+          ))
+        )
+      ),
+
+      tab==='pm'&&h('div',null,
+        acctPM.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'16px 0'}},'No PM items for this account'):
+        acctPM.map(p=>h('div',{key:p.id,style:{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderTop:'1px solid var(--border)'}},
+          h('div',{style:{flex:1}},
+            h('div',{style:{fontSize:12.5,fontWeight:500}},p.task),
+            h('div',{style:{fontSize:10,color:'var(--muted)',marginTop:2}},'Due: '+p.due+' · Last: '+p.last+' · '+p.freq)
+          ),
+          h(Badge,{cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'},p.status)
+        ))
+      ),
+
+      tab==='qr'&&h('div',null,
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
+          h('div',{style:{fontSize:12,color:'var(--muted)'}},qrItems.length+' responses for this account'),
+          h('button',{className:'btn btn-primary btn-sm',onClick:()=>onToast('QR zone creator opened')},ico('ti-plus'),' Add QR Zone')
+        ),
+        qrItems.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'16px 0'}},'No QR feedback yet for this account'):
+        qrItems.map(q=>h('div',{key:q.id,className:'qr-card',style:{marginBottom:8}},
+          h('div',{style:{flex:1}},
+            h('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:3}},
+              h('span',{style:{fontWeight:600,fontSize:12.5}},q.location),
+              h(Stars,{n:q.rating}),
+              h('span',{style:{marginLeft:'auto',fontSize:10,color:'var(--muted)'}},q.time)
+            ),
+            h('div',{style:{fontSize:12,color:'var(--muted)',fontStyle:'italic'}},'"'+q.comment+'"')
+          ),
+          q.auto&&h(Badge,{cls:'red'},'Auto-Ticket')
+        ))
+      ),
+
+      tab==='walkthrough'&&h(AccountWalkthrough,{acct,onToast})
+    )
+  );
+}
+
+function AccountWalkthrough({acct,onToast}){
+  const [scores,setScores]=useState({});
+  const [submitted,setSubmitted]=useState(false);
+  const [autoTickets,setAutoTickets]=useState([]);
+  const checkItems=['Floors','Dusting','Trash','Restrooms','Glass/Mirrors','High-touch Surfaces','Odor','Supplies Stocked'];
+
+  if(submitted)return h('div',null,
+    h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:12,padding:'12px',background:'rgba(34,197,94,.06)',borderRadius:9,border:'1px solid rgba(34,197,94,.2)'}},
+      ico('ti-circle-check',{fontSize:20,color:'var(--green)'}),
+      h('div',null,
+        h('div',{style:{fontWeight:600}},acct.name+' — Walkthrough Submitted'),
+        h('div',{style:{fontSize:11,color:'var(--muted)'}},autoTickets.length+' auto-tickets created')
+      ),
+      h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>{setScores({});setSubmitted(false);setAutoTickets([]);}},ico('ti-refresh'),' New')
+    ),
+    autoTickets.length>0&&autoTickets.map((t,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:9,padding:'8px 0',borderTop:i?'1px solid var(--border)':'none'}},
+      h('div',{style:{width:3,height:32,borderRadius:99,background:t.score===1?'var(--red)':'var(--amber)',flexShrink:0}}),
+      h('div',{flex:1},
+        h('div',{style:{fontSize:12,fontWeight:500}},t.area+' — '+t.item+': '+t.score+'/5'),
+        h('div',{style:{fontSize:10,color:'var(--muted)'}},acct.name+' · Auto-ticket created')
+      ),
+      h(Badge,{cls:'red'},'Open')
+    ))
+  );
+
+  return h('div',null,
+    h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:12}},
+      'Score each area 1–5. Scores ≤ 2 auto-create tickets.'
+    ),
+    acct.areas.map(area=>h('div',{key:area,style:{marginBottom:14}},
+      h('div',{style:{fontWeight:600,fontSize:13,marginBottom:8,color:'var(--text)'}},area),
+      checkItems.map(item=>{
+        const key=area+'::'+item;
+        const val=scores[key];
+        return h('div',{key:item,style:{display:'flex',alignItems:'center',gap:8,marginBottom:6}},
+          h('div',{style:{width:140,fontSize:11,color:'var(--muted)',flexShrink:0}},item),
+          h('div',{style:{display:'flex',gap:4}},
+            [1,2,3,4,5].map(n=>h('button',{key:n,
+              className:'score-btn s'+n+(val===n?' active':''),
+              onClick:()=>setScores(p=>({...p,[key]:n}))
+            },n))
+          ),
+          val&&val<=2&&h(Badge,{cls:'red'},'Ticket')
+        );
+      })
+    )),
+    h('div',{style:{display:'flex',justifyContent:'flex-end',paddingTop:8,borderTop:'1px solid var(--border)'}},
+      h('button',{className:'btn btn-primary',onClick:()=>{
+        const t=[];
+        Object.entries(scores).forEach(([key,val])=>{
+          if(val<=2){const[area,item]=key.split('::');t.push({area,item,score:val});}
+        });
+        setAutoTickets(t);setSubmitted(true);
+        onToast(t.length>0?t.length+' tickets created from walkthrough':'Walkthrough complete — no issues');
+      }},ico('ti-send'),' Submit Walkthrough')
+    )
   );
 }
 
 // ── OVERVIEW ──────────────────────────────────────────────────────────────────
 function Overview(){
+  const [acctFilter,setAcctFilter]=useState('');
+  const filteredTickets=acctFilter?INIT_TICKETS.filter(t=>t.acct===parseInt(acctFilter)):INIT_TICKETS;
+  const filteredWorkers=acctFilter?INIT_WORKERS.filter(w=>w.site===parseInt(acctFilter)&&w.status==='On Site'):INIT_WORKERS.filter(w=>w.status==='On Site');
+  const satData=acctFilter
+    ?[{m:'Score',v:ACCOUNTS.find(a=>a.id===parseInt(acctFilter))?.score||0}]
+    :SAT_TREND;
+
   const stats=[
     {label:'Active Accounts',value:'4',icon:'ti-building',color:'#4F7EFF',bg:'rgba(79,126,255,.12)',delta:'+1',dir:'up'},
-    {label:'Open Tickets',value:'3',icon:'ti-ticket',color:'#EF4444',bg:'rgba(239,68,68,.12)',delta:'+2',dir:'down'},
-    {label:'Workers On-Site',value:'5',icon:'ti-users',color:'#22C55E',bg:'rgba(34,197,94,.12)',delta:'5 today',dir:'up'},
+    {label:'Open Tickets',value:INIT_TICKETS.filter(t=>t.status==='Open'&&(!acctFilter||t.acct===parseInt(acctFilter))).length,icon:'ti-ticket',color:'#EF4444',bg:'rgba(239,68,68,.12)',delta:'',dir:'down'},
+    {label:'Workers On-Site',value:INIT_WORKERS.filter(w=>w.status==='On Site'&&(!acctFilter||w.site===parseInt(acctFilter))).length,icon:'ti-users',color:'#22C55E',bg:'rgba(34,197,94,.12)',delta:'',dir:'up'},
     {label:'Avg Satisfaction',value:'89',icon:'ti-star',color:'#F59E0B',bg:'rgba(245,158,11,.12)',delta:'+2 pts',dir:'up'},
     {label:'PM Compliance',value:'78%',icon:'ti-checklist',color:'#A78BFA',bg:'rgba(167,139,250,.12)',delta:'-4%',dir:'down'},
     {label:'QR Responses (7d)',value:'84',icon:'ti-qrcode',color:'#22D3EE',bg:'rgba(34,211,238,.12)',delta:'+12',dir:'up'},
     {label:'Call-outs (30d)',value:'6',icon:'ti-user-off',color:'#F59E0B',bg:'rgba(245,158,11,.12)',delta:'+1',dir:'down'},
     {label:'SLA Compliance',value:'94%',icon:'ti-clock-check',color:'#22C55E',bg:'rgba(34,197,94,.12)',delta:'+1%',dir:'up'},
   ];
+
   return h(Fragment,null,
-    h('div',{className:'grid g4',style:{marginBottom:20}},
+    h('div',{className:'filter-bar'},
+      h(AccountFilter,{value:acctFilter,onChange:setAcctFilter,all:true}),
+      acctFilter&&h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setAcctFilter('')},ico('ti-x'),' Clear')
+    ),
+    h('div',{className:'grid g4',style:{marginBottom:16}},
       stats.map(s=>h('div',{key:s.label,className:'stat-card'},
         h('div',{className:'stat-icon',style:{background:s.bg,color:s.color}},ico(s.icon)),
         h('div',{className:'stat-label'},s.label),
-        h('div',{className:'stat-value'},s.value),
-        h('div',{className:'stat-delta '+s.dir},ico('ti-trending-'+(s.dir==='up'?'up':'down')),s.delta)
+        h('div',{className:'stat-value'},''+s.value),
+        s.delta&&h('div',{className:'stat-delta '+s.dir},ico('ti-trending-'+(s.dir==='up'?'up':'down')),s.delta)
       ))
     ),
-    h('div',{className:'grid g2',style:{marginBottom:20}},
+    h('div',{className:'grid g2',style:{marginBottom:16}},
       h('div',{className:'card'},
         h('div',{className:'card-title'},ico('ti-chart-line'),' Satisfaction Trend'),
         h(LineChartSVG,{data:SAT_TREND,color:'#4F7EFF'})
       ),
       h('div',{className:'card'},
         h('div',{className:'card-title'},ico('ti-activity'),' Ticket Volume (7d)'),
-        h(DualBarChartSVG,{data:[{l:'Mon',a:3,b:5},{l:'Tue',a:5,b:4},{l:'Wed',a:2,b:6},{l:'Thu',a:4,b:3},{l:'Fri',a:6,b:4},{l:'Sat',a:1,b:2},{l:'Sun',a:0,b:1}]})
+        h(BarChartSVG,{data:[{l:'Mon',v:8},{l:'Tue',v:9},{l:'Wed',v:8},{l:'Thu',v:7},{l:'Fri',v:10},{l:'Sat',v:3},{l:'Sun',v:1}],colors:['#4F7EFF']})
       )
     ),
     h('div',{className:'grid g2'},
       h('div',{className:'card'},
-        h('div',{className:'card-title'},ico('ti-alert-triangle'),' Recent Tickets'),
-        INIT_TICKETS.slice(0,4).map(t=>h('div',{key:t.id,className:'pm-row',style:{gap:10}},
+        h('div',{className:'card-title'},ico('ti-alert-triangle'),' Recent Tickets'+(acctFilter?' — '+acctName(parseInt(acctFilter)):'')),
+        filteredTickets.slice(0,5).map(t=>h('div',{key:t.id,className:'pm-row',style:{gap:8}},
           h('div',{style:{width:3,alignSelf:'stretch',borderRadius:99,background:pc(t.priority),flexShrink:0}}),
           h('div',{style:{flex:1,minWidth:0}},
-            h('div',{style:{fontSize:13,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},t.title),
-            h('div',{style:{fontSize:11,color:'var(--muted)',marginTop:2}},t.acct+' · '+t.created)
+            h('div',{style:{fontSize:12.5,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},t.title),
+            h('div',{style:{fontSize:10,color:'var(--muted)',marginTop:1}},acctName(t.acct)+' · '+t.created)
           ),
           h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status)
-        ))
+        )),
+        filteredTickets.length===0&&h('div',{style:{fontSize:12,color:'var(--muted)',padding:'10px 0'}},'No tickets')
       ),
       h('div',{className:'card'},
-        h('div',{className:'card-title'},ico('ti-users'),' Workers On-Site'),
-        INIT_WORKERS.filter(w=>w.status==='On Site').slice(0,5).map(w=>h('div',{key:w.id,className:'pm-row',style:{gap:10}},
-          h('div',{className:'worker-avatar',style:{background:w.color,width:32,height:32,fontSize:12}},w.name.split(' ').map(p=>p[0]).join('')),
+        h('div',{className:'card-title'},ico('ti-users'),' Workers On-Site'+(acctFilter?' — '+acctName(parseInt(acctFilter)):'')),
+        filteredWorkers.slice(0,6).map(w=>h('div',{key:w.id,className:'pm-row',style:{gap:8}},
+          h('div',{className:'worker-avatar',style:{background:w.color,width:28,height:28,fontSize:10}},w.name.split(' ').map(p=>p[0]).join('')),
           h('div',{style:{flex:1}},
-            h('div',{style:{fontSize:13,fontWeight:500}},w.name),
-            h('div',{style:{fontSize:11,color:'var(--muted)'}},w.site+' · '+w.shift)
+            h('div',{style:{fontSize:12.5,fontWeight:500}},w.name),
+            h('div',{style:{fontSize:10,color:'var(--muted)'}},acctName(w.site)+' · '+w.shift)
           ),
           h('div',{className:'status-dot green'})
-        ))
+        )),
+        filteredWorkers.length===0&&h('div',{style:{fontSize:12,color:'var(--muted)',padding:'10px 0'}},'No workers on site')
       )
     )
   );
 }
 
 // ── ACCOUNTS ──────────────────────────────────────────────────────────────────
-function Accounts(){
+function Accounts({onToast}){
   const [sel,setSel]=useState(null);
+  const [tickets,setTickets]=useState(INIT_TICKETS);
+  const [workers]=useState(INIT_WORKERS);
+  const [pm]=useState(INIT_PM);
+
   return h(Fragment,null,
-    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}},
-      h('div',{style:{fontSize:14,color:'var(--muted)'}}, '5 accounts · 1.4M sq ft under management'),
+    sel&&h(AccountDetailModal,{acct:sel,tickets,workers,pm,onClose:()=>setSel(null),onToast}),
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}},
+      h('div',{style:{fontSize:13,color:'var(--muted)'}},'5 accounts · 1.4M sq ft under management'),
       h('button',{className:'btn btn-primary'},ico('ti-plus'),' Add Account')
     ),
     h('div',{className:'card',style:{padding:0}},
       h('table',{className:'tbl'},
-        h('thead',null,h('tr',null,['Account','Sq Ft','Tier','Status','Score','Trend',''].map(c=>h('th',{key:c},c)))),
+        h('thead',null,h('tr',null,['Account','Industry','Sq Ft','Tier','Status','Score','Trend',''].map(c=>h('th',{key:c},c)))),
         h('tbody',null,ACCOUNTS.map(a=>h('tr',{key:a.id,style:{cursor:'pointer'},onClick:()=>setSel(a)},
-          h('td',null,h('div',{style:{fontWeight:600}},a.name),h('div',{style:{fontSize:11,color:'var(--muted)'}},a.addr)),
-          h('td',{style:{fontFamily:'monospace',color:'var(--muted)'}},a.sqft),
+          h('td',null,h('div',{style:{fontWeight:600}},a.name),h('div',{style:{fontSize:10,color:'var(--muted)'}},a.addr)),
+          h('td',null,h(Tag,{t:a.industry})),
+          h('td',{style:{fontFamily:'monospace',color:'var(--muted)',fontSize:11}},a.sqft),
           h('td',null,h(Badge,{cls:a.tier==='Platinum'?'purple':a.tier==='Gold'?'amber':'muted'},a.tier)),
           h('td',null,h(Badge,{cls:a.status==='Active'?'green':'amber'},a.status)),
-          h('td',null,a.score>0?h('div',{style:{display:'flex',alignItems:'center',gap:8}},
-            h('div',{style:{width:80}},h('div',{className:'progress-bar'},h('div',{className:'progress-fill',style:{width:a.score+'%',background:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}}))),
-            h('span',{style:{fontWeight:600,color:a.score>=85?'var(--green)':'var(--text)'}},a.score)
-          ):h(Badge,{cls:'muted'},'Pending')),
+          h('td',null,a.score>0
+            ?h('div',{style:{display:'flex',alignItems:'center',gap:7}},
+              h('div',{style:{width:70}},h('div',{className:'progress-bar'},h('div',{className:'progress-fill',style:{width:a.score+'%',background:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}}))),
+              h('span',{style:{fontWeight:700,fontSize:12,color:a.score>=85?'var(--green)':'var(--text)'}},a.score)
+            ):h(Badge,{cls:'muted'},'Pending')
+          ),
           h('td',null,h(SparkBars,{data:[78,81,79,84,87,a.score||0]})),
           h('td',null,h('button',{className:'btn btn-ghost btn-sm'},ico('ti-arrow-right')))
         )))
-      )
-    ),
-    sel&&h('div',{className:'modal-backdrop',onClick:()=>setSel(null)},
-      h('div',{className:'modal',onClick:e=>e.stopPropagation()},
-        h('div',{className:'modal-title'},ico('ti-building',{color:'var(--accent2)'}),sel.name,
-          h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>setSel(null)},ico('ti-x'))
-        ),
-        h('div',{className:'grid g2',style:{marginBottom:16}},
-          [['ADDRESS',sel.addr],['SQ FOOTAGE',sel.sqft+' sq ft'],['TIER',sel.tier],['POD',sel.pod]]
-          .map(([lbl,val])=>h('div',{key:lbl,className:'highlight-chip'},
-            h('div',{style:{fontSize:10,color:'var(--muted)',marginBottom:2}},lbl),
-            h('strong',null,val)
-          ))
-        )
       )
     )
   );
 }
 
 // ── QA TASKS ──────────────────────────────────────────────────────────────────
-function QATasks(){
-  const [tab,setTab]=useState('A');
-  const [toast,setToast]=useState(null);
-  const info={
-    A:{label:'Critical',color:'#EF4444',desc:'Life-safety, biohazard, immediate-response items. Failure = escalation.'},
-    B:{label:'Daily Ops',color:'#F59E0B',desc:'Core daily service standards. Drives client satisfaction scores.'},
-    C:{label:'Weekly',color:'#4F7EFF',desc:'Periodic deep-cleans. Scheduled weekly or bi-weekly.'},
-    D:{label:'Scheduled',color:'#22C55E',desc:'Monthly, quarterly, or semi-annual preventive tasks.'},
-  };
+function QATasks({onToast}){
+  const [acctFilter,setAcctFilter]=useState('');
+  const [toast2,setToast2]=useState(null);
+  const [tasks,setTasks]=useState(()=>{
+    const t=[];
+    ACCOUNTS.filter(a=>a.status==='Active').forEach(a=>{
+      const tmpl=QA_TEMPLATES[a.industry]||QA_TEMPLATES.Default;
+      tmpl.forEach((task,i)=>t.push({id:a.id+'-'+i,acct:a.id,task,status:'Pending',due:'Today',priority:i<2?'High':'Medium'}));
+    });
+    return t;
+  });
+
+  const filtered=acctFilter?tasks.filter(t=>t.acct===parseInt(acctFilter)):tasks;
+  const complete=id=>setTasks(p=>p.map(t=>t.id===id?{...t,status:'Complete'}:t));
+  const grouped={};
+  filtered.forEach(t=>{if(!grouped[t.acct])grouped[t.acct]=[];grouped[t.acct].push(t);});
+
   return h(Fragment,null,
-    toast&&h(Toast,{msg:toast,onDone:()=>setToast(null)}),
-    h('div',{style:{marginBottom:20,display:'flex',gap:8}},
-      ['A','B','C','D'].map(t=>h('button',{key:t,
-        className:'btn '+(tab===t?'btn-primary':'btn-ghost'),
-        style:tab!==t?{borderColor:info[t].color+'44',color:info[t].color}:{},
-        onClick:()=>setTab(t)},
-        h('span',{className:'tier-pill tier-'+t.toLowerCase()},t),' ',info[t].label
-      ))
-    ),
-    h('div',{className:'highlight-chip',style:{marginBottom:16}},
-      ico('ti-info-circle',{color:info[tab].color,marginRight:6}),
-      h('strong',{style:{color:info[tab].color}},'Tier '+tab+': '),
-      info[tab].desc
-    ),
-    h('div',{className:'card',style:{padding:0}},
-      h('table',{className:'tbl'},
-        h('thead',null,h('tr',null,['ID','Task','Frequency','Last Completed','Status',''].map(c=>h('th',{key:c},c)))),
-        h('tbody',null,QA_TASKS[tab].map(t=>{
-          const late=t.last.includes('Yesterday')||t.last.includes('Last')||t.last.includes('2025')||t.last==='N/A';
-          return h('tr',{key:t.id},
-            h('td',null,h('span',{style:{fontFamily:'monospace',fontSize:12,color:'var(--muted)'}},t.id)),
-            h('td',{style:{fontWeight:500}},t.task),
-            h('td',null,h(Tag,{t:t.freq})),
-            h('td',{style:{color:late?'var(--amber)':'var(--muted)',fontSize:12}},t.last),
-            h('td',null,h(Badge,{cls:t.last==='N/A'?'muted':late?'amber':'green'},t.last==='N/A'?'Standby':late?'Needs Attention':'Current')),
-            h('td',null,h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setToast('Task '+t.id+' marked complete')},ico('ti-check'),' Done'))
-          );
-        }))
+    toast2&&h(Toast,{msg:toast2,onDone:()=>setToast2(null)}),
+    h('div',{className:'filter-bar'},
+      h(AccountFilter,{value:acctFilter,onChange:setAcctFilter}),
+      h('div',{style:{marginLeft:'auto',display:'flex',gap:8}},
+        h('div',{className:'stat-card',style:{padding:'6px 14px',flexDirection:'row',alignItems:'center',gap:8}},
+          h('span',{style:{fontSize:11,color:'var(--red)',fontWeight:700}},filtered.filter(t=>t.status==='Pending'&&t.priority==='High').length+' High Priority'),
+          h('span',{style:{fontSize:11,color:'var(--muted)'}},'·'),
+          h('span',{style:{fontSize:11,color:'var(--green)',fontWeight:700}},filtered.filter(t=>t.status==='Complete').length+' Complete')
+        )
       )
-    )
+    ),
+    Object.entries(grouped).map(([aid,items])=>{
+      const acct=ACCOUNTS.find(a=>a.id===parseInt(aid));
+      return h('div',{key:aid,className:'card',style:{marginBottom:14,padding:0}},
+        h('div',{style:{padding:'12px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:8}},
+          h('div',{style:{fontWeight:700,fontSize:13}},acct?acct.name:''),
+          h(Tag,{t:acct?acct.industry:''}),
+          h('div',{style:{marginLeft:'auto',fontSize:11,color:'var(--muted)'}},items.filter(t=>t.status==='Complete').length+'/'+items.length+' complete')
+        ),
+        h('table',{className:'tbl'},
+          h('thead',null,h('tr',null,['Task','Priority','Status','Due',''].map(c=>h('th',{key:c},c)))),
+          h('tbody',null,items.map(t=>h('tr',{key:t.id},
+            h('td',{style:{fontWeight:500}},t.task),
+            h('td',null,h(Badge,{cls:t.priority==='High'?'red':'amber'},t.priority)),
+            h('td',null,h(Badge,{cls:t.status==='Complete'?'green':'muted'},t.status)),
+            h('td',{style:{fontSize:11,color:'var(--muted)'}},t.due),
+            h('td',null,t.status!=='Complete'&&h('button',{className:'btn btn-ghost btn-sm',onClick:()=>{complete(t.id);setToast2('Task marked complete');}},ico('ti-check'),' Done'))
+          )))
+        )
+      );
+    })
   );
 }
 
 // ── SATISFACTION ──────────────────────────────────────────────────────────────
 function BuildingSatisfaction(){
-  const byAcct=ACCOUNTS.filter(a=>a.score>0).map(a=>({l:a.name.split(' ')[0],v:a.score}));
+  const active=ACCOUNTS.filter(a=>a.score>0);
+  const byAcct=active.map(a=>({l:a.name.split(' ')[0],v:a.score}));
   return h(Fragment,null,
-    h('div',{className:'grid g4',style:{marginBottom:20}},
+    h('div',{className:'grid g4',style:{marginBottom:16}},
       [{label:'Portfolio Avg',value:'87'},{label:'NPS Score',value:'55'},{label:'At-Risk Accounts',value:'1'},{label:'5-Star Responses',value:'31%'}]
       .map(s=>h('div',{key:s.label,className:'stat-card'},
         h('div',{className:'stat-label'},s.label),
@@ -429,25 +647,25 @@ function BuildingSatisfaction(){
         h('div',{className:'stat-delta up'},ico('ti-trending-up'),' +vs last month')
       ))
     ),
-    h('div',{className:'grid g2',style:{marginBottom:20}},
+    h('div',{className:'grid g2',style:{marginBottom:16}},
       h('div',{className:'card'},
         h('div',{className:'card-title'},ico('ti-chart-bar'),' Satisfaction by Account'),
         h(BarChartSVG,{data:byAcct,colors:byAcct.map(d=>d.v>=85?'#22C55E':d.v>=75?'#F59E0B':'#EF4444')})
       ),
       h('div',{className:'card'},
-        h('div',{className:'card-title'},ico('ti-chart-line'),' NPS Trend — 6 Months'),
-        h(LineChartSVG,{data:NPS_TREND,color:'#22C55E'})
+        h('div',{className:'card-title'},ico('ti-chart-line'),' Trend — 6 Months'),
+        h(LineChartSVG,{data:SAT_TREND,color:'#4F7EFF'})
       )
     ),
     h('div',{className:'card'},
       h('div',{className:'card-title'},ico('ti-building'),' Account Breakdown'),
-      h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
-        ACCOUNTS.filter(a=>a.score>0).map(a=>h('div',{key:a.id,style:{display:'flex',alignItems:'center',gap:14}},
-          h('div',{style:{width:180,fontSize:13,fontWeight:500,flexShrink:0}},a.name),
-          h('div',{style:{flex:1}},h('div',{className:'progress-bar',style:{height:8}},
+      h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+        active.map(a=>h('div',{key:a.id,style:{display:'flex',alignItems:'center',gap:12}},
+          h('div',{style:{width:170,fontSize:12.5,fontWeight:500,flexShrink:0}},a.name),
+          h('div',{style:{flex:1}},h('div',{className:'progress-bar',style:{height:7}},
             h('div',{className:'progress-fill',style:{width:a.score+'%',background:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}})
           )),
-          h('div',{style:{width:36,textAlign:'right',fontWeight:700,fontSize:14,color:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}},a.score),
+          h('div',{style:{width:32,textAlign:'right',fontWeight:700,fontSize:13,color:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}},a.score),
           h(Badge,{cls:a.score>=85?'green':a.score>=70?'amber':'red'},a.score>=85?'On Track':a.score>=70?'Watch':'At Risk')
         ))
       )
@@ -457,108 +675,83 @@ function BuildingSatisfaction(){
 
 // ── WALKTHROUGH ───────────────────────────────────────────────────────────────
 function Walkthrough({onToast}){
-  const [scores,setScores]=useState({});
-  const [submitted,setSubmitted]=useState(false);
-  const [tickets,setTickets]=useState([]);
+  const [selectedAcct,setSelectedAcct]=useState('');
+  const acct=ACCOUNTS.find(a=>a.id===parseInt(selectedAcct));
 
-  function handleSubmit(){
-    const t=[];
-    Object.entries(scores).forEach(([key,val])=>{
-      if(val<=2){
-        const [zid,...rest]=key.split('-');
-        const zone=ZONES.find(z=>z.id===parseInt(zid));
-        t.push({area:rest.join('-'),zone:zone?zone.name:'',score:val});
-      }
-    });
-    setTickets(t);setSubmitted(true);
-    if(t.length>0)onToast(t.length+' auto-ticket'+(t.length>1?'s':'')+' created');
-    else onToast('Walkthrough submitted — no issues found');
-  }
-
-  if(submitted)return h(Fragment,null,
-    h('div',{className:'card',style:{marginBottom:16,borderColor:'rgba(34,197,94,.3)'}},
-      h('div',{style:{display:'flex',alignItems:'center',gap:12}},
-        h('div',{style:{width:40,height:40,borderRadius:99,background:'rgba(34,197,94,.12)',display:'flex',alignItems:'center',justifyContent:'center'}},ico('ti-circle-check',{fontSize:22,color:'var(--green)'})),
-        h('div',null,
-          h('div',{style:{fontWeight:700,fontSize:15}},'Walkthrough Submitted'),
-          h('div',{style:{fontSize:12,color:'var(--muted)'}},Object.keys(scores).length+' areas scored · '+tickets.length+' tickets created')
-        ),
-        h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>{setScores({});setSubmitted(false);setTickets([]);}},ico('ti-refresh'),' New Walk')
-      )
+  return h('div',null,
+    h('div',{className:'filter-bar',style:{marginBottom:20}},
+      h('div',{style:{fontSize:13,fontWeight:600,color:'var(--text)',marginRight:8}},'Select Account:'),
+      h(AccountFilter,{value:selectedAcct,onChange:setSelectedAcct,label:'Choose account to inspect...'})
     ),
-    tickets.length>0&&h('div',{className:'card'},
-      h('div',{className:'card-title'},ico('ti-ticket',{color:'var(--red)'}),' Auto-Created Tickets'),
-      tickets.map((t,i)=>h('div',{key:i,className:'ticket-card',style:{marginBottom:8}},
-        h('div',{className:'priority-bar',style:{background:t.score===1?'var(--red)':'var(--amber)'}}),
-        h('div',null,
-          h('div',{style:{fontWeight:600,fontSize:13}},t.area+' — Score '+t.score+'/5'),
-          h('div',{style:{fontSize:11,color:'var(--muted)'}},t.zone+' · Assigned for review')
-        ),
-        h(Badge,{cls:'red'},'Auto-Ticket')
-      ))
-    )
-  );
-
-  return h(Fragment,null,
-    h('div',{className:'grid g2',style:{marginBottom:20}},
-      ZONES.map(z=>h('div',{key:z.id,className:'zone-card'},
-        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}},
-          h('div',{style:{fontWeight:600,fontSize:14}},z.name),
-          h('span',{style:{fontSize:11,color:'var(--muted)',background:'var(--border)',padding:'2px 7px',borderRadius:6}},z.areas.length+' areas')
-        ),
-        z.areas.map(area=>{
-          const key=z.id+'-'+area;
-          const val=scores[key];
-          return h('div',{key:area,style:{marginBottom:8}},
-            h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:5}},area),
-            h('div',{style:{display:'flex',gap:5}},
-              [1,2,3,4,5].map(n=>h('button',{key:n,
-                className:'score-btn s'+n+(val===n?' active':''),
-                onClick:()=>setScores(p=>({...p,[key]:n}))
-              },n))
-            )
-          );
-        })
-      ))
+    !selectedAcct&&h('div',{style:{textAlign:'center',padding:'60px 20px',color:'var(--muted)'}},
+      ico('ti-map-search',{fontSize:40,display:'block',marginBottom:12,opacity:.3}),
+      h('div',{style:{fontSize:13}},'Select an account above to start a walkthrough inspection')
     ),
-    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
-      h('span',{style:{fontSize:12,color:'var(--muted)'}},Object.keys(scores).length+' of '+ZONES.flatMap(z=>z.areas).length+' areas scored'),
-      h('button',{className:'btn btn-primary',onClick:handleSubmit},ico('ti-send'),' Submit Walkthrough')
-    )
+    selectedAcct&&acct&&h(AccountWalkthrough,{acct,onToast})
   );
 }
 
 // ── QR FEEDBACK ───────────────────────────────────────────────────────────────
 function QRFeedback({onToast}){
-  const avg=(QR_FEED.reduce((s,i)=>s+i.rating,0)/QR_FEED.length).toFixed(1);
+  const [acctFilter,setAcctFilter]=useState('');
+  const [qrItems,setQrItems]=useState(QR_FEED);
+  const [showCreate,setShowCreate]=useState(false);
+  const [newArea,setNewArea]=useState({acct:'',name:''});
+  const filtered=acctFilter?qrItems.filter(q=>q.acct===parseInt(acctFilter)):qrItems;
+  const avg=(filtered.reduce((s,i)=>s+i.rating,0)/Math.max(filtered.length,1)).toFixed(1);
+
   return h(Fragment,null,
-    h('div',{className:'grid g4',style:{marginBottom:20}},
+    showCreate&&h('div',{className:'modal-backdrop',onClick:()=>setShowCreate(false)},
+      h('div',{className:'modal',style:{width:440},onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-title'},ico('ti-qrcode',{color:'var(--accent2)'}),' Create QR Zone'),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+          h('div',null,
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'ACCOUNT'),
+            h('select',{className:'field-input',value:newArea.acct,onChange:e=>setNewArea({...newArea,acct:e.target.value})},
+              h('option',{value:''},'Select account...'),
+              ACCOUNTS.map(a=>h('option',{key:a.id,value:a.id},a.name))
+            )
+          ),
+          h('div',null,
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'AREA NAME'),
+            h('input',{className:'field-input',placeholder:'e.g. 3rd Floor Restroom East',value:newArea.name,onChange:e=>setNewArea({...newArea,name:e.target.value})})
+          ),
+          h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
+            h('button',{className:'btn btn-ghost',onClick:()=>setShowCreate(false)},'Cancel'),
+            h('button',{className:'btn btn-primary',disabled:!newArea.acct||!newArea.name,onClick:()=>{onToast('QR code created for '+newArea.name);setShowCreate(false);setNewArea({acct:'',name:''});}},ico('ti-qrcode'),' Generate QR Code')
+          )
+        )
+      )
+    ),
+    h('div',{className:'filter-bar'},
+      h(AccountFilter,{value:acctFilter,onChange:setAcctFilter}),
+      h('button',{className:'btn btn-primary btn-sm',style:{marginLeft:'auto'},onClick:()=>setShowCreate(true)},ico('ti-plus'),' Create QR Zone')
+    ),
+    h('div',{className:'grid g4',style:{marginBottom:16}},
       [
-        {label:'Avg Rating (7d)',value:avg,icon:'ti-star',c:'var(--amber)'},
-        {label:'Total Responses',value:QR_FEED.length,icon:'ti-qrcode',c:'var(--accent2)'},
-        {label:'Negative (≤2★)',value:QR_FEED.filter(i=>i.rating<=2).length,icon:'ti-alert-triangle',c:'var(--red)'},
-        {label:'Auto-Tickets',value:QR_FEED.filter(i=>i.auto).length,icon:'ti-ticket',c:'var(--red)'},
+        {label:'Avg Rating',value:avg,icon:'ti-star',c:'var(--amber)'},
+        {label:'Total Responses',value:filtered.length,icon:'ti-qrcode',c:'var(--accent2)'},
+        {label:'Negative (≤2★)',value:filtered.filter(i=>i.rating<=2).length,icon:'ti-alert-triangle',c:'var(--red)'},
+        {label:'Auto-Tickets',value:filtered.filter(i=>i.auto).length,icon:'ti-ticket',c:'var(--red)'},
       ].map(s=>h('div',{key:s.label,className:'stat-card'},
         h('div',{className:'stat-icon',style:{background:s.c+'22',color:s.c}},ico(s.icon)),
         h('div',{className:'stat-label'},s.label),
         h('div',{className:'stat-value'},s.value)
       ))
     ),
-    h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
-      QR_FEED.map(item=>h('div',{key:item.id,className:'qr-card',style:item.rating<=2?{borderColor:'rgba(239,68,68,.3)'}:{}},
-        h('div',{style:{width:34,height:34,borderRadius:8,background:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},ico('ti-qrcode',{color:'var(--muted)'})),
+    h('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+      filtered.map(item=>h('div',{key:item.id,className:'qr-card',style:item.rating<=2?{borderColor:'rgba(239,68,68,.3)'}:{}},
+        h('div',{style:{width:32,height:32,borderRadius:7,background:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},ico('ti-qrcode',{color:'var(--muted)'})),
         h('div',{style:{flex:1}},
-          h('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:4}},
-            h('span',{style:{fontWeight:600,fontSize:13}},item.location),
+          h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:3}},
+            h('span',{style:{fontWeight:600,fontSize:12.5}},item.location),
+            h('span',{style:{fontSize:10,color:'var(--muted)'}},acctName(item.acct)),
             h(Stars,{n:item.rating}),
-            h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--muted)'}},item.time)
+            h('span',{style:{marginLeft:'auto',fontSize:10,color:'var(--muted)'}},item.time)
           ),
-          h('div',{style:{fontSize:13,color:'var(--muted)',fontStyle:'italic'}},'"'+item.comment+'"')
+          h('div',{style:{fontSize:12,color:'var(--muted)',fontStyle:'italic'}},'"'+item.comment+'"')
         ),
-        item.auto&&h('div',{style:{display:'flex',flexDirection:'column',gap:4,alignItems:'flex-end'}},
-          h(Badge,{cls:'red'},'Auto-Ticket'),
-          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Ticket TKT-1042 created')},'View')
-        )
+        item.auto&&h(Badge,{cls:'red'},'Auto-Ticket')
       ))
     )
   );
@@ -567,19 +760,67 @@ function QRFeedback({onToast}){
 // ── TICKETS ───────────────────────────────────────────────────────────────────
 function Tickets({onToast}){
   const [tickets,setTickets]=useState(INIT_TICKETS);
+  const [acctFilter,setAcctFilter]=useState('');
   const [showNew,setShowNew]=useState(false);
+  const [selTicket,setSelTicket]=useState(null);
   const [nw,setNw]=useState({title:'',acct:'',priority:'Medium',assigned:''});
   const [filter,setFilter]=useState('All');
+  const [comment,setComment]=useState('');
+
+  const base=acctFilter?tickets.filter(t=>t.acct===parseInt(acctFilter)):tickets;
+  const filtered=filter==='All'?base:base.filter(t=>t.status===filter);
 
   function create(){
-    const t={id:'TKT-'+(1042+tickets.length),...nw,status:'Open',created:'Just now',source:'Manual',hubspot:true};
+    const t={id:'TKT-'+(1042+tickets.length),...nw,acct:parseInt(nw.acct),status:'Open',created:'Just now',source:'Manual',hubspot:true,comments:[]};
     setTickets(p=>[t,...p]);
     setShowNew(false);setNw({title:'',acct:'',priority:'Medium',assigned:''});
-    onToast('Ticket created & synced to HubSpot');
+    onToast('Ticket created & dispatched to account workers');
   }
-  const filtered=filter==='All'?tickets:tickets.filter(t=>t.status===filter);
+  function addComment(){
+    if(!comment.trim())return;
+    setTickets(p=>p.map(t=>t.id===selTicket.id?{...t,comments:[...t.comments,comment]}:t));
+    setSelTicket(s=>({...s,comments:[...s.comments,comment]}));
+    setComment('');
+  }
 
   return h(Fragment,null,
+    selTicket&&h('div',{className:'modal-backdrop',onClick:()=>setSelTicket(null)},
+      h('div',{className:'modal',onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-title'},
+          ico('ti-ticket',{color:'var(--accent2)'}),selTicket.id,
+          h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>setSelTicket(null)},ico('ti-x'))
+        ),
+        h('div',{style:{marginBottom:12}},
+          h('div',{style:{fontSize:15,fontWeight:700,marginBottom:6}},selTicket.title),
+          h('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginBottom:10}},
+            h(Badge,{cls:selTicket.priority==='High'?'red':selTicket.priority==='Medium'?'amber':'muted'},selTicket.priority),
+            h(Badge,{cls:selTicket.status==='Resolved'?'green':selTicket.status==='In Progress'?'blue':'red'},selTicket.status),
+            selTicket.hubspot&&h('span',{className:'hs-badge'},'HS')
+          ),
+          h('div',{className:'grid g2'},
+            h('div',{className:'chip'},h('div',{style:{fontSize:10,color:'var(--muted)',marginBottom:2}},'ACCOUNT'),h('strong',null,acctName(selTicket.acct))),
+            h('div',{className:'chip'},h('div',{style:{fontSize:10,color:'var(--muted)',marginBottom:2}},'ASSIGNED'),h('strong',null,selTicket.assigned))
+          )
+        ),
+        h('div',{style:{borderTop:'1px solid var(--border)',paddingTop:12,marginTop:4}},
+          h('div',{style:{fontSize:11,fontWeight:700,color:'var(--muted)',marginBottom:8}},'COMMENTS'),
+          selTicket.comments.length===0&&h('div',{style:{fontSize:12,color:'var(--muted2)',marginBottom:8}},'No comments yet'),
+          selTicket.comments.map((c,i)=>h('div',{key:i,style:{fontSize:12.5,padding:'7px 10px',background:'var(--surface)',borderRadius:7,marginBottom:6,border:'1px solid var(--border)'}},c)),
+          h('div',{style:{display:'flex',gap:8,marginTop:8}},
+            h('input',{className:'field-input',placeholder:'Add a comment...',value:comment,onChange:e=>setComment(e.target.value),onKeyDown:e=>e.key==='Enter'&&addComment()}),
+            h('button',{className:'btn btn-primary',onClick:addComment},ico('ti-send'))
+          )
+        ),
+        h('div',{style:{display:'flex',gap:8,marginTop:12,paddingTop:12,borderTop:'1px solid var(--border)'}},
+          h('button',{className:'btn btn-primary',onClick:()=>{
+            const workers=INIT_WORKERS.filter(w=>w.site===selTicket.acct);
+            onToast('Ticket dispatched to '+workers.length+' workers at '+acctName(selTicket.acct));
+          }},ico('ti-send'),' Dispatch to Account Workers'),
+          h('button',{className:'btn btn-ghost'},ico('ti-refresh'),' Update Status')
+        )
+      )
+    ),
+
     showNew&&h('div',{className:'modal-backdrop',onClick:()=>setShowNew(false)},
       h('div',{className:'modal',onClick:e=>e.stopPropagation()},
         h('div',{className:'modal-title'},ico('ti-ticket',{color:'var(--accent2)'}),' New Ticket'),
@@ -593,7 +834,7 @@ function Tickets({onToast}){
               h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'ACCOUNT'),
               h('select',{className:'field-input',value:nw.acct,onChange:e=>setNw({...nw,acct:e.target.value})},
                 h('option',{value:''},'Select account...'),
-                ACCOUNTS.map(a=>h('option',{key:a.id,value:a.name},a.name))
+                ACCOUNTS.map(a=>h('option',{key:a.id,value:a.id},a.name))
               )
             ),
             h('div',null,
@@ -607,41 +848,44 @@ function Tickets({onToast}){
             h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'DISPATCH TO'),
             h('select',{className:'field-input',value:nw.assigned,onChange:e=>setNw({...nw,assigned:e.target.value})},
               h('option',{value:''},'Assign to employee...'),
-              INIT_WORKERS.map(w=>h('option',{key:w.id,value:w.name},w.name))
+              INIT_WORKERS.filter(w=>!w.bench).map(w=>h('option',{key:w.id,value:w.name},w.name+(w.site?' ('+acctName(w.site)+')':'')))
             )
           ),
           h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
             h('button',{className:'btn btn-ghost',onClick:()=>setShowNew(false)},'Cancel'),
-            h('button',{className:'btn btn-primary',onClick:create,disabled:!nw.title},ico('ti-send'),' Dispatch & Sync HubSpot')
+            h('button',{className:'btn btn-primary',onClick:create,disabled:!nw.title||!nw.acct},ico('ti-send'),' Create & Dispatch')
           )
         )
       )
     ),
-    h('div',{style:{display:'flex',gap:8,marginBottom:20,alignItems:'center'}},
-      ['All','Open','In Progress','Resolved'].map(f=>h('button',{key:f,className:'btn btn-sm '+(filter===f?'btn-primary':'btn-ghost'),onClick:()=>setFilter(f)},f)),
+
+    h('div',{className:'filter-bar'},
+      h(AccountFilter,{value:acctFilter,onChange:setAcctFilter}),
+      h('div',{style:{display:'flex',gap:6}},
+        ['All','Open','In Progress','Resolved'].map(f=>h('button',{key:f,className:'btn btn-sm '+(filter===f?'btn-primary':'btn-ghost'),onClick:()=>setFilter(f)},f))
+      ),
       h('button',{className:'btn btn-primary btn-sm',style:{marginLeft:'auto'},onClick:()=>setShowNew(true)},ico('ti-plus'),' New Ticket')
     ),
-    h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
-      filtered.map(t=>h('div',{key:t.id,className:'ticket-card'},
+    h('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+      filtered.map(t=>h('div',{key:t.id,className:'ticket-card',onClick:()=>setSelTicket(t)},
         h('div',{className:'priority-bar',style:{background:pc(t.priority)}}),
         h('div',{style:{flex:1}},
-          h('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:6}},
-            h('span',{style:{fontFamily:'monospace',fontSize:11,color:'var(--muted)'}},t.id),
+          h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:5}},
+            h('span',{style:{fontFamily:'monospace',fontSize:10,color:'var(--muted)'}},t.id),
             h(Badge,{cls:t.priority==='High'?'red':t.priority==='Medium'?'amber':'muted'},t.priority),
             t.hubspot&&h('span',{className:'hs-badge'},'HS'),
-            h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--muted)'}},t.created)
+            h('span',{style:{marginLeft:'auto',fontSize:10,color:'var(--muted)'}},t.created)
           ),
-          h('div',{style:{fontWeight:600,fontSize:13,marginBottom:4}},t.title),
-          h('div',{style:{fontSize:11,color:'var(--muted)',display:'flex',gap:12}},
-            h('span',null,ico('ti-building'),' ',t.acct),
-            h('span',null,ico('ti-user'),' ',t.assigned)
+          h('div',{style:{fontWeight:600,fontSize:12.5,marginBottom:4}},t.title),
+          h('div',{style:{fontSize:10,color:'var(--muted)',display:'flex',gap:10}},
+            h('span',null,ico('ti-building'),' ',acctName(t.acct)),
+            h('span',null,ico('ti-user'),' ',t.assigned),
+            t.comments.length>0&&h('span',null,ico('ti-message'),' '+t.comments.length)
           )
         ),
-        h('div',{style:{display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end'}},
-          h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status),
-          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Re-dispatched '+t.id)},ico('ti-send'),' Dispatch')
-        )
-      ))
+        h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status)
+      )),
+      filtered.length===0&&h('div',{style:{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:12}},'No tickets match this filter')
     )
   );
 }
@@ -650,53 +894,85 @@ function Tickets({onToast}){
 function Workers({onToast}){
   const [workers,setWorkers]=useState(INIT_WORKERS);
   const [showCO,setShowCO]=useState(null);
+  const [acctFilter,setAcctFilter]=useState('');
+  const [tab,setTab]=useState('assigned');
   const w2=workers.find(w=>w.id===showCO);
+
+  const assigned=acctFilter
+    ?workers.filter(w=>!w.bench&&w.site===parseInt(acctFilter))
+    :workers.filter(w=>!w.bench);
+  const bench=acctFilter
+    ?workers.filter(w=>w.bench&&w.trained.includes(parseInt(acctFilter)))
+    :workers.filter(w=>w.bench);
 
   function markCO(id){
     setWorkers(p=>p.map(w=>w.id===id?{...w,status:'Called Out',callouts:w.callouts+1}:w));
-    setShowCO(null);onToast('Call-out recorded. Coverage alert sent to Sharlene.');
+    setShowCO(null);
+    onToast('Call-out recorded. Coverage alert sent to bench workers.');
   }
 
   return h(Fragment,null,
-    h('div',{className:'grid g4',style:{marginBottom:20}},
+    showCO&&w2&&h('div',{className:'modal-backdrop',onClick:()=>setShowCO(null)},
+      h('div',{className:'modal',style:{width:420},onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-title'},ico('ti-user-off',{color:'var(--red)'}),' Record Call-Out'),
+        h('div',{style:{fontSize:13,marginBottom:12}},'Record call-out for ',h('strong',null,w2.name),'?'),
+        h('div',{className:'chip',style:{marginBottom:14,borderColor:'rgba(239,68,68,.3)'}},
+          ico('ti-alert-triangle',{color:'var(--red)',marginRight:6}),
+          h('strong',{style:{color:'var(--red)'}},w2.callouts+' prior call-out'+(w2.callouts!==1?'s':'')),
+          '. HR review triggered at 5+. 3+ triggers verbal coaching.'
+        ),
+        h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
+          h('button',{className:'btn btn-ghost',onClick:()=>setShowCO(null)},'Cancel'),
+          h('button',{className:'btn btn-danger',onClick:()=>markCO(showCO)},ico('ti-user-off'),' Confirm Call-Out')
+        )
+      )
+    ),
+
+    h('div',{className:'filter-bar'},
+      h(AccountFilter,{value:acctFilter,onChange:setAcctFilter}),
+      tab==='bench'&&acctFilter&&h('button',{className:'btn btn-green',onClick:()=>onToast('Coverage request sent to all '+bench.length+' available bench workers')},ico('ti-send'),' Request Coverage — All Bench')
+    ),
+    h('div',{className:'grid g4',style:{marginBottom:16}},
       [
-        {label:'On Site',value:workers.filter(w=>w.status==='On Site').length,c:'var(--green)'},
+        {label:'On Site',value:workers.filter(w=>!w.bench&&w.status==='On Site').length,c:'var(--green)'},
         {label:'Called Out',value:workers.filter(w=>w.status==='Called Out').length,c:'var(--red)'},
-        {label:'Off Shift',value:workers.filter(w=>w.status==='Off Shift').length,c:'var(--muted)'},
-        {label:'Call-out Risk',value:workers.filter(w=>w.callouts>=3).length,c:'var(--amber)'},
+        {label:'Off Shift',value:workers.filter(w=>!w.bench&&w.status==='Off Shift').length,c:'var(--muted)'},
+        {label:'Bench Available',value:workers.filter(w=>w.bench&&w.status==='Available').length,c:'var(--accent2)'},
       ].map(s=>h('div',{key:s.label,className:'stat-card'},
         h('div',{className:'stat-label'},s.label),
         h('div',{className:'stat-value',style:{color:s.c}},s.value)
       ))
     ),
-    showCO&&w2&&h('div',{className:'modal-backdrop',onClick:()=>setShowCO(null)},
-      h('div',{className:'modal',onClick:e=>e.stopPropagation()},
-        h('div',{className:'modal-title'},ico('ti-user-off',{color:'var(--red)'}),' Record Call-Out'),
-        h('div',{style:{fontSize:14,marginBottom:16}},'Record call-out for ',h('strong',null,w2.name),'? This will alert Sharlene and flag for coverage.'),
-        h('div',{className:'highlight-chip',style:{marginBottom:16,borderColor:'rgba(239,68,68,.3)'}},
-          ico('ti-alert-triangle',{color:'var(--red)',marginRight:6}),
-          h('strong',{style:{color:'var(--red)'}},w2.callouts+' prior call-out'+(w2.callouts!==1?'s':'')),'. HR review triggered at 5+.'
-        ),
-        h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
-          h('button',{className:'btn btn-ghost',onClick:()=>setShowCO(null)},'Cancel'),
-          h('button',{className:'btn btn-danger',onClick:()=>markCO(showCO)},ico('ti-user-off'),' Confirm')
-        )
-      )
+    h('div',{className:'tab-bar'},
+      h('button',{className:'tab-btn '+(tab==='assigned'?'active':''),onClick:()=>setTab('assigned')},'Assigned Workers ('+assigned.length+')'),
+      h('button',{className:'tab-btn '+(tab==='bench'?'active':''),onClick:()=>setTab('bench')},'Bench / Backup ('+(acctFilter?bench.length:workers.filter(w=>w.bench).length)+')')
     ),
-    h('div',{className:'card',style:{padding:0}},
-      workers.map(w=>h('div',{key:w.id,className:'worker-row'},
+    tab==='assigned'&&h('div',{className:'card',style:{padding:0}},
+      assigned.map(w=>h('div',{key:w.id,className:'worker-row'},
         h('div',{className:'worker-avatar',style:{background:w.color}},w.name.split(' ').map(p=>p[0]).join('')),
         h('div',{style:{flex:1}},
-          h('div',{style:{fontSize:13,fontWeight:600}},w.name),
-          h('div',{style:{fontSize:11,color:'var(--muted)'}},w.role+' · '+w.site)
+          h('div',{style:{fontSize:12.5,fontWeight:600}},w.name),
+          h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role+' · '+acctName(w.site))
         ),
-        h('div',{style:{fontSize:11,color:'var(--muted)',minWidth:80}},w.shift),
-        h('div',{style:{minWidth:80}},w.callouts>0&&h(Badge,{cls:w.callouts>=3?'red':'amber'},w.callouts+' CO')),
-        h('div',{style:{display:'flex',alignItems:'center',gap:8}},
+        h('div',{style:{fontSize:10,color:'var(--muted)',minWidth:70}},w.shift),
+        w.callouts>0&&h(Badge,{cls:w.callouts>=3?'red':'amber'},w.callouts+' CO'),
+        h('div',{style:{display:'flex',alignItems:'center',gap:6,marginLeft:8}},
           h('div',{className:'status-dot '+(w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted')}),
-          h('span',{style:{fontSize:12,fontWeight:500,color:w.status==='On Site'?'var(--green)':w.status==='Called Out'?'var(--red)':'var(--muted)',minWidth:70}},w.status)
+          h('span',{style:{fontSize:11,fontWeight:500,color:w.status==='On Site'?'var(--green)':w.status==='Called Out'?'var(--red)':'var(--muted)',minWidth:65}},w.status)
         ),
         w.status!=='Called Out'&&h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setShowCO(w.id)},ico('ti-user-off'))
+      ))
+    ),
+    tab==='bench'&&h('div',{className:'card',style:{padding:0}},
+      (acctFilter?bench:workers.filter(w=>w.bench)).map(w=>h('div',{key:w.id,className:'worker-row'},
+        h('div',{className:'worker-avatar',style:{background:w.color}},w.name.split(' ').map(p=>p[0]).join('')),
+        h('div',{style:{flex:1}},
+          h('div',{style:{fontSize:12.5,fontWeight:600}},w.name),
+          h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role+' · Trained: '+w.trained.map(id=>acctName(id)).join(', '))
+        ),
+        w.callouts>0&&h(Badge,{cls:w.callouts>=3?'red':'amber'},w.callouts+' CO'),
+        h(Badge,{cls:'green'},'Available'),
+        h('button',{className:'btn btn-green btn-sm',style:{marginLeft:8},onClick:()=>onToast('Coverage request sent to '+w.name)},ico('ti-send'),' Request Coverage')
       ))
     )
   );
@@ -705,14 +981,21 @@ function Workers({onToast}){
 // ── PREVENTIVE PM ─────────────────────────────────────────────────────────────
 function PreventivePM({onToast}){
   const [items,setItems]=useState(INIT_PM);
+  const [acctFilter,setAcctFilter]=useState('');
   const done=id=>{setItems(p=>p.map(x=>x.id===id?{...x,status:'Completed',last:'Today'}:x));onToast('PM item marked complete');};
+  const filtered=acctFilter?items.filter(i=>i.acct===parseInt(acctFilter)):items;
+
   return h(Fragment,null,
-    h('div',{className:'grid g4',style:{marginBottom:20}},
+    h('div',{className:'filter-bar'},
+      h(AccountFilter,{value:acctFilter,onChange:setAcctFilter}),
+      h('button',{className:'btn btn-primary btn-sm',style:{marginLeft:'auto'}},ico('ti-plus'),' Add PM Item')
+    ),
+    h('div',{className:'grid g4',style:{marginBottom:16}},
       [
-        {label:'Overdue',value:items.filter(i=>i.status==='Overdue').length,c:'var(--red)'},
-        {label:'Due Soon (7d)',value:items.filter(i=>i.status==='Due Soon').length,c:'var(--amber)'},
-        {label:'Scheduled',value:items.filter(i=>i.status==='Scheduled').length,c:'var(--accent2)'},
-        {label:'Completed',value:items.filter(i=>i.status==='Completed').length,c:'var(--green)'},
+        {label:'Overdue',value:filtered.filter(i=>i.status==='Overdue').length,c:'var(--red)'},
+        {label:'Due Soon (7d)',value:filtered.filter(i=>i.status==='Due Soon').length,c:'var(--amber)'},
+        {label:'Scheduled',value:filtered.filter(i=>i.status==='Scheduled').length,c:'var(--accent2)'},
+        {label:'Completed',value:filtered.filter(i=>i.status==='Completed').length,c:'var(--green)'},
       ].map(s=>h('div',{key:s.label,className:'stat-card'},
         h('div',{className:'stat-label'},s.label),
         h('div',{className:'stat-value',style:{color:s.c}},s.value)
@@ -720,14 +1003,14 @@ function PreventivePM({onToast}){
     ),
     h('div',{className:'card',style:{padding:0}},
       h('table',{className:'tbl'},
-        h('thead',null,h('tr',null,['ID','Task','Account','Frequency','Due','Last Done','Status',''].map(c=>h('th',{key:c},c)))),
-        h('tbody',null,items.map(p=>h('tr',{key:p.id},
-          h('td',{style:{fontFamily:'monospace',fontSize:11,color:'var(--muted)'}},p.id),
-          h('td',{style:{fontWeight:500}},p.task),
-          h('td',{style:{color:'var(--muted)',fontSize:12}},p.acct),
+        h('thead',null,h('tr',null,['ID','Task','Account','Freq','Due','Last Done','Status',''].map(c=>h('th',{key:c},c)))),
+        h('tbody',null,filtered.map(p=>h('tr',{key:p.id},
+          h('td',{style:{fontFamily:'monospace',fontSize:10,color:'var(--muted)'}},p.id),
+          h('td',{style:{fontWeight:500,fontSize:12}},p.task),
+          h('td',{style:{fontSize:11,color:'var(--muted)'}},acctName(p.acct)),
           h('td',null,h(Tag,{t:p.freq})),
-          h('td',{style:{fontWeight:600,color:p.status==='Overdue'?'var(--red)':p.status==='Due Soon'?'var(--amber)':'var(--text)'}},p.due),
-          h('td',{style:{color:'var(--muted)',fontSize:12}},p.last),
+          h('td',{style:{fontWeight:700,fontSize:12,color:p.status==='Overdue'?'var(--red)':p.status==='Due Soon'?'var(--amber)':'var(--text)'}},p.due),
+          h('td',{style:{fontSize:11,color:'var(--muted)'}},p.last),
           h('td',null,h(Badge,{cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'},p.status)),
           h('td',null,p.status!=='Completed'&&h('button',{className:'btn btn-ghost btn-sm',onClick:()=>done(p.id)},ico('ti-check'),' Done'))
         )))
@@ -736,11 +1019,11 @@ function PreventivePM({onToast}){
   );
 }
 
-// ── AI ASSISTANT ──────────────────────────────────────────────────────────────
-const SYS=`You are Inperium AI, the policy-aware facilities management assistant for DSC Solutions. Pod 3 covers Harrisburg/Lancaster corridor. Cerberus SOP tiers: A=Critical/Emergency, B=Daily Ops, C=Weekly, D=Scheduled Maintenance. Call-out policy: 3+ = verbal coaching, 5+ = written warning, 7+ = PIP within rolling 90 days. Always lead with coverage solution first, then documentation. Alan Kaufman is Managing Director. Sharlene is Fleet Manager. Be direct and operational. Keep responses concise.`;
+// ── ALAN AI ───────────────────────────────────────────────────────────────────
+const SYS=`You are Alan AI, the intelligent operations assistant for FacilityIQ by DSC Solutions. Pod 3 covers Harrisburg/Lancaster corridor. You help pod owners with quality assurance, worker management, client satisfaction, PM scheduling, and operational decisions. DSC Solutions operates across 17 states with ~450 employees. Call-out policy: 3+ = verbal coaching, 5+ = written warning, 7+ = PIP (rolling 90 days). Always lead with coverage solution first. Alan Kaufman is Managing Director. Sharlene is Fleet Manager. Be direct, concise, and operational.`;
 
-function AIAssistant(){
-  const [msgs,setMsgs]=useState([{role:'assistant',text:"Hey — I'm Inperium AI. Briefed on Cerberus SOPs, Pod 3 accounts, call-out policy, and ticket protocols. What do you need?"}]);
+function AlanAI(){
+  const [msgs,setMsgs]=useState([{role:'assistant',text:"Hey — I'm Alan AI. I have full context on your Pod 3 accounts, workers, call-out policies, and QA protocols. What do you need?"}]);
   const [input,setInput]=useState('');
   const [loading,setLoading]=useState(false);
   const endRef=useRef(null);
@@ -769,31 +1052,29 @@ function AIAssistant(){
     setLoading(false);
   }
 
-  const QP=["Elton Craig has 4 call-outs — what's our policy?","Draft a Tier A SOP for biohazard cleanup","Satisfaction at Armstrong dropped to 79 — recommended actions?","What should I check on a walkthrough for Commonwealth PA?"];
+  const QP=["Elton Craig has 4 call-outs — what's our next step?","Draft coverage request message for tonight's shift","Satisfaction at Armstrong is 79 — what should I do?","Generate a QA checklist for a healthcare account"];
 
   return h('div',{style:{display:'flex',flexDirection:'column',height:'calc(100vh - 140px)'}},
-    h('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}},
+    h('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginBottom:12}},
       QP.map(q=>h('button',{key:q,className:'btn btn-ghost btn-sm',style:{fontSize:11},onClick:()=>setInput(q)},q))
     ),
     h('div',{className:'card',style:{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}},
-      h('div',{style:{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:14,paddingBottom:8}},
+      h('div',{style:{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:12,paddingBottom:6}},
         msgs.map((m,i)=>h('div',{key:i,className:'chat-msg '+(m.role==='user'?'user':'')},
-          m.role==='assistant'&&h('div',{style:{width:30,height:30,borderRadius:8,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
-            ico('ti-sparkles',{fontSize:15,color:'#fff'})
-          ),
+          m.role==='assistant'&&h('div',{style:{width:28,height:28,borderRadius:7,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:13,fontWeight:700,color:'#fff'}},'A'),
           h('div',{className:'chat-bubble',style:{whiteSpace:'pre-wrap'}},m.text)
         )),
         loading&&h('div',{className:'chat-msg'},
-          h('div',{style:{width:30,height:30,borderRadius:8,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},ico('ti-sparkles',{fontSize:15,color:'#fff'})),
+          h('div',{style:{width:28,height:28,borderRadius:7,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:13,fontWeight:700,color:'#fff'}},'A'),
           h('div',{className:'chat-bubble'},h('div',{className:'typing-dots'},h('span'),h('span'),h('span')))
         ),
         h('div',{ref:endRef})
       ),
-      h('div',{style:{display:'flex',gap:8,marginTop:12}},
-        h('textarea',{className:'chat-input',placeholder:'Ask about SOPs, call-out policy, satisfaction scores...',value:input,rows:1,
+      h('div',{style:{display:'flex',gap:7,marginTop:10}},
+        h('textarea',{className:'chat-input',placeholder:'Ask about coverage, QA, accounts, policy...',value:input,rows:1,
           onChange:e=>setInput(e.target.value),
           onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}),
-        h('button',{className:'btn btn-primary',onClick:send,disabled:!input.trim()||loading,style:{height:42,alignSelf:'flex-end'}},ico('ti-send'))
+        h('button',{className:'btn btn-primary',onClick:send,disabled:!input.trim()||loading,style:{height:40,alignSelf:'flex-end'}},ico('ti-send'))
       )
     )
   );
@@ -803,16 +1084,16 @@ function AIAssistant(){
 const NAV=[
   {id:'overview',label:'Overview',icon:'ti-layout-dashboard'},
   {id:'accounts',label:'Accounts',icon:'ti-building'},
-  {id:'qa',label:'QA Tasks',icon:'ti-checklist',badge:'3',bc:'amber'},
+  {id:'qa',label:'QA Tasks',icon:'ti-checklist',badge:'5',bc:'red'},
   {id:'satisfaction',label:'Satisfaction',icon:'ti-star'},
   {id:'walkthrough',label:'Walkthrough',icon:'ti-map-search'},
   {id:'qr',label:'QR Feedback',icon:'ti-qrcode',badge:'2',bc:'red'},
   {id:'tickets',label:'Tickets',icon:'ti-ticket',badge:'3',bc:'red'},
   {id:'workers',label:'Workers',icon:'ti-users',badge:'1',bc:'amber'},
-  {id:'pm',label:'Preventive PM',icon:'ti-tool',badge:'1',bc:'red'},
-  {id:'ai',label:'AI Assistant',icon:'ti-sparkles'},
+  {id:'pm',label:'Preventive PM',icon:'ti-tool',badge:'2',bc:'red'},
+  {id:'ai',label:'Alan AI',icon:'ti-sparkles'},
 ];
-const LABELS={overview:'Overview',accounts:'Accounts',qa:'QA Tasks — Cerberus SOPs',satisfaction:'Building Satisfaction',walkthrough:'iPad Building Walkthrough',qr:'QR Feedback Feed',tickets:'Tickets & Dispatch',workers:'Workers On-Site',pm:'Preventive PM',ai:'AI Assistant'};
+const LABELS={overview:'Overview',accounts:'Accounts',qa:'QA Tasks',satisfaction:'Building Satisfaction',walkthrough:'Building Walkthrough',qr:'QR Feedback',tickets:'Tickets & Dispatch',workers:'Workers',pm:'Preventive PM',ai:'Alan AI'};
 
 function App(){
   const [page,setPage]=useState('overview');
@@ -823,11 +1104,13 @@ function App(){
     toast&&h(Toast,{msg:toast,onDone:()=>setToast(null)}),
     h('div',{className:'sidebar'},
       h('div',{className:'sidebar-logo'},
-        h('div',{className:'logo-mark'},'I'),
-        h('div',null,h('div',{className:'logo-text'},'Inperium'),h('div',{className:'logo-sub'},'DSC Solutions'))
+        h('div',{className:'logo-mark'},'F'),
+        h('div',null,
+          h('div',{className:'logo-word'},'Facility',h('span',null,'IQ')),
+          h('div',{className:'logo-sub'},'DSC Solutions · Pod 3')
+        )
       ),
       h('div',{className:'nav-section'},
-        h('div',{className:'nav-label'},'Pod 3 — Harrisburg/Lancaster'),
         NAV.map(n=>h('div',{key:n.id,className:'nav-item '+(page===n.id?'active':''),onClick:()=>setPage(n.id)},
           ico(n.icon),
           h('span',null,n.label),
@@ -838,19 +1121,19 @@ function App(){
         h('div',{className:'user-chip'},
           h('div',{className:'avatar'},'AK'),
           h('div',null,h('div',{className:'user-name'},'Alan K.'),h('div',{className:'user-role'},'Managing Director')),
-          ico('ti-dots-vertical',{marginLeft:'auto',color:'var(--muted)',fontSize:16})
+          ico('ti-dots-vertical',{marginLeft:'auto',color:'var(--muted)',fontSize:15})
         )
       )
     ),
     h('div',{className:'main'},
       h('div',{className:'topbar'},
         h('div',{className:'topbar-bread'},
-          h('span',{style:{color:'var(--muted2)'}},'Inperium'),
-          ico('ti-chevron-right',{fontSize:12}),
+          h('span',{style:{color:'var(--muted2)'}},'FacilityIQ'),
+          ico('ti-chevron-right',{fontSize:11}),
           h('span',null,LABELS[page])
         ),
         h('div',{className:'topbar-actions'},
-          h('span',{className:'live-pill'},ico('ti-circle-filled',{fontSize:7}),' Live'),
+          h('span',{className:'live-pill'},ico('ti-circle-filled',{fontSize:6}),' Live'),
           h('button',{className:'topbar-icon-btn'},ico('ti-bell')),
           h('button',{className:'topbar-icon-btn'},ico('ti-settings'))
         )
@@ -865,7 +1148,7 @@ function App(){
         page==='tickets'&&h(Tickets,props),
         page==='workers'&&h(Workers,props),
         page==='pm'&&h(PreventivePM,props),
-        page==='ai'&&h(AIAssistant,props)
+        page==='ai'&&h(AlanAI,props)
       )
     )
   );
