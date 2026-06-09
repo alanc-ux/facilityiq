@@ -1,1551 +1,877 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Inperium — Pod Owner Platform</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
-<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/recharts@2.12.7/umd/Recharts.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg:       #0C0D12;
-    --surface:  #13141B;
-    --card:     #181922;
-    --border:   #252733;
-    --border2:  #2E3144;
-    --text:     #E8EAF2;
-    --muted:    #7B7F99;
-    --muted2:   #4E5270;
-    --accent:   #4F7EFF;
-    --accent2:  #6B96FF;
-    --green:    #22C55E;
-    --amber:    #F59E0B;
-    --red:      #EF4444;
-    --purple:   #A78BFA;
-    --cyan:     #22D3EE;
-    --sidebar-w: 220px;
-    --topbar-h:  56px;
-  }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.5; overflow: hidden; }
-  #root { display: flex; height: 100vh; overflow: hidden; }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
-
-  /* Sidebar */
-  .sidebar {
-    width: var(--sidebar-w);
-    min-width: var(--sidebar-w);
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
-    overflow: hidden;
-    transition: width .2s ease;
-  }
-  .sidebar-logo {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: var(--topbar-h);
-  }
-  .logo-mark {
-    width: 32px; height: 32px;
-    background: linear-gradient(135deg, var(--accent), var(--purple));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; font-weight: 700; color: #fff;
-    flex-shrink: 0;
-  }
-  .logo-text { font-size: 15px; font-weight: 700; letter-spacing: -.3px; color: var(--text); }
-  .logo-sub { font-size: 10px; color: var(--muted); font-weight: 400; letter-spacing: .5px; text-transform: uppercase; }
-
-  .nav-section { padding: 12px 12px 4px; }
-  .nav-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; color: var(--muted2); padding: 0 8px 6px; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px; border-radius: 8px; cursor: pointer;
-    color: var(--muted); font-size: 13px; font-weight: 500;
-    transition: all .15s; position: relative; white-space: nowrap;
-    border: 1px solid transparent;
-    margin-bottom: 1px;
-  }
-  .nav-item:hover { background: rgba(79,126,255,.07); color: var(--text); }
-  .nav-item.active {
-    background: rgba(79,126,255,.12);
-    color: var(--accent2);
-    border-color: rgba(79,126,255,.2);
-  }
-  .nav-item.active::before {
-    content: '';
-    position: absolute; left: -12px; top: 6px; bottom: 6px;
-    width: 3px; background: var(--accent); border-radius: 0 3px 3px 0;
-    box-shadow: 0 0 8px var(--accent);
-  }
-  .nav-item .ti { font-size: 17px; flex-shrink: 0; }
-  .nav-badge {
-    margin-left: auto; background: var(--red); color: #fff;
-    font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; min-width: 18px; text-align: center;
-  }
-  .nav-badge.amber { background: var(--amber); color: #000; }
-  .nav-badge.green { background: var(--green); }
-
-  .sidebar-footer {
-    margin-top: auto; border-top: 1px solid var(--border); padding: 12px;
-  }
-  .user-chip {
-    display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
-    cursor: pointer; transition: background .15s;
-  }
-  .user-chip:hover { background: rgba(255,255,255,.04); }
-  .avatar {
-    width: 32px; height: 32px; border-radius: 99px;
-    background: linear-gradient(135deg, var(--accent), var(--purple));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
-  }
-  .user-name { font-size: 13px; font-weight: 600; color: var(--text); }
-  .user-role { font-size: 11px; color: var(--muted); }
-
-  /* Main */
-  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  .topbar {
-    height: var(--topbar-h); min-height: var(--topbar-h);
-    background: var(--surface); border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 24px; gap: 16px;
-  }
-  .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
-  .topbar-bread { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-  .topbar-icon-btn {
-    width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--border);
-    background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: all .15s; font-size: 18px;
-  }
-  .topbar-icon-btn:hover { background: rgba(255,255,255,.04); color: var(--text); }
-
-  .content { flex: 1; overflow-y: auto; padding: 24px; }
-
-  /* Cards */
-  .card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
-  }
-  .card-sm { padding: 16px; }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
-  .card-title .ti { font-size: 15px; }
-  
-  /* Grid helpers */
-  .grid { display: grid; gap: 16px; }
-  .g2 { grid-template-columns: 1fr 1fr; }
-  .g3 { grid-template-columns: 1fr 1fr 1fr; }
-  .g4 { grid-template-columns: repeat(4,1fr); }
-  .g-stat { grid-template-columns: repeat(4,1fr); }
-
-  /* Stat card */
-  .stat-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 18px 20px;
-    display: flex; flex-direction: column; gap: 6px;
-  }
-  .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
-  .stat-value { font-size: 28px; font-weight: 700; letter-spacing: -1px; color: var(--text); line-height: 1; }
-  .stat-value.green { color: var(--green); }
-  .stat-value.red { color: var(--red); }
-  .stat-value.amber { color: var(--amber); }
-  .stat-delta { font-size: 11px; font-weight: 500; display: flex; align-items: center; gap: 3px; }
-  .stat-delta.up { color: var(--green); }
-  .stat-delta.down { color: var(--red); }
-  .stat-icon {
-    width: 36px; height: 36px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 19px; margin-bottom: 4px;
-  }
-
-  /* Badges */
-  .badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600;
-  }
-  .badge-green { background: rgba(34,197,94,.12); color: var(--green); border: 1px solid rgba(34,197,94,.25); }
-  .badge-red { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.25); }
-  .badge-amber { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.25); }
-  .badge-blue { background: rgba(79,126,255,.12); color: var(--accent2); border: 1px solid rgba(79,126,255,.25); }
-  .badge-purple { background: rgba(167,139,250,.12); color: var(--purple); border: 1px solid rgba(167,139,250,.25); }
-  .badge-muted { background: rgba(123,127,153,.1); color: var(--muted); border: 1px solid var(--border); }
-
-  /* Buttons */
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
-    cursor: pointer; border: none; transition: all .15s; font-family: inherit;
-  }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent2); }
-  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-  .btn-ghost:hover { background: rgba(255,255,255,.04); color: var(--text); }
-  .btn-danger { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.25); }
-  .btn-sm { padding: 4px 10px; font-size: 12px; }
-
-  /* Table */
-  .tbl { width: 100%; border-collapse: collapse; }
-  .tbl th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); padding: 0 16px 10px; text-align: left; }
-  .tbl td { padding: 11px 16px; border-top: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
-  .tbl tr:hover td { background: rgba(255,255,255,.02); }
-
-  /* Progress bar */
-  .progress-bar { height: 6px; border-radius: 99px; background: var(--border2); overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 99px; transition: width .4s ease; }
-
-  /* Score circle */
-  .score-ring {
-    width: 56px; height: 56px; border-radius: 99px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 700; flex-shrink: 0;
-  }
-
-  /* Zone card */
-  .zone-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 16px; cursor: pointer;
-    transition: all .15s;
-  }
-  .zone-card:hover { border-color: var(--border2); background: var(--card); }
-  .zone-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-
-  /* Tier pill */
-  .tier-pill {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 24px; height: 24px; border-radius: 6px;
-    font-size: 11px; font-weight: 700;
-  }
-  .tier-a { background: rgba(239,68,68,.15); color: var(--red); }
-  .tier-b { background: rgba(245,158,11,.15); color: var(--amber); }
-  .tier-c { background: rgba(79,126,255,.15); color: var(--accent2); }
-  .tier-d { background: rgba(34,197,94,.15); color: var(--green); }
-
-  /* Chat */
-  .chat-wrap { display: flex; flex-direction: column; height: 100%; }
-  .chat-messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-bottom: 8px; }
-  .chat-msg { display: flex; gap: 10px; max-width: 85%; }
-  .chat-msg.user { align-self: flex-end; flex-direction: row-reverse; }
-  .chat-bubble {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px 14px; font-size: 13px; line-height: 1.55;
-  }
-  .chat-msg.user .chat-bubble { background: rgba(79,126,255,.15); border-color: rgba(79,126,255,.3); }
-  .chat-input-row { display: flex; gap: 8px; margin-top: 12px; }
-  .chat-input {
-    flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; padding: 10px 14px; color: var(--text); font-family: inherit;
-    font-size: 13px; resize: none; outline: none; transition: border-color .15s;
-    min-height: 42px; max-height: 120px;
-  }
-  .chat-input:focus { border-color: var(--accent); }
-  .chat-input::placeholder { color: var(--muted2); }
-
-  /* Satisfaction rating */
-  .rating-stars { display: flex; gap: 3px; }
-  .star { font-size: 13px; }
-  .star.filled { color: var(--amber); }
-  .star.empty { color: var(--border2); }
-
-  /* Workers */
-  .worker-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 16px; border-top: 1px solid var(--border);
-    transition: background .12s;
-  }
-  .worker-row:hover { background: rgba(255,255,255,.02); }
-  .worker-avatar {
-    width: 34px; height: 34px; border-radius: 99px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
-  }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 99px; flex-shrink: 0;
-  }
-  .status-dot.green { background: var(--green); box-shadow: 0 0 0 2px rgba(34,197,94,.2); }
-  .status-dot.red { background: var(--red); }
-  .status-dot.amber { background: var(--amber); }
-  .status-dot.muted { background: var(--muted2); }
-
-  /* HubSpot badge */
-  .hs-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 2px 7px; border-radius: 6px;
-    background: rgba(255,91,46,.12); color: #FF5B2E;
-    border: 1px solid rgba(255,91,46,.25); font-size: 10px; font-weight: 700;
-    letter-spacing: .3px;
-  }
-
-  /* PM Status */
-  .pm-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 0; border-top: 1px solid var(--border);
-    font-size: 13px;
-  }
-  .pm-icon-box {
-    width: 34px; height: 34px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px; flex-shrink: 0;
-  }
-
-  /* Ticket card */
-  .ticket-card {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 16px;
-    display: flex; gap: 12px; align-items: flex-start;
-    transition: border-color .15s;
-  }
-  .ticket-card:hover { border-color: var(--border2); }
-  .priority-bar { width: 3px; border-radius: 99px; align-self: stretch; flex-shrink: 0; }
-
-  /* Input */
-  .field-input {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 12px; color: var(--text); font-family: inherit;
-    font-size: 13px; outline: none; width: 100%; transition: border-color .15s;
-  }
-  .field-input:focus { border-color: var(--accent); }
-
-  /* Select */
-  select.field-input { cursor: pointer; }
-  select.field-input option { background: var(--card); }
-
-  /* Divider */
-  .divider { height: 1px; background: var(--border); margin: 16px 0; }
-
-  /* Walkthrough scoring */
-  .score-btn {
-    width: 40px; height: 40px; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; font-weight: 700; cursor: pointer;
-    border: 1.5px solid var(--border2); background: var(--surface);
-    color: var(--muted); transition: all .15s;
-  }
-  .score-btn:hover { border-color: var(--muted); color: var(--text); }
-  .score-btn.active { color: #fff; border-color: transparent; }
-  .score-1.active { background: var(--red); }
-  .score-2.active { background: #F97316; }
-  .score-3.active { background: var(--amber); }
-  .score-4.active { background: #84CC16; }
-  .score-5.active { background: var(--green); }
-
-  /* QR Feed */
-  .qr-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-    padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start;
-  }
-  .qr-source {
-    width: 34px; height: 34px; border-radius: 8px;
-    background: var(--surface); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px; flex-shrink: 0;
-  }
-
-  /* Modal */
-  .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 500;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .modal {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; padding: 24px; width: 520px; max-width: 95vw;
-    max-height: 80vh; overflow-y: auto;
-  }
-  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-
-  /* Typing indicator */
-  .typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
-  .typing-dots span {
-    width: 6px; height: 6px; border-radius: 99px; background: var(--muted);
-    animation: dot-bounce .9s infinite ease-in-out;
-  }
-  .typing-dots span:nth-child(2) { animation-delay: .15s; }
-  .typing-dots span:nth-child(3) { animation-delay: .3s; }
-  @keyframes dot-bounce { 0%,80%,100% { transform: scale(.6); opacity:.4 } 40% { transform: scale(1); opacity:1 } }
-
-  /* Scrollable panel */
-  .scroll-panel { overflow-y: auto; max-height: 420px; }
-
-  /* Toast */
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; z-index: 999;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 16px; display: flex; gap: 10px; align-items: center;
-    box-shadow: 0 8px 32px rgba(0,0,0,.4); font-size: 13px; font-weight: 500;
-    animation: slide-up .25s ease;
-  }
-  @keyframes slide-up { from { transform: translateY(20px); opacity:0 } to { transform: translateY(0); opacity:1 } }
-
-  /* Empty state */
-  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); }
-  .empty-state .ti { font-size: 42px; display: block; margin-bottom: 12px; opacity: .35; }
-  .empty-state p { font-size: 13px; }
-
-  /* Highlight chip */
-  .highlight-chip {
-    background: rgba(79,126,255,.08); border: 1px solid rgba(79,126,255,.18);
-    border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--muted);
-  }
-  .highlight-chip strong { color: var(--accent2); }
-
-  /* Trend spark */
-  .spark-line { display: flex; align-items: flex-end; gap: 2px; height: 28px; }
-  .spark-bar { width: 5px; border-radius: 2px 2px 0 0; background: var(--accent); opacity: .6; min-height: 3px; }
-
-  /* Tag */
-  .tag {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: rgba(123,127,153,.08); border: 1px solid var(--border);
-    border-radius: 6px; padding: 2px 7px; font-size: 11px; color: var(--muted); font-weight: 500;
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0C0D12;--surface:#13141B;--card:#181922;--border:#252733;--border2:#2E3144;
+  --text:#E8EAF2;--muted:#7B7F99;--muted2:#4E5270;
+  --accent:#4F7EFF;--accent2:#6B96FF;
+  --green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#A78BFA;--cyan:#22D3EE;
+  --sidebar-w:220px;--topbar-h:56px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
+#root{display:flex;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+.sidebar{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow:hidden}
+.sidebar-logo{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;min-height:var(--topbar-h)}
+.logo-mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:-.3px;color:var(--text)}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.nav-section{padding:12px 12px 4px;flex:1;overflow-y:auto}
+.nav-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--muted2);padding:0 8px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;transition:all .15s;position:relative;white-space:nowrap;border:1px solid transparent;margin-bottom:1px}
+.nav-item:hover{background:rgba(79,126,255,.07);color:var(--text)}
+.nav-item.active{background:rgba(79,126,255,.12);color:var(--accent2);border-color:rgba(79,126,255,.2)}
+.nav-item.active::before{content:'';position:absolute;left:-12px;top:6px;bottom:6px;width:3px;background:var(--accent);border-radius:0 3px 3px 0;box-shadow:0 0 8px var(--accent)}
+.nav-item .ti{font-size:17px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;min-width:18px;text-align:center}
+.nav-badge.amber{background:var(--amber);color:#000}
+.sidebar-footer{margin-top:auto;border-top:1px solid var(--border);padding:12px}
+.user-chip{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.user-chip:hover{background:rgba(255,255,255,.04)}
+.avatar{width:32px;height:32px;border-radius:99px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-size:13px;font-weight:600;color:var(--text)}
+.user-role{font-size:11px;color:var(--muted)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:var(--topbar-h);min-height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px}
+.topbar-bread{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.topbar-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:18px}
+.topbar-icon-btn:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.content{flex:1;overflow-y:auto;padding:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:6px}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.stat-value{font-size:28px;font-weight:700;letter-spacing:-1px;color:var(--text);line-height:1}
+.stat-delta{font-size:11px;font-weight:500;display:flex;align-items:center;gap:3px}
+.stat-delta.up{color:var(--green)}.stat-delta.down{color:var(--red)}
+.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:4px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.badge-red{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.badge-amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.badge-blue{background:rgba(79,126,255,.12);color:var(--accent2);border:1px solid rgba(79,126,255,.25)}
+.badge-purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.badge-muted{background:rgba(123,127,153,.1);color:var(--muted);border:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.btn-danger{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.btn-sm{padding:4px 10px;font-size:12px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:0 16px 10px;text-align:left}
+.tbl td{padding:11px 16px;border-top:1px solid var(--border);font-size:13px;vertical-align:middle}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.progress-bar{height:6px;border-radius:99px;background:var(--border2);overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width .4s ease}
+.zone-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:default;transition:all .15s}
+.zone-card:hover{border-color:var(--border2)}
+.tier-pill{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;font-size:11px;font-weight:700}
+.tier-a{background:rgba(239,68,68,.15);color:var(--red)}
+.tier-b{background:rgba(245,158,11,.15);color:var(--amber)}
+.tier-c{background:rgba(79,126,255,.15);color:var(--accent2)}
+.tier-d{background:rgba(34,197,94,.15);color:var(--green)}
+.chat-msg{display:flex;gap:10px;max-width:85%}
+.chat-msg.user{align-self:flex-end;flex-direction:row-reverse}
+.chat-bubble{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.55}
+.chat-msg.user .chat-bubble{background:rgba(79,126,255,.15);border-color:rgba(79,126,255,.3)}
+.chat-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:inherit;font-size:13px;resize:none;outline:none;min-height:42px;max-height:120px}
+.chat-input:focus{border-color:var(--accent)}
+.chat-input::placeholder{color:var(--muted2)}
+.worker-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-top:1px solid var(--border)}
+.worker-row:hover{background:rgba(255,255,255,.02)}
+.worker-avatar{width:34px;height:34px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0}
+.status-dot{width:8px;height:8px;border-radius:99px;flex-shrink:0}
+.status-dot.green{background:var(--green);box-shadow:0 0 0 2px rgba(34,197,94,.2)}
+.status-dot.red{background:var(--red)}.status-dot.muted{background:var(--muted2)}
+.hs-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;background:rgba(255,91,46,.12);color:#FF5B2E;border:1px solid rgba(255,91,46,.25);font-size:10px;font-weight:700}
+.pm-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);font-size:13px}
+.ticket-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.ticket-card:hover{border-color:var(--border2)}
+.priority-bar{width:3px;border-radius:99px;align-self:stretch;flex-shrink:0}
+.field-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;width:100%}
+.field-input:focus{border-color:var(--accent)}
+select.field-input{cursor:pointer}
+select.field-input option{background:var(--card)}
+.score-btn{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;cursor:pointer;border:1.5px solid var(--border2);background:var(--surface);color:var(--muted);font-family:inherit}
+.score-btn:hover{border-color:var(--muted);color:var(--text)}
+.score-btn.active{color:#fff;border-color:transparent}
+.s1.active{background:var(--red)}.s2.active{background:#F97316}.s3.active{background:var(--amber)}.s4.active{background:#84CC16}.s5.active{background:var(--green)}
+.qr-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:520px;max-width:95vw;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.typing-dots{display:flex;gap:4px;align-items:center;padding:4px 0}
+.typing-dots span{width:6px;height:6px;border-radius:99px;background:var(--muted);animation:db .9s infinite ease-in-out}
+.typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes db{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+.toast{position:fixed;bottom:24px;right:24px;z-index:999;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,.4);font-size:13px;font-weight:500;animation:su .25s ease}
+@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.highlight-chip{background:rgba(79,126,255,.08);border:1px solid rgba(79,126,255,.18);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted)}
+.highlight-chip strong{color:var(--accent2)}
+.spark-line{display:flex;align-items:flex-end;gap:2px;height:28px}
+.spark-bar{width:5px;border-radius:2px 2px 0 0;background:var(--accent);opacity:.6;min-height:3px}
+.tag{display:inline-flex;align-items:center;background:rgba(123,127,153,.08);border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:11px;color:var(--muted);font-weight:500}
+.live-pill{font-size:11px;background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);padding:3px 10px;border-radius:99px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
 </style>
 </head>
 <body>
 <div id="root"></div>
+<script>
+'use strict';
+const {createElement:h,useState,useEffect,useRef,Fragment} = React;
 
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
-const {
-  LineChart, Line, AreaChart, Area, BarChart, Bar, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} = Recharts;
-
-// ── DATA ─────────────────────────────────────────────────────────────────────
-const ACCOUNTS = [
-  { id: 1, name: "Highmark Health", addr: "Fifth Ave Place, Pittsburgh", sqft: "312,000", tier: "Platinum", status: "Active", score: 91, pod: "Pod 3" },
-  { id: 2, name: "Penn State Health", addr: "1850 E Park Dr, Harrisburg", sqft: "248,000", tier: "Gold", status: "Active", score: 87, pod: "Pod 3" },
-  { id: 3, name: "Commonwealth PA", addr: "400 North St, Harrisburg", sqft: "580,000", tier: "Platinum", status: "Active", score: 83, pod: "Pod 3" },
-  { id: 4, name: "Capital Region Water", addr: "3003 N Front St, Harrisburg", sqft: "64,000", tier: "Silver", status: "Proposal", score: 0, pod: "Pod 3" },
-  { id: 5, name: "Armstrong Flooring", addr: "2500 Columbia Ave, Lancaster", sqft: "190,000", tier: "Gold", status: "Active", score: 79, pod: "Pod 3" },
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const ACCOUNTS=[
+  {id:1,name:'Highmark Health',addr:'Fifth Ave Place, Pittsburgh',sqft:'312,000',tier:'Platinum',status:'Active',score:91,pod:'Pod 3'},
+  {id:2,name:'Penn State Health',addr:'1850 E Park Dr, Harrisburg',sqft:'248,000',tier:'Gold',status:'Active',score:87,pod:'Pod 3'},
+  {id:3,name:'Commonwealth PA',addr:'400 North St, Harrisburg',sqft:'580,000',tier:'Platinum',status:'Active',score:83,pod:'Pod 3'},
+  {id:4,name:'Capital Region Water',addr:'3003 N Front St, Harrisburg',sqft:'64,000',tier:'Silver',status:'Proposal',score:0,pod:'Pod 3'},
+  {id:5,name:'Armstrong Flooring',addr:'2500 Columbia Ave, Lancaster',sqft:'190,000',tier:'Gold',status:'Active',score:79,pod:'Pod 3'},
 ];
-
-const TICKETS = [
-  { id: "TKT-1041", title: "Lobby floor buffing missed — Level 1", acct: "Commonwealth PA", priority: "High", status: "Open", assigned: "Marcus Johnson", created: "2h ago", source: "QR Feedback", hubspot: true },
-  { id: "TKT-1040", title: "Restroom supply restock — 3rd floor", acct: "Highmark Health", priority: "Medium", status: "In Progress", assigned: "Dana Reyes", created: "4h ago", source: "Walkthrough", hubspot: true },
-  { id: "TKT-1039", title: "Zone B break room odor complaint", acct: "Penn State Health", priority: "High", status: "Open", assigned: "Sharlene Torres", created: "6h ago", source: "QR Feedback", hubspot: false },
-  { id: "TKT-1038", title: "PM — HVAC filter check overdue", acct: "Armstrong Flooring", priority: "Medium", status: "Open", assigned: "Unassigned", created: "1d ago", source: "PM Schedule", hubspot: false },
-  { id: "TKT-1037", title: "Entrance glass not streak-free", acct: "Highmark Health", priority: "Low", status: "Resolved", assigned: "Marcus Johnson", created: "2d ago", source: "Walkthrough", hubspot: true },
+const INIT_TICKETS=[
+  {id:'TKT-1041',title:'Lobby floor buffing missed — Level 1',acct:'Commonwealth PA',priority:'High',status:'Open',assigned:'Marcus Johnson',created:'2h ago',source:'QR Feedback',hubspot:true},
+  {id:'TKT-1040',title:'Restroom supply restock — 3rd floor',acct:'Highmark Health',priority:'Medium',status:'In Progress',assigned:'Dana Reyes',created:'4h ago',source:'Walkthrough',hubspot:true},
+  {id:'TKT-1039',title:'Zone B break room odor complaint',acct:'Penn State Health',priority:'High',status:'Open',assigned:'Sharlene Torres',created:'6h ago',source:'QR Feedback',hubspot:false},
+  {id:'TKT-1038',title:'PM — HVAC filter check overdue',acct:'Armstrong Flooring',priority:'Medium',status:'Open',assigned:'Unassigned',created:'1d ago',source:'PM Schedule',hubspot:false},
+  {id:'TKT-1037',title:'Entrance glass not streak-free',acct:'Highmark Health',priority:'Low',status:'Resolved',assigned:'Marcus Johnson',created:'2d ago',source:'Walkthrough',hubspot:true},
 ];
-
-const WORKERS = [
-  { id: 1, name: "Marcus Johnson", role: "Crew Lead", site: "Highmark Health", status: "On Site", shift: "6a–2p", callouts: 1, color: "#4F7EFF" },
-  { id: 2, name: "Dana Reyes", role: "Janitor II", site: "Highmark Health", status: "On Site", shift: "6a–2p", callouts: 0, color: "#22C55E" },
-  { id: 3, name: "Sharlene Torres", role: "Crew Lead", site: "Penn State Health", status: "On Site", shift: "7a–3p", callouts: 2, color: "#A78BFA" },
-  { id: 4, name: "Elton Craig", role: "Janitor I", site: "Penn State Health", status: "Called Out", shift: "7a–3p", callouts: 4, color: "#EF4444" },
-  { id: 5, name: "Priya Nair", role: "Floor Tech", site: "Commonwealth PA", status: "On Site", shift: "5a–1p", callouts: 0, color: "#F59E0B" },
-  { id: 6, name: "James Okafor", role: "Janitor II", site: "Commonwealth PA", status: "Off Shift", shift: "3p–11p", callouts: 1, color: "#22D3EE" },
-  { id: 7, name: "Mia Santos", role: "Day Porter", site: "Armstrong Flooring", status: "On Site", shift: "8a–4p", callouts: 0, color: "#F472B6" },
+const INIT_WORKERS=[
+  {id:1,name:'Marcus Johnson',role:'Crew Lead',site:'Highmark Health',status:'On Site',shift:'6a–2p',callouts:1,color:'#4F7EFF'},
+  {id:2,name:'Dana Reyes',role:'Janitor II',site:'Highmark Health',status:'On Site',shift:'6a–2p',callouts:0,color:'#22C55E'},
+  {id:3,name:'Sharlene Torres',role:'Crew Lead',site:'Penn State Health',status:'On Site',shift:'7a–3p',callouts:2,color:'#A78BFA'},
+  {id:4,name:'Elton Craig',role:'Janitor I',site:'Penn State Health',status:'Called Out',shift:'7a–3p',callouts:4,color:'#EF4444'},
+  {id:5,name:'Priya Nair',role:'Floor Tech',site:'Commonwealth PA',status:'On Site',shift:'5a–1p',callouts:0,color:'#F59E0B'},
+  {id:6,name:'James Okafor',role:'Janitor II',site:'Commonwealth PA',status:'Off Shift',shift:'3p–11p',callouts:1,color:'#22D3EE'},
+  {id:7,name:'Mia Santos',role:'Day Porter',site:'Armstrong Flooring',status:'On Site',shift:'8a–4p',callouts:0,color:'#F472B6'},
 ];
-
-const QA_TASKS = {
-  A: [
-    { id: "A1", task: "Emergency biohazard response & containment", freq: "As Needed", last: "N/A" },
-    { id: "A2", task: "Blood/bodily fluid cleanup protocol", freq: "As Needed", last: "N/A" },
-    { id: "A3", task: "Critical area sterility inspection (labs/OR)", freq: "Daily", last: "Today" },
-    { id: "A4", task: "Elevator call escalation — injury risk", freq: "Immediate", last: "N/A" },
-  ],
-  B: [
-    { id: "B1", task: "High-touch surface disinfection — lobbies", freq: "2× Daily", last: "Today 7a" },
-    { id: "B2", task: "Restroom deep clean & restock", freq: "Daily", last: "Today 6a" },
-    { id: "B3", task: "Entrance glass cleaning", freq: "Daily", last: "Yesterday" },
-    { id: "B4", task: "Stairwell sweep & mop", freq: "Daily", last: "Today 6a" },
-    { id: "B5", task: "Trash removal all floors", freq: "Daily", last: "Today 7a" },
-  ],
-  C: [
-    { id: "C1", task: "Carpet spot treatment & extraction", freq: "Weekly", last: "Mon" },
-    { id: "C2", task: "Window interior cleaning (above 6ft)", freq: "Weekly", last: "Last Fri" },
-    { id: "C3", task: "Conference room deep wipe-down", freq: "Weekly", last: "Mon" },
-    { id: "C4", task: "Floor buffing & polish — Level 1", freq: "Weekly", last: "Last Wed" },
-    { id: "C5", task: "Break room appliance exteriors", freq: "Weekly", last: "Mon" },
-  ],
-  D: [
-    { id: "D1", task: "Strip & wax hard floors", freq: "Quarterly", last: "Feb 2025" },
-    { id: "D2", task: "High-dusting (ceilings, vents, fixtures)", freq: "Monthly", last: "May 2025" },
-    { id: "D3", task: "Pressure wash exterior entry", freq: "Monthly", last: "Apr 2025" },
-    { id: "D4", task: "HVAC diffuser cleaning", freq: "Quarterly", last: "Jan 2025" },
-    { id: "D5", task: "Deep carpet extraction — full building", freq: "Semi-annual", last: "Jan 2025" },
-  ],
+const QA_TASKS={
+  A:[{id:'A1',task:'Emergency biohazard response & containment',freq:'As Needed',last:'N/A'},{id:'A2',task:'Blood/bodily fluid cleanup protocol',freq:'As Needed',last:'N/A'},{id:'A3',task:'Critical area sterility inspection (labs/OR)',freq:'Daily',last:'Today'},{id:'A4',task:'Elevator call escalation — injury risk',freq:'Immediate',last:'N/A'}],
+  B:[{id:'B1',task:'High-touch surface disinfection — lobbies',freq:'2× Daily',last:'Today 7a'},{id:'B2',task:'Restroom deep clean & restock',freq:'Daily',last:'Today 6a'},{id:'B3',task:'Entrance glass cleaning',freq:'Daily',last:'Yesterday'},{id:'B4',task:'Stairwell sweep & mop',freq:'Daily',last:'Today 6a'},{id:'B5',task:'Trash removal all floors',freq:'Daily',last:'Today 7a'}],
+  C:[{id:'C1',task:'Carpet spot treatment & extraction',freq:'Weekly',last:'Mon'},{id:'C2',task:'Window interior cleaning (above 6ft)',freq:'Weekly',last:'Last Fri'},{id:'C3',task:'Conference room deep wipe-down',freq:'Weekly',last:'Mon'},{id:'C4',task:'Floor buffing & polish — Level 1',freq:'Weekly',last:'Last Wed'},{id:'C5',task:'Break room appliance exteriors',freq:'Weekly',last:'Mon'}],
+  D:[{id:'D1',task:'Strip & wax hard floors',freq:'Quarterly',last:'Feb 2025'},{id:'D2',task:'High-dusting (ceilings, vents, fixtures)',freq:'Monthly',last:'May 2025'},{id:'D3',task:'Pressure wash exterior entry',freq:'Monthly',last:'Apr 2025'},{id:'D4',task:'HVAC diffuser cleaning',freq:'Quarterly',last:'Jan 2025'},{id:'D5',task:'Deep carpet extraction — full building',freq:'Semi-annual',last:'Jan 2025'}],
 };
-
-const ZONES = [
-  { id: 1, name: "Main Lobby", areas: ["Entry Doors", "Reception Desk", "Elevators", "Waiting Area"] },
-  { id: 2, name: "Floor 2 – East Wing", areas: ["Corridor A", "Restrooms 2E", "Break Room", "Conference 201"] },
-  { id: 3, name: "Floor 2 – West Wing", areas: ["Corridor B", "Restrooms 2W", "Copy Room", "Stairwell A"] },
-  { id: 4, name: "Floor 3", areas: ["Open Office", "Restrooms 3N", "Kitchen", "Elevator Lobby 3"] },
-  { id: 5, name: "Loading / Utility", areas: ["Loading Dock", "Janitor Closet", "Utility Corridor", "Dumpster Area"] },
+const ZONES=[
+  {id:1,name:'Main Lobby',areas:['Entry Doors','Reception Desk','Elevators','Waiting Area']},
+  {id:2,name:'Floor 2 – East Wing',areas:['Corridor A','Restrooms 2E','Break Room','Conference 201']},
+  {id:3,name:'Floor 2 – West Wing',areas:['Corridor B','Restrooms 2W','Copy Room','Stairwell A']},
+  {id:4,name:'Floor 3',areas:['Open Office','Restrooms 3N','Kitchen','Elevator Lobby 3']},
+  {id:5,name:'Loading / Utility',areas:['Loading Dock','Janitor Closet','Utility Corridor','Dumpster Area']},
 ];
-
-const QR_FEED = [
-  { id: 1, location: "Restroom 2E", rating: 1, comment: "Out of paper towels, smells bad", time: "18 min ago", source: "QR Scan", auto: true },
-  { id: 2, location: "Main Lobby", rating: 4, comment: "Looks great today!", time: "1h ago", source: "QR Scan", auto: false },
-  { id: 3, location: "Break Room L3", rating: 2, comment: "Microwave needs cleaning", time: "2h ago", source: "QR Scan", auto: true },
-  { id: 4, location: "Conference 201", rating: 5, comment: "Spotless before our 9am meeting", time: "3h ago", source: "QR Scan", auto: false },
-  { id: 5, location: "Stairwell A", rating: 2, comment: "Spill on landing, still there from yesterday", time: "4h ago", source: "QR Scan", auto: true },
-  { id: 6, location: "Elevator Lobby 3", rating: 3, comment: "Fingerprints on glass panels", time: "5h ago", source: "QR Scan", auto: false },
+const QR_FEED=[
+  {id:1,location:'Restroom 2E',rating:1,comment:'Out of paper towels, smells bad',time:'18 min ago',auto:true},
+  {id:2,location:'Main Lobby',rating:4,comment:'Looks great today!',time:'1h ago',auto:false},
+  {id:3,location:'Break Room L3',rating:2,comment:'Microwave needs cleaning',time:'2h ago',auto:true},
+  {id:4,location:'Conference 201',rating:5,comment:'Spotless before our 9am meeting',time:'3h ago',auto:false},
+  {id:5,location:'Stairwell A',rating:2,comment:'Spill on landing, still there from yesterday',time:'4h ago',auto:true},
 ];
-
-const SAT_TREND = [
-  { month: "Jan", score: 81, nps: 42 },
-  { month: "Feb", score: 79, nps: 38 },
-  { month: "Mar", score: 82, nps: 44 },
-  { month: "Apr", score: 84, nps: 47 },
-  { month: "May", score: 87, nps: 52 },
-  { month: "Jun", score: 89, nps: 55 },
+const SAT_TREND=[{m:'Jan',v:81},{m:'Feb',v:79},{m:'Mar',v:82},{m:'Apr',v:84},{m:'May',v:87},{m:'Jun',v:89}];
+const NPS_TREND=[{m:'Jan',v:42},{m:'Feb',v:38},{m:'Mar',v:44},{m:'Apr',v:47},{m:'May',v:52},{m:'Jun',v:55}];
+const INIT_PM=[
+  {id:'PM-01',task:'HVAC Filter Replacement — Building A',acct:'Highmark Health',due:'Jun 14',freq:'90 days',status:'Due Soon',last:'Mar 15'},
+  {id:'PM-02',task:'Carpet Deep Extraction — All Floors',acct:'Penn State Health',due:'Jun 18',freq:'Semi-annual',status:'Scheduled',last:'Dec 2024'},
+  {id:'PM-03',task:'Floor Strip & Wax — Lobby',acct:'Commonwealth PA',due:'Jul 01',freq:'Quarterly',status:'Scheduled',last:'Apr 2025'},
+  {id:'PM-04',task:'Exterior Pressure Wash',acct:'Armstrong Flooring',due:'Jun 10',freq:'Monthly',status:'Overdue',last:'May 9'},
+  {id:'PM-05',task:'High-Dust — Vents & Ceilings',acct:'Highmark Health',due:'Jun 22',freq:'Monthly',status:'Scheduled',last:'May 22'},
+  {id:'PM-06',task:'Drain Treatment — Kitchen & Break Rooms',acct:'Penn State Health',due:'Jun 15',freq:'Monthly',status:'Due Soon',last:'May 15'},
 ];
-
-const PM_ITEMS = [
-  { id: "PM-01", task: "HVAC Filter Replacement — Building A", acct: "Highmark Health", due: "Jun 14", freq: "90 days", status: "Due Soon", last: "Mar 15" },
-  { id: "PM-02", task: "Carpet Deep Extraction — All Floors", acct: "Penn State Health", due: "Jun 18", freq: "Semi-annual", status: "Scheduled", last: "Dec 2024" },
-  { id: "PM-03", task: "Floor Strip & Wax — Lobby", acct: "Commonwealth PA", due: "Jul 01", freq: "Quarterly", status: "Scheduled", last: "Apr 2025" },
-  { id: "PM-04", task: "Exterior Pressure Wash", acct: "Armstrong Flooring", due: "Jun 10", freq: "Monthly", status: "Overdue", last: "May 9" },
-  { id: "PM-05", task: "High-Dust — Vents & Ceilings", acct: "Highmark Health", due: "Jun 22", freq: "Monthly", status: "Scheduled", last: "May 22" },
-  { id: "PM-06", task: "Drain Treatment — Kitchen & Break Rooms", acct: "Penn State Health", due: "Jun 15", freq: "Monthly", status: "Due Soon", last: "May 15" },
-];
-
-const EMPLOYEES = WORKERS.map(w => w.name);
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
-function scoreColor(s) {
-  if (s >= 4) return "#22C55E";
-  if (s >= 3) return "#F59E0B";
-  if (s >= 2) return "#F97316";
-  return "#EF4444";
-}
-function priorityColor(p) {
-  if (p === "High") return "#EF4444";
-  if (p === "Medium") return "#F59E0B";
-  return "#7B7F99";
-}
-function Stars({ n }) {
-  return <div className="rating-stars">
-    {[1,2,3,4,5].map(i => (
-      <span key={i} className={"star " + (i <= n ? "filled" : "empty")}>★</span>
-    ))}
-  </div>;
-}
-function SparkBars({ data }) {
-  const max = Math.max(...data);
-  return <div className="spark-line">
-    {data.map((v, i) => (
-      <div key={i} className="spark-bar" style={{ height: `${(v / max) * 28}px` }} />
-    ))}
-  </div>;
+const pc = p => p==='High'?'#EF4444':p==='Medium'?'#F59E0B':'#7B7F99';
+const ico = (cls, s) => h('i', {className:'ti '+cls, style:s||{}});
+const Badge = ({cls, children}) => h('span', {className:'badge badge-'+cls}, children);
+const Tag = ({t}) => h('span', {className:'tag'}, t);
+
+function Toast({msg, onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,3200);return()=>clearTimeout(t);},[]);
+  return h('div',{className:'toast'}, ico('ti-check',{fontSize:18,color:'var(--green)'}), h('span',null,msg));
 }
 
-// ── TOAST ────────────────────────────────────────────────────────────────────
-function Toast({ msg, icon, onDone }) {
-  useEffect(() => { const t = setTimeout(onDone, 3200); return () => clearTimeout(t); }, []);
-  return (
-    <div className="toast">
-      <i className={"ti " + icon} style={{ fontSize: 18, color: "var(--green)" }} />
-      <span>{msg}</span>
-    </div>
+function Stars({n}){
+  return h('div',{className:'rating-stars',style:{display:'flex',gap:3}},
+    [1,2,3,4,5].map(i=>h('span',{key:i,style:{fontSize:13,color:i<=n?'var(--amber)':'var(--border2)'}}, '★'))
+  );
+}
+function SparkBars({data}){
+  const mx=Math.max(...data);
+  return h('div',{className:'spark-line'},
+    data.map((v,i)=>h('div',{key:i,className:'spark-bar',style:{height:Math.max(3,(v/mx)*28)+'px'}}))
   );
 }
 
-// ── OVERVIEW ─────────────────────────────────────────────────────────────────
-function Overview({ setPage }) {
-  const stats = [
-    { label: "Active Accounts", value: "4", icon: "ti-building", color: "#4F7EFF", bg: "rgba(79,126,255,.12)", delta: "+1", dir: "up" },
-    { label: "Open Tickets", value: "3", icon: "ti-ticket", color: "#EF4444", bg: "rgba(239,68,68,.12)", delta: "+2", dir: "down" },
-    { label: "Workers On-Site", value: "5", icon: "ti-users", color: "#22C55E", bg: "rgba(34,197,94,.12)", delta: "0", dir: "up" },
-    { label: "Avg Satisfaction", value: "89", icon: "ti-star", color: "#F59E0B", bg: "rgba(245,158,11,.12)", delta: "+2 pts", dir: "up" },
-    { label: "PM Compliance", value: "78%", icon: "ti-checklist", color: "#A78BFA", bg: "rgba(167,139,250,.12)", delta: "-4%", dir: "down" },
-    { label: "QR Responses (7d)", value: "84", icon: "ti-qrcode", color: "#22D3EE", bg: "rgba(34,211,238,.12)", delta: "+12", dir: "up" },
-    { label: "Call-outs (30d)", value: "6", icon: "ti-user-off", color: "#F59E0B", bg: "rgba(245,158,11,.12)", delta: "+1", dir: "down" },
-    { label: "SLA Compliance", value: "94%", icon: "ti-clock-check", color: "#22C55E", bg: "rgba(34,197,94,.12)", delta: "+1%", dir: "up" },
+// ── SVG CHARTS (no deps) ──────────────────────────────────────────────────────
+function LineChartSVG({data, color, h2}){
+  const W=400, H=h2||140, pad={t:10,r:10,b:24,l:30};
+  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
+  const mn=Math.min(...data.map(d=>d.v))-2, mx=Math.max(...data.map(d=>d.v))+2;
+  const px=(i)=>pad.l+i*(iw/(data.length-1));
+  const py=(v)=>pad.t+ih-(((v-mn)/(mx-mn))*ih);
+  const pts=data.map((d,i)=>px(i)+','+py(d.v)).join(' ');
+  const fill=data.map((d,i)=>px(i)+','+py(d.v)).join(' ')+' '+px(data.length-1)+','+(pad.t+ih)+' '+pad.l+','+(pad.t+ih);
+  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H}},
+    h('defs',null,h('linearGradient',{id:'lg'+color.replace('#',''),x1:'0',y1:'0',x2:'0',y2:'1'},
+      h('stop',{offset:'0%',stopColor:color,stopOpacity:'0.25'}),
+      h('stop',{offset:'100%',stopColor:color,stopOpacity:'0'})
+    )),
+    [0,1,2].map(i=>h('line',{key:i,x1:pad.l,y1:pad.t+ih*(i/2),x2:W-pad.r,y2:pad.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
+    h('polygon',{points:fill,fill:'url(#lg'+color.replace('#','')+')'}),
+    h('polyline',{points:pts,fill:'none',stroke:color,strokeWidth:'2'}),
+    data.map((d,i)=>h('text',{key:i,x:px(i),y:H-6,textAnchor:'middle',fill:'#7B7F99',fontSize:'10'},d.m))
+  );
+}
+
+function BarChartSVG({data, colors}){
+  const W=400, H=140, pad={t:10,r:10,b:24,l:30};
+  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
+  const mx=Math.max(...data.map(d=>d.v));
+  const bw=Math.floor(iw/data.length*0.55);
+  const gap=iw/data.length;
+  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H}},
+    [0,1,2].map(i=>h('line',{key:i,x1:pad.l,y1:pad.t+ih*(i/2),x2:W-pad.r,y2:pad.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
+    data.map((d,i)=>{
+      const bh=Math.max(2,(d.v/mx)*ih);
+      const x=pad.l+gap*i+(gap-bw)/2;
+      const y=pad.t+ih-bh;
+      const col=colors?colors[i%colors.length]:'#4F7EFF';
+      return h(Fragment,{key:i},
+        h('rect',{x,y,width:bw,height:bh,fill:col,opacity:'0.8',rx:'3'}),
+        h('text',{x:x+bw/2,y:H-6,textAnchor:'middle',fill:'#7B7F99',fontSize:'10'},d.l||d.m||'')
+      );
+    })
+  );
+}
+
+function DualBarChartSVG({data}){
+  const W=400, H=140, pad={t:10,r:10,b:24,l:30};
+  const iw=W-pad.l-pad.r, ih=H-pad.t-pad.b;
+  const mx=Math.max(...data.flatMap(d=>[d.a,d.b]));
+  const slot=iw/data.length, bw=Math.floor(slot*0.3);
+  return h('svg',{viewBox:'0 0 '+W+' '+H,style:{width:'100%',height:H}},
+    [0,1,2].map(i=>h('line',{key:i,x1:pad.l,y1:pad.t+ih*(i/2),x2:W-pad.r,y2:pad.t+ih*(i/2),stroke:'#252733',strokeWidth:'0.5',strokeDasharray:'4'})),
+    data.map((d,i)=>{
+      const x=pad.l+slot*i+slot*0.1;
+      const ah=Math.max(2,(d.a/mx)*ih), bh=Math.max(2,(d.b/mx)*ih);
+      return h(Fragment,{key:i},
+        h('rect',{x,y:pad.t+ih-ah,width:bw,height:ah,fill:'#EF4444',opacity:'0.75',rx:'2'}),
+        h('rect',{x:x+bw+2,y:pad.t+ih-bh,width:bw,height:bh,fill:'#22C55E',opacity:'0.75',rx:'2'}),
+        h('text',{x:x+bw,y:H-6,textAnchor:'middle',fill:'#7B7F99',fontSize:'9'},d.l)
+      );
+    })
+  );
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────────
+function Overview(){
+  const stats=[
+    {label:'Active Accounts',value:'4',icon:'ti-building',color:'#4F7EFF',bg:'rgba(79,126,255,.12)',delta:'+1',dir:'up'},
+    {label:'Open Tickets',value:'3',icon:'ti-ticket',color:'#EF4444',bg:'rgba(239,68,68,.12)',delta:'+2',dir:'down'},
+    {label:'Workers On-Site',value:'5',icon:'ti-users',color:'#22C55E',bg:'rgba(34,197,94,.12)',delta:'5 today',dir:'up'},
+    {label:'Avg Satisfaction',value:'89',icon:'ti-star',color:'#F59E0B',bg:'rgba(245,158,11,.12)',delta:'+2 pts',dir:'up'},
+    {label:'PM Compliance',value:'78%',icon:'ti-checklist',color:'#A78BFA',bg:'rgba(167,139,250,.12)',delta:'-4%',dir:'down'},
+    {label:'QR Responses (7d)',value:'84',icon:'ti-qrcode',color:'#22D3EE',bg:'rgba(34,211,238,.12)',delta:'+12',dir:'up'},
+    {label:'Call-outs (30d)',value:'6',icon:'ti-user-off',color:'#F59E0B',bg:'rgba(245,158,11,.12)',delta:'+1',dir:'down'},
+    {label:'SLA Compliance',value:'94%',icon:'ti-clock-check',color:'#22C55E',bg:'rgba(34,197,94,.12)',delta:'+1%',dir:'up'},
   ];
-  return (
-    <div>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
-        {stats.map(s => (
-          <div key={s.label} className="stat-card">
-            <div className="stat-icon" style={{ background: s.bg, color: s.color }}>
-              <i className={"ti " + s.icon} />
-            </div>
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value">{s.value}</div>
-            <div className={"stat-delta " + s.dir}>
-              <i className={"ti " + (s.dir === "up" ? "ti-trending-up" : "ti-trending-down")} />
-              {s.delta} this month
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid g2" style={{ marginBottom: 20 }}>
-        <div className="card">
-          <div className="card-title"><i className="ti ti-chart-line" /> Satisfaction Trend</div>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={SAT_TREND} margin={{ top: 4, right: 8, left: -28, bottom: 0 }}>
-              <defs>
-                <linearGradient id="satGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4F7EFF" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#4F7EFF" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="#252733" strokeDasharray="4 4" vertical={false} />
-              <XAxis dataKey="month" tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} domain={[70, 100]} />
-              <Tooltip contentStyle={{ background: "#181922", border: "1px solid #252733", borderRadius: 8, fontSize: 12 }} />
-              <Area type="monotone" dataKey="score" stroke="#4F7EFF" strokeWidth={2} fill="url(#satGrad)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="card">
-          <div className="card-title"><i className="ti ti-activity" /> Ticket Volume (7d)</div>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={[
-              { day: "Mon", open: 3, resolved: 5 }, { day: "Tue", open: 5, resolved: 4 },
-              { day: "Wed", open: 2, resolved: 6 }, { day: "Thu", open: 4, resolved: 3 },
-              { day: "Fri", open: 6, resolved: 4 }, { day: "Sat", open: 1, resolved: 2 },
-              { day: "Sun", open: 0, resolved: 1 },
-            ]} margin={{ top: 4, right: 8, left: -28, bottom: 0 }}>
-              <CartesianGrid stroke="#252733" strokeDasharray="4 4" vertical={false} />
-              <XAxis dataKey="day" tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: "#181922", border: "1px solid #252733", borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="open" fill="#EF4444" opacity={0.7} radius={[3,3,0,0]} />
-              <Bar dataKey="resolved" fill="#22C55E" opacity={0.7} radius={[3,3,0,0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="grid g2">
-        <div className="card">
-          <div className="card-title"><i className="ti ti-alert-triangle" /> Recent Tickets</div>
-          {TICKETS.slice(0, 4).map(t => (
-            <div key={t.id} className="pm-row" style={{ gap: 10 }}>
-              <div style={{ width: 3, alignSelf: "stretch", borderRadius: 99, background: priorityColor(t.priority), flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t.title}</div>
-                <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 2 }}>{t.acct} · {t.created}</div>
-              </div>
-              <span className={`badge badge-${t.status === "Resolved" ? "green" : t.status === "In Progress" ? "blue" : "red"}`}>{t.status}</span>
-            </div>
-          ))}
-        </div>
-        <div className="card">
-          <div className="card-title"><i className="ti ti-users" /> Workers On-Site</div>
-          {WORKERS.filter(w => w.status === "On Site").slice(0, 5).map(w => (
-            <div key={w.id} className="pm-row" style={{ gap: 10 }}>
-              <div className="worker-avatar" style={{ background: w.color }}>{w.name.split(" ").map(p => p[0]).join("")}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{w.name}</div>
-                <div style={{ fontSize: 11, color: "var(--muted)" }}>{w.site} · {w.shift}</div>
-              </div>
-              <div className="status-dot green" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+  return h(Fragment,null,
+    h('div',{className:'grid g4',style:{marginBottom:20}},
+      stats.map(s=>h('div',{key:s.label,className:'stat-card'},
+        h('div',{className:'stat-icon',style:{background:s.bg,color:s.color}},ico(s.icon)),
+        h('div',{className:'stat-label'},s.label),
+        h('div',{className:'stat-value'},s.value),
+        h('div',{className:'stat-delta '+s.dir},ico('ti-trending-'+(s.dir==='up'?'up':'down')),s.delta)
+      ))
+    ),
+    h('div',{className:'grid g2',style:{marginBottom:20}},
+      h('div',{className:'card'},
+        h('div',{className:'card-title'},ico('ti-chart-line'),' Satisfaction Trend'),
+        h(LineChartSVG,{data:SAT_TREND,color:'#4F7EFF'})
+      ),
+      h('div',{className:'card'},
+        h('div',{className:'card-title'},ico('ti-activity'),' Ticket Volume (7d)'),
+        h(DualBarChartSVG,{data:[{l:'Mon',a:3,b:5},{l:'Tue',a:5,b:4},{l:'Wed',a:2,b:6},{l:'Thu',a:4,b:3},{l:'Fri',a:6,b:4},{l:'Sat',a:1,b:2},{l:'Sun',a:0,b:1}]})
+      )
+    ),
+    h('div',{className:'grid g2'},
+      h('div',{className:'card'},
+        h('div',{className:'card-title'},ico('ti-alert-triangle'),' Recent Tickets'),
+        INIT_TICKETS.slice(0,4).map(t=>h('div',{key:t.id,className:'pm-row',style:{gap:10}},
+          h('div',{style:{width:3,alignSelf:'stretch',borderRadius:99,background:pc(t.priority),flexShrink:0}}),
+          h('div',{style:{flex:1,minWidth:0}},
+            h('div',{style:{fontSize:13,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}},t.title),
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginTop:2}},t.acct+' · '+t.created)
+          ),
+          h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status)
+        ))
+      ),
+      h('div',{className:'card'},
+        h('div',{className:'card-title'},ico('ti-users'),' Workers On-Site'),
+        INIT_WORKERS.filter(w=>w.status==='On Site').slice(0,5).map(w=>h('div',{key:w.id,className:'pm-row',style:{gap:10}},
+          h('div',{className:'worker-avatar',style:{background:w.color,width:32,height:32,fontSize:12}},w.name.split(' ').map(p=>p[0]).join('')),
+          h('div',{style:{flex:1}},
+            h('div',{style:{fontSize:13,fontWeight:500}},w.name),
+            h('div',{style:{fontSize:11,color:'var(--muted)'}},w.site+' · '+w.shift)
+          ),
+          h('div',{className:'status-dot green'})
+        ))
+      )
+    )
   );
 }
 
-// ── ACCOUNTS ─────────────────────────────────────────────────────────────────
-function Accounts() {
-  const [sel, setSel] = useState(null);
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <div>
-          <div style={{ fontSize: 14, color: "var(--muted)" }}>5 accounts · 1.4M sq ft under management</div>
-        </div>
-        <button className="btn btn-primary"><i className="ti ti-plus" /> Add Account</button>
-      </div>
-      <div className="card" style={{ padding: 0 }}>
-        <table className="tbl">
-          <thead>
-            <tr>
-              <th>Account</th><th>Sq Ft</th><th>Tier</th><th>Status</th><th>Sat Score</th><th>Trend</th><th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {ACCOUNTS.map(a => (
-              <tr key={a.id} style={{ cursor: "pointer" }} onClick={() => setSel(a)}>
-                <td>
-                  <div style={{ fontWeight: 600 }}>{a.name}</div>
-                  <div style={{ fontSize: 11, color: "var(--muted)" }}>{a.addr}</div>
-                </td>
-                <td style={{ fontFamily: "monospace", color: "var(--muted)" }}>{a.sqft}</td>
-                <td><span className={`badge badge-${a.tier === "Platinum" ? "purple" : a.tier === "Gold" ? "amber" : "muted"}`}>{a.tier}</span></td>
-                <td><span className={`badge badge-${a.status === "Active" ? "green" : "amber"}`}>{a.status}</span></td>
-                <td>
-                  {a.score > 0 ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 100 }}>
-                        <div className="progress-bar">
-                          <div className="progress-fill" style={{ width: `${a.score}%`, background: a.score >= 85 ? "var(--green)" : a.score >= 70 ? "var(--amber)" : "var(--red)" }} />
-                        </div>
-                      </div>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: a.score >= 85 ? "var(--green)" : "var(--text)" }}>{a.score}</span>
-                    </div>
-                  ) : <span className="badge badge-muted">Pending</span>}
-                </td>
-                <td><SparkBars data={[78,81,79,84,87,a.score || 0]} /></td>
-                <td>
-                  <button className="btn btn-ghost btn-sm"><i className="ti ti-arrow-right" /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {sel && (
-        <div className="modal-backdrop" onClick={() => setSel(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-title">
-              <i className="ti ti-building" style={{ color: "var(--accent2)" }} />
-              {sel.name}
-              <button className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }} onClick={() => setSel(null)}><i className="ti ti-x" /></button>
-            </div>
-            <div className="grid g2" style={{ marginBottom: 16 }}>
-              <div className="highlight-chip"><div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 2 }}>ADDRESS</div><strong>{sel.addr}</strong></div>
-              <div className="highlight-chip"><div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 2 }}>SQ FOOTAGE</div><strong>{sel.sqft} sq ft</strong></div>
-              <div className="highlight-chip"><div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 2 }}>TIER</div><strong>{sel.tier}</strong></div>
-              <div className="highlight-chip"><div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 2 }}>POD</div><strong>{sel.pod}</strong></div>
-            </div>
-            <div className="highlight-chip">
-              <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 4 }}>SATISFACTION SCORE</div>
-              {sel.score > 0
-                ? <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <strong style={{ fontSize: 24, color: sel.score >= 85 ? "var(--green)" : "var(--amber)" }}>{sel.score}</strong>
-                    <div className="progress-bar" style={{ flex: 1 }}>
-                      <div className="progress-fill" style={{ width: `${sel.score}%`, background: sel.score >= 85 ? "var(--green)" : "var(--amber)" }} />
-                    </div>
-                  </div>
-                : <span className="badge badge-amber">No data yet</span>}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+// ── ACCOUNTS ──────────────────────────────────────────────────────────────────
+function Accounts(){
+  const [sel,setSel]=useState(null);
+  return h(Fragment,null,
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}},
+      h('div',{style:{fontSize:14,color:'var(--muted)'}}, '5 accounts · 1.4M sq ft under management'),
+      h('button',{className:'btn btn-primary'},ico('ti-plus'),' Add Account')
+    ),
+    h('div',{className:'card',style:{padding:0}},
+      h('table',{className:'tbl'},
+        h('thead',null,h('tr',null,['Account','Sq Ft','Tier','Status','Score','Trend',''].map(c=>h('th',{key:c},c)))),
+        h('tbody',null,ACCOUNTS.map(a=>h('tr',{key:a.id,style:{cursor:'pointer'},onClick:()=>setSel(a)},
+          h('td',null,h('div',{style:{fontWeight:600}},a.name),h('div',{style:{fontSize:11,color:'var(--muted)'}},a.addr)),
+          h('td',{style:{fontFamily:'monospace',color:'var(--muted)'}},a.sqft),
+          h('td',null,h(Badge,{cls:a.tier==='Platinum'?'purple':a.tier==='Gold'?'amber':'muted'},a.tier)),
+          h('td',null,h(Badge,{cls:a.status==='Active'?'green':'amber'},a.status)),
+          h('td',null,a.score>0?h('div',{style:{display:'flex',alignItems:'center',gap:8}},
+            h('div',{style:{width:80}},h('div',{className:'progress-bar'},h('div',{className:'progress-fill',style:{width:a.score+'%',background:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}}))),
+            h('span',{style:{fontWeight:600,color:a.score>=85?'var(--green)':'var(--text)'}},a.score)
+          ):h(Badge,{cls:'muted'},'Pending')),
+          h('td',null,h(SparkBars,{data:[78,81,79,84,87,a.score||0]})),
+          h('td',null,h('button',{className:'btn btn-ghost btn-sm'},ico('ti-arrow-right')))
+        )))
+      )
+    ),
+    sel&&h('div',{className:'modal-backdrop',onClick:()=>setSel(null)},
+      h('div',{className:'modal',onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-title'},ico('ti-building',{color:'var(--accent2)'}),sel.name,
+          h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>setSel(null)},ico('ti-x'))
+        ),
+        h('div',{className:'grid g2',style:{marginBottom:16}},
+          [['ADDRESS',sel.addr],['SQ FOOTAGE',sel.sqft+' sq ft'],['TIER',sel.tier],['POD',sel.pod]]
+          .map(([lbl,val])=>h('div',{key:lbl,className:'highlight-chip'},
+            h('div',{style:{fontSize:10,color:'var(--muted)',marginBottom:2}},lbl),
+            h('strong',null,val)
+          ))
+        )
+      )
+    )
   );
 }
 
-// ── QA TASKS ─────────────────────────────────────────────────────────────────
-function QATasks() {
-  const [activeTab, setActiveTab] = useState("A");
-  const [toast, setToast] = useState(null);
-  const tierInfo = {
-    A: { label: "Critical", color: "#EF4444", desc: "Life-safety, biohazard, immediate-response items. Failure = escalation." },
-    B: { label: "Daily Ops", color: "#F59E0B", desc: "Core daily service standards. Drives client satisfaction scores." },
-    C: { label: "Weekly", color: "#4F7EFF", desc: "Periodic deep-cleans. Scheduled weekly or bi-weekly." },
-    D: { label: "Scheduled", color: "#22C55E", desc: "Monthly, quarterly, or semi-annual preventive tasks." },
+// ── QA TASKS ──────────────────────────────────────────────────────────────────
+function QATasks(){
+  const [tab,setTab]=useState('A');
+  const [toast,setToast]=useState(null);
+  const info={
+    A:{label:'Critical',color:'#EF4444',desc:'Life-safety, biohazard, immediate-response items. Failure = escalation.'},
+    B:{label:'Daily Ops',color:'#F59E0B',desc:'Core daily service standards. Drives client satisfaction scores.'},
+    C:{label:'Weekly',color:'#4F7EFF',desc:'Periodic deep-cleans. Scheduled weekly or bi-weekly.'},
+    D:{label:'Scheduled',color:'#22C55E',desc:'Monthly, quarterly, or semi-annual preventive tasks.'},
   };
-  return (
-    <div>
-      {toast && <Toast msg={toast} icon="ti-check" onDone={() => setToast(null)} />}
-      <div style={{ marginBottom: 20, display: "flex", gap: 8 }}>
-        {["A","B","C","D"].map(t => (
-          <button key={t} onClick={() => setActiveTab(t)}
-            className={"btn " + (activeTab === t ? "btn-primary" : "btn-ghost")}
-            style={activeTab !== t ? { borderColor: tierInfo[t].color + "44", color: tierInfo[t].color } : {}}>
-            <span className={"tier-pill tier-" + t.toLowerCase()}>{t}</span>
-            {tierInfo[t].label}
-          </button>
-        ))}
-      </div>
-
-      <div className="highlight-chip" style={{ marginBottom: 16 }}>
-        <i className="ti ti-info-circle" style={{ color: tierInfo[activeTab].color, marginRight: 6 }} />
-        <strong style={{ color: tierInfo[activeTab].color }}>Tier {activeTab}:</strong> {tierInfo[activeTab].desc}
-      </div>
-
-      <div className="card" style={{ padding: 0 }}>
-        <table className="tbl">
-          <thead>
-            <tr><th>ID</th><th>Task</th><th>Frequency</th><th>Last Completed</th><th>Status</th><th></th></tr>
-          </thead>
-          <tbody>
-            {QA_TASKS[activeTab].map(t => {
-              const isLate = t.last.includes("Yesterday") || t.last.includes("Last") || t.last.includes("2025") || t.last.includes("N/A");
-              return (
-                <tr key={t.id}>
-                  <td><span style={{ fontFamily: "monospace", fontSize: 12, color: "var(--muted)" }}>{t.id}</span></td>
-                  <td style={{ fontWeight: 500 }}>{t.task}</td>
-                  <td><span className="tag">{t.freq}</span></td>
-                  <td style={{ color: isLate ? "var(--amber)" : "var(--muted)", fontSize: 12 }}>{t.last}</td>
-                  <td>
-                    {t.last === "N/A"
-                      ? <span className="badge badge-muted">Standby</span>
-                      : isLate
-                        ? <span className="badge badge-amber">Needs Attention</span>
-                        : <span className="badge badge-green">Current</span>}
-                  </td>
-                  <td>
-                    <button className="btn btn-ghost btn-sm" onClick={() => setToast(`Task ${t.id} marked complete`)}>
-                      <i className="ti ti-check" /> Done
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  return h(Fragment,null,
+    toast&&h(Toast,{msg:toast,onDone:()=>setToast(null)}),
+    h('div',{style:{marginBottom:20,display:'flex',gap:8}},
+      ['A','B','C','D'].map(t=>h('button',{key:t,
+        className:'btn '+(tab===t?'btn-primary':'btn-ghost'),
+        style:tab!==t?{borderColor:info[t].color+'44',color:info[t].color}:{},
+        onClick:()=>setTab(t)},
+        h('span',{className:'tier-pill tier-'+t.toLowerCase()},t),' ',info[t].label
+      ))
+    ),
+    h('div',{className:'highlight-chip',style:{marginBottom:16}},
+      ico('ti-info-circle',{color:info[tab].color,marginRight:6}),
+      h('strong',{style:{color:info[tab].color}},'Tier '+tab+': '),
+      info[tab].desc
+    ),
+    h('div',{className:'card',style:{padding:0}},
+      h('table',{className:'tbl'},
+        h('thead',null,h('tr',null,['ID','Task','Frequency','Last Completed','Status',''].map(c=>h('th',{key:c},c)))),
+        h('tbody',null,QA_TASKS[tab].map(t=>{
+          const late=t.last.includes('Yesterday')||t.last.includes('Last')||t.last.includes('2025')||t.last==='N/A';
+          return h('tr',{key:t.id},
+            h('td',null,h('span',{style:{fontFamily:'monospace',fontSize:12,color:'var(--muted)'}},t.id)),
+            h('td',{style:{fontWeight:500}},t.task),
+            h('td',null,h(Tag,{t:t.freq})),
+            h('td',{style:{color:late?'var(--amber)':'var(--muted)',fontSize:12}},t.last),
+            h('td',null,h(Badge,{cls:t.last==='N/A'?'muted':late?'amber':'green'},t.last==='N/A'?'Standby':late?'Needs Attention':'Current')),
+            h('td',null,h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setToast('Task '+t.id+' marked complete')},ico('ti-check'),' Done'))
+          );
+        }))
+      )
+    )
   );
 }
 
-// ── BUILDING SATISFACTION ─────────────────────────────────────────────────────
-function BuildingSatisfaction() {
-  const byAcct = ACCOUNTS.filter(a => a.score > 0).map(a => ({ name: a.name.split(" ")[0], score: a.score }));
-  const npsData = SAT_TREND;
-  return (
-    <div>
-      <div className="grid g-stat" style={{ marginBottom: 20 }}>
-        {[
-          { label: "Portfolio Avg", value: "87", delta: "+4 pts", dir: "up" },
-          { label: "NPS Score", value: "55", delta: "+8", dir: "up" },
-          { label: "At-Risk Accounts", value: "1", delta: "-1", dir: "up" },
-          { label: "5-Star Responses", value: "31%", delta: "+5%", dir: "up" },
-        ].map(s => (
-          <div key={s.label} className="stat-card">
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value green">{s.value}</div>
-            <div className={"stat-delta " + s.dir}><i className={"ti " + (s.dir === "up" ? "ti-trending-up" : "ti-trending-down")} />{s.delta}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid g2" style={{ marginBottom: 20 }}>
-        <div className="card">
-          <div className="card-title"><i className="ti ti-chart-bar" /> Satisfaction by Account</div>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={byAcct} margin={{ top: 4, right: 8, left: -28, bottom: 0 }}>
-              <CartesianGrid stroke="#252733" strokeDasharray="4 4" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} domain={[70, 100]} />
-              <Tooltip contentStyle={{ background: "#181922", border: "1px solid #252733", borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="score" radius={[4,4,0,0]}>
-                {byAcct.map((entry, i) => (
-                  <Cell key={i} fill={entry.score >= 85 ? "#22C55E" : entry.score >= 75 ? "#F59E0B" : "#EF4444"} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-        <div className="card">
-          <div className="card-title"><i className="ti ti-chart-line" /> NPS Trend — 6 Months</div>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={npsData} margin={{ top: 4, right: 8, left: -28, bottom: 0 }}>
-              <CartesianGrid stroke="#252733" strokeDasharray="4 4" vertical={false} />
-              <XAxis dataKey="month" tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "#7B7F99", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ background: "#181922", border: "1px solid #252733", borderRadius: 8, fontSize: 12 }} />
-              <Line type="monotone" dataKey="score" stroke="#4F7EFF" strokeWidth={2} dot={false} name="Satisfaction" />
-              <Line type="monotone" dataKey="nps" stroke="#22C55E" strokeWidth={2} dot={false} name="NPS" />
-              <Legend wrapperStyle={{ fontSize: 11, color: "#7B7F99" }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      <div className="card">
-        <div className="card-title"><i className="ti ti-building" /> Account Breakdown</div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {ACCOUNTS.filter(a => a.score > 0).map(a => (
-            <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ width: 180, fontSize: 13, fontWeight: 500, flexShrink: 0 }}>{a.name}</div>
-              <div style={{ flex: 1 }}>
-                <div className="progress-bar" style={{ height: 8 }}>
-                  <div className="progress-fill" style={{
-                    width: `${a.score}%`,
-                    background: a.score >= 85 ? "var(--green)" : a.score >= 70 ? "var(--amber)" : "var(--red)"
-                  }} />
-                </div>
-              </div>
-              <div style={{ width: 36, textAlign: "right", fontWeight: 700, fontSize: 14,
-                color: a.score >= 85 ? "var(--green)" : a.score >= 70 ? "var(--amber)" : "var(--red)" }}>
-                {a.score}
-              </div>
-              <span className={`badge badge-${a.score >= 85 ? "green" : a.score >= 70 ? "amber" : "red"}`}>
-                {a.score >= 85 ? "On Track" : a.score >= 70 ? "Watch" : "At Risk"}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+// ── SATISFACTION ──────────────────────────────────────────────────────────────
+function BuildingSatisfaction(){
+  const byAcct=ACCOUNTS.filter(a=>a.score>0).map(a=>({l:a.name.split(' ')[0],v:a.score}));
+  return h(Fragment,null,
+    h('div',{className:'grid g4',style:{marginBottom:20}},
+      [{label:'Portfolio Avg',value:'87'},{label:'NPS Score',value:'55'},{label:'At-Risk Accounts',value:'1'},{label:'5-Star Responses',value:'31%'}]
+      .map(s=>h('div',{key:s.label,className:'stat-card'},
+        h('div',{className:'stat-label'},s.label),
+        h('div',{className:'stat-value',style:{color:'var(--green)'}},s.value),
+        h('div',{className:'stat-delta up'},ico('ti-trending-up'),' +vs last month')
+      ))
+    ),
+    h('div',{className:'grid g2',style:{marginBottom:20}},
+      h('div',{className:'card'},
+        h('div',{className:'card-title'},ico('ti-chart-bar'),' Satisfaction by Account'),
+        h(BarChartSVG,{data:byAcct,colors:byAcct.map(d=>d.v>=85?'#22C55E':d.v>=75?'#F59E0B':'#EF4444')})
+      ),
+      h('div',{className:'card'},
+        h('div',{className:'card-title'},ico('ti-chart-line'),' NPS Trend — 6 Months'),
+        h(LineChartSVG,{data:NPS_TREND,color:'#22C55E'})
+      )
+    ),
+    h('div',{className:'card'},
+      h('div',{className:'card-title'},ico('ti-building'),' Account Breakdown'),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
+        ACCOUNTS.filter(a=>a.score>0).map(a=>h('div',{key:a.id,style:{display:'flex',alignItems:'center',gap:14}},
+          h('div',{style:{width:180,fontSize:13,fontWeight:500,flexShrink:0}},a.name),
+          h('div',{style:{flex:1}},h('div',{className:'progress-bar',style:{height:8}},
+            h('div',{className:'progress-fill',style:{width:a.score+'%',background:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}})
+          )),
+          h('div',{style:{width:36,textAlign:'right',fontWeight:700,fontSize:14,color:a.score>=85?'var(--green)':a.score>=70?'var(--amber)':'var(--red)'}},a.score),
+          h(Badge,{cls:a.score>=85?'green':a.score>=70?'amber':'red'},a.score>=85?'On Track':a.score>=70?'Watch':'At Risk')
+        ))
+      )
+    )
   );
 }
 
 // ── WALKTHROUGH ───────────────────────────────────────────────────────────────
-function Walkthrough({ onToast }) {
-  const [scores, setScores] = useState({});
-  const [selZone, setSelZone] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [tickets, setTickets] = useState([]);
+function Walkthrough({onToast}){
+  const [scores,setScores]=useState({});
+  const [submitted,setSubmitted]=useState(false);
+  const [tickets,setTickets]=useState([]);
 
-  function handleScore(zoneId, area, val) {
-    setScores(prev => ({
-      ...prev,
-      [`${zoneId}-${area}`]: val
-    }));
-  }
-
-  function handleSubmit() {
-    const newTickets = [];
-    Object.entries(scores).forEach(([key, val]) => {
-      if (val <= 2) {
-        const [zoneId, ...areaParts] = key.split("-");
-        const area = areaParts.join("-");
-        const zone = ZONES.find(z => z.id === parseInt(zoneId));
-        newTickets.push({ area, zone: zone?.name, score: val });
+  function handleSubmit(){
+    const t=[];
+    Object.entries(scores).forEach(([key,val])=>{
+      if(val<=2){
+        const [zid,...rest]=key.split('-');
+        const zone=ZONES.find(z=>z.id===parseInt(zid));
+        t.push({area:rest.join('-'),zone:zone?zone.name:'',score:val});
       }
     });
-    setTickets(newTickets);
-    setSubmitted(true);
-    if (newTickets.length > 0) onToast(`${newTickets.length} auto-ticket${newTickets.length > 1 ? "s" : ""} created from low scores`);
+    setTickets(t);setSubmitted(true);
+    if(t.length>0)onToast(t.length+' auto-ticket'+(t.length>1?'s':'')+' created');
+    else onToast('Walkthrough submitted — no issues found');
   }
 
-  if (submitted) {
-    return (
-      <div>
-        <div className="card" style={{ marginBottom: 16, borderColor: "rgba(34,197,94,.3)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 99, background: "rgba(34,197,94,.12)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <i className="ti ti-circle-check" style={{ fontSize: 22, color: "var(--green)" }} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>Walkthrough Submitted</div>
-              <div style={{ fontSize: 12, color: "var(--muted)" }}>
-                {Object.keys(scores).length} areas scored · {tickets.length} tickets auto-created
-              </div>
-            </div>
-            <button className="btn btn-ghost btn-sm" style={{ marginLeft: "auto" }} onClick={() => { setScores({}); setSubmitted(false); setTickets([]); }}>
-              <i className="ti ti-refresh" /> New Walk
-            </button>
-          </div>
-        </div>
-        {tickets.length > 0 && (
-          <div className="card">
-            <div className="card-title"><i className="ti ti-ticket" style={{ color: "var(--red)" }} /> Auto-Created Tickets</div>
-            {tickets.map((t, i) => (
-              <div key={i} className="ticket-card" style={{ marginBottom: 8 }}>
-                <div className="priority-bar" style={{ background: t.score === 1 ? "var(--red)" : "var(--amber)" }} />
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 13 }}>{t.area} — Score {t.score}/5</div>
-                  <div style={{ fontSize: 11, color: "var(--muted)" }}>{t.zone} · Assigned for review</div>
-                </div>
-                <span className="badge badge-red" style={{ marginLeft: "auto" }}>Auto-Ticket</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
+  if(submitted)return h(Fragment,null,
+    h('div',{className:'card',style:{marginBottom:16,borderColor:'rgba(34,197,94,.3)'}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:12}},
+        h('div',{style:{width:40,height:40,borderRadius:99,background:'rgba(34,197,94,.12)',display:'flex',alignItems:'center',justifyContent:'center'}},ico('ti-circle-check',{fontSize:22,color:'var(--green)'})),
+        h('div',null,
+          h('div',{style:{fontWeight:700,fontSize:15}},'Walkthrough Submitted'),
+          h('div',{style:{fontSize:12,color:'var(--muted)'}},Object.keys(scores).length+' areas scored · '+tickets.length+' tickets created')
+        ),
+        h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>{setScores({});setSubmitted(false);setTickets([]);}},ico('ti-refresh'),' New Walk')
+      )
+    ),
+    tickets.length>0&&h('div',{className:'card'},
+      h('div',{className:'card-title'},ico('ti-ticket',{color:'var(--red)'}),' Auto-Created Tickets'),
+      tickets.map((t,i)=>h('div',{key:i,className:'ticket-card',style:{marginBottom:8}},
+        h('div',{className:'priority-bar',style:{background:t.score===1?'var(--red)':'var(--amber)'}}),
+        h('div',null,
+          h('div',{style:{fontWeight:600,fontSize:13}},t.area+' — Score '+t.score+'/5'),
+          h('div',{style:{fontSize:11,color:'var(--muted)'}},t.zone+' · Assigned for review')
+        ),
+        h(Badge,{cls:'red'},'Auto-Ticket')
+      ))
+    )
+  );
 
-  return (
-    <div>
-      <div className="grid g2" style={{ marginBottom: 20 }}>
-        {ZONES.map(z => (
-          <div key={z.id} className={"zone-card " + (selZone?.id === z.id ? "selected" : "")}
-            onClick={() => setSelZone(selZone?.id === z.id ? null : z)}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div style={{ fontWeight: 600, fontSize: 14 }}>{z.name}</div>
-              <span style={{ fontSize: 11, color: "var(--muted)", background: "var(--border)", padding: "2px 7px", borderRadius: 6 }}>
-                {z.areas.length} areas
-              </span>
-            </div>
-            {z.areas.map(area => {
-              const key = `${z.id}-${area}`;
-              const val = scores[key];
-              return (
-                <div key={area} style={{ marginBottom: 8 }}>
-                  <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 5 }}>{area}</div>
-                  <div style={{ display: "flex", gap: 5 }}>
-                    {[1,2,3,4,5].map(n => (
-                      <button key={n}
-                        className={"score-btn score-" + n + (val === n ? " active" : "")}
-                        onClick={e => { e.stopPropagation(); handleScore(z.id, area, n); }}>
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontSize: 12, color: "var(--muted)" }}>
-          {Object.keys(scores).length} of {ZONES.flatMap(z => z.areas).length} areas scored
-          {Object.values(scores).filter(v => v <= 2).length > 0 && (
-            <span style={{ color: "var(--amber)", marginLeft: 8 }}>
-              · {Object.values(scores).filter(v => v <= 2).length} low score{Object.values(scores).filter(v => v <= 2).length > 1 ? "s" : ""} will auto-create tickets
-            </span>
-          )}
-        </div>
-        <button className="btn btn-primary" onClick={handleSubmit}>
-          <i className="ti ti-send" /> Submit Walkthrough
-        </button>
-      </div>
-    </div>
+  return h(Fragment,null,
+    h('div',{className:'grid g2',style:{marginBottom:20}},
+      ZONES.map(z=>h('div',{key:z.id,className:'zone-card'},
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}},
+          h('div',{style:{fontWeight:600,fontSize:14}},z.name),
+          h('span',{style:{fontSize:11,color:'var(--muted)',background:'var(--border)',padding:'2px 7px',borderRadius:6}},z.areas.length+' areas')
+        ),
+        z.areas.map(area=>{
+          const key=z.id+'-'+area;
+          const val=scores[key];
+          return h('div',{key:area,style:{marginBottom:8}},
+            h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:5}},area),
+            h('div',{style:{display:'flex',gap:5}},
+              [1,2,3,4,5].map(n=>h('button',{key:n,
+                className:'score-btn s'+n+(val===n?' active':''),
+                onClick:()=>setScores(p=>({...p,[key]:n}))
+              },n))
+            )
+          );
+        })
+      ))
+    ),
+    h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center'}},
+      h('span',{style:{fontSize:12,color:'var(--muted)'}},Object.keys(scores).length+' of '+ZONES.flatMap(z=>z.areas).length+' areas scored'),
+      h('button',{className:'btn btn-primary',onClick:handleSubmit},ico('ti-send'),' Submit Walkthrough')
+    )
   );
 }
 
 // ── QR FEEDBACK ───────────────────────────────────────────────────────────────
-function QRFeedback({ onToast }) {
-  const [items, setItems] = useState(QR_FEED);
-  const avg = (items.reduce((s, i) => s + i.rating, 0) / items.length).toFixed(1);
-
-  return (
-    <div>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
-        {[
-          { label: "Avg Rating (7d)", value: avg, icon: "ti-star", color: "var(--amber)" },
-          { label: "Total Responses", value: items.length, icon: "ti-qrcode", color: "var(--accent2)" },
-          { label: "Negative (≤2★)", value: items.filter(i => i.rating <= 2).length, icon: "ti-alert-triangle", color: "var(--red)" },
-          { label: "Auto-Tickets", value: items.filter(i => i.auto).length, icon: "ti-ticket", color: "var(--red)" },
-        ].map(s => (
-          <div key={s.label} className="stat-card">
-            <div className="stat-icon" style={{ background: s.color + "22", color: s.color }}>
-              <i className={"ti " + s.icon} />
-            </div>
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value">{s.value}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {items.map(item => (
-          <div key={item.id} className="qr-card" style={item.rating <= 2 ? { borderColor: "rgba(239,68,68,.3)" } : {}}>
-            <div className="qr-source">
-              <i className="ti ti-qrcode" style={{ color: "var(--muted)" }} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                <span style={{ fontWeight: 600, fontSize: 13 }}>{item.location}</span>
-                <Stars n={item.rating} />
-                <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--muted)" }}>{item.time}</span>
-              </div>
-              <div style={{ fontSize: 13, color: "var(--muted)", fontStyle: "italic" }}>"{item.comment}"</div>
-            </div>
-            {item.auto && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
-                <span className="badge badge-red"><i className="ti ti-ticket" /> Auto-Ticket</span>
-                <button className="btn btn-ghost btn-sm" onClick={() => onToast("Ticket TKT-1042 created")}>
-                  View
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+function QRFeedback({onToast}){
+  const avg=(QR_FEED.reduce((s,i)=>s+i.rating,0)/QR_FEED.length).toFixed(1);
+  return h(Fragment,null,
+    h('div',{className:'grid g4',style:{marginBottom:20}},
+      [
+        {label:'Avg Rating (7d)',value:avg,icon:'ti-star',c:'var(--amber)'},
+        {label:'Total Responses',value:QR_FEED.length,icon:'ti-qrcode',c:'var(--accent2)'},
+        {label:'Negative (≤2★)',value:QR_FEED.filter(i=>i.rating<=2).length,icon:'ti-alert-triangle',c:'var(--red)'},
+        {label:'Auto-Tickets',value:QR_FEED.filter(i=>i.auto).length,icon:'ti-ticket',c:'var(--red)'},
+      ].map(s=>h('div',{key:s.label,className:'stat-card'},
+        h('div',{className:'stat-icon',style:{background:s.c+'22',color:s.c}},ico(s.icon)),
+        h('div',{className:'stat-label'},s.label),
+        h('div',{className:'stat-value'},s.value)
+      ))
+    ),
+    h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+      QR_FEED.map(item=>h('div',{key:item.id,className:'qr-card',style:item.rating<=2?{borderColor:'rgba(239,68,68,.3)'}:{}},
+        h('div',{style:{width:34,height:34,borderRadius:8,background:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},ico('ti-qrcode',{color:'var(--muted)'})),
+        h('div',{style:{flex:1}},
+          h('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:4}},
+            h('span',{style:{fontWeight:600,fontSize:13}},item.location),
+            h(Stars,{n:item.rating}),
+            h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--muted)'}},item.time)
+          ),
+          h('div',{style:{fontSize:13,color:'var(--muted)',fontStyle:'italic'}},'"'+item.comment+'"')
+        ),
+        item.auto&&h('div',{style:{display:'flex',flexDirection:'column',gap:4,alignItems:'flex-end'}},
+          h(Badge,{cls:'red'},'Auto-Ticket'),
+          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Ticket TKT-1042 created')},'View')
+        )
+      ))
+    )
   );
 }
 
-// ── TICKETS & DISPATCH ────────────────────────────────────────────────────────
-function Tickets({ onToast }) {
-  const [tickets, setTickets] = useState(TICKETS);
-  const [showNew, setShowNew] = useState(false);
-  const [newTkt, setNewTkt] = useState({ title: "", acct: "", priority: "Medium", assigned: "" });
-  const [filter, setFilter] = useState("All");
+// ── TICKETS ───────────────────────────────────────────────────────────────────
+function Tickets({onToast}){
+  const [tickets,setTickets]=useState(INIT_TICKETS);
+  const [showNew,setShowNew]=useState(false);
+  const [nw,setNw]=useState({title:'',acct:'',priority:'Medium',assigned:''});
+  const [filter,setFilter]=useState('All');
 
-  function createTicket() {
-    const t = {
-      id: `TKT-${1042 + tickets.length}`,
-      ...newTkt,
-      status: "Open",
-      created: "Just now",
-      source: "Manual",
-      hubspot: true,
-    };
-    setTickets([t, ...tickets]);
-    setShowNew(false);
-    setNewTkt({ title: "", acct: "", priority: "Medium", assigned: "" });
-    onToast("Ticket created & synced to HubSpot");
+  function create(){
+    const t={id:'TKT-'+(1042+tickets.length),...nw,status:'Open',created:'Just now',source:'Manual',hubspot:true};
+    setTickets(p=>[t,...p]);
+    setShowNew(false);setNw({title:'',acct:'',priority:'Medium',assigned:''});
+    onToast('Ticket created & synced to HubSpot');
   }
+  const filtered=filter==='All'?tickets:tickets.filter(t=>t.status===filter);
 
-  const filtered = filter === "All" ? tickets : tickets.filter(t => t.status === filter);
-
-  return (
-    <div>
-      {showNew && (
-        <div className="modal-backdrop" onClick={() => setShowNew(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-title"><i className="ti ti-ticket" style={{ color: "var(--accent2)" }} /> New Ticket</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <div>
-                <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 5 }}>TITLE</div>
-                <input className="field-input" placeholder="Describe the issue..." value={newTkt.title}
-                  onChange={e => setNewTkt({ ...newTkt, title: e.target.value })} />
-              </div>
-              <div className="grid g2">
-                <div>
-                  <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 5 }}>ACCOUNT</div>
-                  <select className="field-input" value={newTkt.acct} onChange={e => setNewTkt({ ...newTkt, acct: e.target.value })}>
-                    <option value="">Select account...</option>
-                    {ACCOUNTS.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 5 }}>PRIORITY</div>
-                  <select className="field-input" value={newTkt.priority} onChange={e => setNewTkt({ ...newTkt, priority: e.target.value })}>
-                    <option>High</option><option>Medium</option><option>Low</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 5 }}>DISPATCH TO</div>
-                <select className="field-input" value={newTkt.assigned} onChange={e => setNewTkt({ ...newTkt, assigned: e.target.value })}>
-                  <option value="">Assign to employee...</option>
-                  {EMPLOYEES.map(e => <option key={e} value={e}>{e}</option>)}
-                </select>
-              </div>
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
-                <button className="btn btn-ghost" onClick={() => setShowNew(false)}>Cancel</button>
-                <button className="btn btn-primary" onClick={createTicket} disabled={!newTkt.title}>
-                  <i className="ti ti-send" /> Dispatch & Sync HubSpot
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 20, alignItems: "center" }}>
-        {["All","Open","In Progress","Resolved"].map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={"btn btn-sm " + (filter === f ? "btn-primary" : "btn-ghost")}>
-            {f}
-          </button>
-        ))}
-        <button className="btn btn-primary btn-sm" style={{ marginLeft: "auto" }} onClick={() => setShowNew(true)}>
-          <i className="ti ti-plus" /> New Ticket
-        </button>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {filtered.map(t => (
-          <div key={t.id} className="ticket-card">
-            <div className="priority-bar" style={{ background: priorityColor(t.priority) }} />
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontFamily: "monospace", fontSize: 11, color: "var(--muted)" }}>{t.id}</span>
-                <span className={`badge badge-${t.priority === "High" ? "red" : t.priority === "Medium" ? "amber" : "muted"}`}>{t.priority}</span>
-                {t.hubspot && <span className="hs-badge"><i className="ti ti-brand-hubspot" /> HS</span>}
-                <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--muted)" }}>{t.created}</span>
-              </div>
-              <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 4 }}>{t.title}</div>
-              <div style={{ fontSize: 11, color: "var(--muted)", display: "flex", gap: 12 }}>
-                <span><i className="ti ti-building" style={{ marginRight: 3 }} />{t.acct}</span>
-                <span><i className="ti ti-user" style={{ marginRight: 3 }} />{t.assigned}</span>
-                <span><i className="ti ti-source-code" style={{ marginRight: 3 }} />{t.source}</span>
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-              <span className={`badge badge-${t.status === "Resolved" ? "green" : t.status === "In Progress" ? "blue" : "red"}`}>{t.status}</span>
-              <button className="btn btn-ghost btn-sm" onClick={() => onToast(`Re-dispatched ${t.id}`)}>
-                <i className="ti ti-send" /> Dispatch
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+  return h(Fragment,null,
+    showNew&&h('div',{className:'modal-backdrop',onClick:()=>setShowNew(false)},
+      h('div',{className:'modal',onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-title'},ico('ti-ticket',{color:'var(--accent2)'}),' New Ticket'),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+          h('div',null,
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'TITLE'),
+            h('input',{className:'field-input',placeholder:'Describe the issue...',value:nw.title,onChange:e=>setNw({...nw,title:e.target.value})})
+          ),
+          h('div',{className:'grid g2'},
+            h('div',null,
+              h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'ACCOUNT'),
+              h('select',{className:'field-input',value:nw.acct,onChange:e=>setNw({...nw,acct:e.target.value})},
+                h('option',{value:''},'Select account...'),
+                ACCOUNTS.map(a=>h('option',{key:a.id,value:a.name},a.name))
+              )
+            ),
+            h('div',null,
+              h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'PRIORITY'),
+              h('select',{className:'field-input',value:nw.priority,onChange:e=>setNw({...nw,priority:e.target.value})},
+                ['High','Medium','Low'].map(p=>h('option',{key:p},p))
+              )
+            )
+          ),
+          h('div',null,
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'DISPATCH TO'),
+            h('select',{className:'field-input',value:nw.assigned,onChange:e=>setNw({...nw,assigned:e.target.value})},
+              h('option',{value:''},'Assign to employee...'),
+              INIT_WORKERS.map(w=>h('option',{key:w.id,value:w.name},w.name))
+            )
+          ),
+          h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
+            h('button',{className:'btn btn-ghost',onClick:()=>setShowNew(false)},'Cancel'),
+            h('button',{className:'btn btn-primary',onClick:create,disabled:!nw.title},ico('ti-send'),' Dispatch & Sync HubSpot')
+          )
+        )
+      )
+    ),
+    h('div',{style:{display:'flex',gap:8,marginBottom:20,alignItems:'center'}},
+      ['All','Open','In Progress','Resolved'].map(f=>h('button',{key:f,className:'btn btn-sm '+(filter===f?'btn-primary':'btn-ghost'),onClick:()=>setFilter(f)},f)),
+      h('button',{className:'btn btn-primary btn-sm',style:{marginLeft:'auto'},onClick:()=>setShowNew(true)},ico('ti-plus'),' New Ticket')
+    ),
+    h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+      filtered.map(t=>h('div',{key:t.id,className:'ticket-card'},
+        h('div',{className:'priority-bar',style:{background:pc(t.priority)}}),
+        h('div',{style:{flex:1}},
+          h('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:6}},
+            h('span',{style:{fontFamily:'monospace',fontSize:11,color:'var(--muted)'}},t.id),
+            h(Badge,{cls:t.priority==='High'?'red':t.priority==='Medium'?'amber':'muted'},t.priority),
+            t.hubspot&&h('span',{className:'hs-badge'},'HS'),
+            h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--muted)'}},t.created)
+          ),
+          h('div',{style:{fontWeight:600,fontSize:13,marginBottom:4}},t.title),
+          h('div',{style:{fontSize:11,color:'var(--muted)',display:'flex',gap:12}},
+            h('span',null,ico('ti-building'),' ',t.acct),
+            h('span',null,ico('ti-user'),' ',t.assigned)
+          )
+        ),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:6,alignItems:'flex-end'}},
+          h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status),
+          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Re-dispatched '+t.id)},ico('ti-send'),' Dispatch')
+        )
+      ))
+    )
   );
 }
 
 // ── WORKERS ───────────────────────────────────────────────────────────────────
-function Workers({ onToast }) {
-  const [workers, setWorkers] = useState(WORKERS);
-  const [showCallout, setShowCallout] = useState(null);
+function Workers({onToast}){
+  const [workers,setWorkers]=useState(INIT_WORKERS);
+  const [showCO,setShowCO]=useState(null);
+  const w2=workers.find(w=>w.id===showCO);
 
-  const onSite = workers.filter(w => w.status === "On Site").length;
-  const calledOut = workers.filter(w => w.status === "Called Out").length;
-
-  function markCallout(id) {
-    setWorkers(prev => prev.map(w => w.id === id ? { ...w, status: "Called Out", callouts: w.callouts + 1 } : w));
-    setShowCallout(null);
-    onToast("Call-out recorded. Coverage alert sent to Sharlene.");
+  function markCO(id){
+    setWorkers(p=>p.map(w=>w.id===id?{...w,status:'Called Out',callouts:w.callouts+1}:w));
+    setShowCO(null);onToast('Call-out recorded. Coverage alert sent to Sharlene.');
   }
 
-  return (
-    <div>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
-        {[
-          { label: "On Site", value: onSite, color: "var(--green)" },
-          { label: "Called Out", value: calledOut, color: "var(--red)" },
-          { label: "Off Shift", value: workers.filter(w => w.status === "Off Shift").length, color: "var(--muted)" },
-          { label: "Call-out Risk", value: workers.filter(w => w.callouts >= 3).length, color: "var(--amber)" },
-        ].map(s => (
-          <div key={s.label} className="stat-card">
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value" style={{ color: s.color }}>{s.value}</div>
-          </div>
-        ))}
-      </div>
-
-      {showCallout && (
-        <div className="modal-backdrop" onClick={() => setShowCallout(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-title"><i className="ti ti-user-off" style={{ color: "var(--red)" }} /> Record Call-Out</div>
-            <div style={{ fontSize: 14, marginBottom: 16 }}>
-              Record call-out for <strong>{workers.find(w => w.id === showCallout)?.name}</strong>?
-              This will alert fleet manager Sharlene and flag for coverage scheduling.
-            </div>
-            <div className="highlight-chip" style={{ marginBottom: 16, borderColor: "rgba(239,68,68,.3)" }}>
-              <i className="ti ti-alert-triangle" style={{ color: "var(--red)", marginRight: 6 }} />
-              This employee has <strong style={{ color: "var(--red)" }}>
-                {workers.find(w => w.id === showCallout)?.callouts} prior call-out{workers.find(w => w.id === showCallout)?.callouts !== 1 ? "s" : ""}
-              </strong> this period. HR review may be triggered at 5+.
-            </div>
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button className="btn btn-ghost" onClick={() => setShowCallout(null)}>Cancel</button>
-              <button className="btn btn-danger" onClick={() => markCallout(showCallout)}>
-                <i className="ti ti-user-off" /> Confirm Call-Out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="card" style={{ padding: 0 }}>
-        {workers.map(w => (
-          <div key={w.id} className="worker-row">
-            <div className="worker-avatar" style={{ background: w.color }}>{w.name.split(" ").map(p => p[0]).join("")}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{w.name}</div>
-              <div style={{ fontSize: 11, color: "var(--muted)" }}>{w.role} · {w.site}</div>
-            </div>
-            <div style={{ fontSize: 11, color: "var(--muted)", minWidth: 80 }}>{w.shift}</div>
-            <div style={{ minWidth: 80 }}>
-              {w.callouts > 0 && (
-                <span className={`badge badge-${w.callouts >= 3 ? "red" : "amber"}`}>
-                  <i className="ti ti-user-off" /> {w.callouts} CO
-                </span>
-              )}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div className={"status-dot " + (w.status === "On Site" ? "green" : w.status === "Called Out" ? "red" : "muted")} />
-              <span style={{ fontSize: 12, fontWeight: 500, color: w.status === "On Site" ? "var(--green)" : w.status === "Called Out" ? "var(--red)" : "var(--muted)", minWidth: 70 }}>
-                {w.status}
-              </span>
-            </div>
-            {w.status !== "Called Out" && (
-              <button className="btn btn-ghost btn-sm" onClick={() => setShowCallout(w.id)}>
-                <i className="ti ti-user-off" />
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+  return h(Fragment,null,
+    h('div',{className:'grid g4',style:{marginBottom:20}},
+      [
+        {label:'On Site',value:workers.filter(w=>w.status==='On Site').length,c:'var(--green)'},
+        {label:'Called Out',value:workers.filter(w=>w.status==='Called Out').length,c:'var(--red)'},
+        {label:'Off Shift',value:workers.filter(w=>w.status==='Off Shift').length,c:'var(--muted)'},
+        {label:'Call-out Risk',value:workers.filter(w=>w.callouts>=3).length,c:'var(--amber)'},
+      ].map(s=>h('div',{key:s.label,className:'stat-card'},
+        h('div',{className:'stat-label'},s.label),
+        h('div',{className:'stat-value',style:{color:s.c}},s.value)
+      ))
+    ),
+    showCO&&w2&&h('div',{className:'modal-backdrop',onClick:()=>setShowCO(null)},
+      h('div',{className:'modal',onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-title'},ico('ti-user-off',{color:'var(--red)'}),' Record Call-Out'),
+        h('div',{style:{fontSize:14,marginBottom:16}},'Record call-out for ',h('strong',null,w2.name),'? This will alert Sharlene and flag for coverage.'),
+        h('div',{className:'highlight-chip',style:{marginBottom:16,borderColor:'rgba(239,68,68,.3)'}},
+          ico('ti-alert-triangle',{color:'var(--red)',marginRight:6}),
+          h('strong',{style:{color:'var(--red)'}},w2.callouts+' prior call-out'+(w2.callouts!==1?'s':'')),'. HR review triggered at 5+.'
+        ),
+        h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
+          h('button',{className:'btn btn-ghost',onClick:()=>setShowCO(null)},'Cancel'),
+          h('button',{className:'btn btn-danger',onClick:()=>markCO(showCO)},ico('ti-user-off'),' Confirm')
+        )
+      )
+    ),
+    h('div',{className:'card',style:{padding:0}},
+      workers.map(w=>h('div',{key:w.id,className:'worker-row'},
+        h('div',{className:'worker-avatar',style:{background:w.color}},w.name.split(' ').map(p=>p[0]).join('')),
+        h('div',{style:{flex:1}},
+          h('div',{style:{fontSize:13,fontWeight:600}},w.name),
+          h('div',{style:{fontSize:11,color:'var(--muted)'}},w.role+' · '+w.site)
+        ),
+        h('div',{style:{fontSize:11,color:'var(--muted)',minWidth:80}},w.shift),
+        h('div',{style:{minWidth:80}},w.callouts>0&&h(Badge,{cls:w.callouts>=3?'red':'amber'},w.callouts+' CO')),
+        h('div',{style:{display:'flex',alignItems:'center',gap:8}},
+          h('div',{className:'status-dot '+(w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted')}),
+          h('span',{style:{fontSize:12,fontWeight:500,color:w.status==='On Site'?'var(--green)':w.status==='Called Out'?'var(--red)':'var(--muted)',minWidth:70}},w.status)
+        ),
+        w.status!=='Called Out'&&h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setShowCO(w.id)},ico('ti-user-off'))
+      ))
+    )
   );
 }
 
 // ── PREVENTIVE PM ─────────────────────────────────────────────────────────────
-function PreventivePM({ onToast }) {
-  const [items, setItems] = useState(PM_ITEMS);
-
-  function complete(id) {
-    setItems(prev => prev.map(p => p.id === id ? { ...p, status: "Completed", last: "Today" } : p));
-    onToast("PM item marked complete");
-  }
-
-  const overdue = items.filter(i => i.status === "Overdue").length;
-  const dueSoon = items.filter(i => i.status === "Due Soon").length;
-
-  return (
-    <div>
-      <div className="grid g4" style={{ marginBottom: 20 }}>
-        {[
-          { label: "Overdue", value: overdue, color: "var(--red)" },
-          { label: "Due Soon (7d)", value: dueSoon, color: "var(--amber)" },
-          { label: "Scheduled", value: items.filter(i => i.status === "Scheduled").length, color: "var(--accent2)" },
-          { label: "Completed", value: items.filter(i => i.status === "Completed").length, color: "var(--green)" },
-        ].map(s => (
-          <div key={s.label} className="stat-card">
-            <div className="stat-label">{s.label}</div>
-            <div className="stat-value" style={{ color: s.color }}>{s.value}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="card" style={{ padding: 0 }}>
-        <table className="tbl">
-          <thead>
-            <tr><th>ID</th><th>Task</th><th>Account</th><th>Frequency</th><th>Due</th><th>Last Done</th><th>Status</th><th></th></tr>
-          </thead>
-          <tbody>
-            {items.map(p => (
-              <tr key={p.id}>
-                <td style={{ fontFamily: "monospace", fontSize: 11, color: "var(--muted)" }}>{p.id}</td>
-                <td style={{ fontWeight: 500 }}>{p.task}</td>
-                <td style={{ color: "var(--muted)", fontSize: 12 }}>{p.acct}</td>
-                <td><span className="tag">{p.freq}</span></td>
-                <td style={{ fontWeight: 600, color: p.status === "Overdue" ? "var(--red)" : p.status === "Due Soon" ? "var(--amber)" : "var(--text)", fontSize: 13 }}>{p.due}</td>
-                <td style={{ color: "var(--muted)", fontSize: 12 }}>{p.last}</td>
-                <td>
-                  <span className={`badge badge-${p.status === "Overdue" ? "red" : p.status === "Due Soon" ? "amber" : p.status === "Completed" ? "green" : "blue"}`}>
-                    {p.status}
-                  </span>
-                </td>
-                <td>
-                  {p.status !== "Completed" && (
-                    <button className="btn btn-ghost btn-sm" onClick={() => complete(p.id)}>
-                      <i className="ti ti-check" /> Done
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+function PreventivePM({onToast}){
+  const [items,setItems]=useState(INIT_PM);
+  const done=id=>{setItems(p=>p.map(x=>x.id===id?{...x,status:'Completed',last:'Today'}:x));onToast('PM item marked complete');};
+  return h(Fragment,null,
+    h('div',{className:'grid g4',style:{marginBottom:20}},
+      [
+        {label:'Overdue',value:items.filter(i=>i.status==='Overdue').length,c:'var(--red)'},
+        {label:'Due Soon (7d)',value:items.filter(i=>i.status==='Due Soon').length,c:'var(--amber)'},
+        {label:'Scheduled',value:items.filter(i=>i.status==='Scheduled').length,c:'var(--accent2)'},
+        {label:'Completed',value:items.filter(i=>i.status==='Completed').length,c:'var(--green)'},
+      ].map(s=>h('div',{key:s.label,className:'stat-card'},
+        h('div',{className:'stat-label'},s.label),
+        h('div',{className:'stat-value',style:{color:s.c}},s.value)
+      ))
+    ),
+    h('div',{className:'card',style:{padding:0}},
+      h('table',{className:'tbl'},
+        h('thead',null,h('tr',null,['ID','Task','Account','Frequency','Due','Last Done','Status',''].map(c=>h('th',{key:c},c)))),
+        h('tbody',null,items.map(p=>h('tr',{key:p.id},
+          h('td',{style:{fontFamily:'monospace',fontSize:11,color:'var(--muted)'}},p.id),
+          h('td',{style:{fontWeight:500}},p.task),
+          h('td',{style:{color:'var(--muted)',fontSize:12}},p.acct),
+          h('td',null,h(Tag,{t:p.freq})),
+          h('td',{style:{fontWeight:600,color:p.status==='Overdue'?'var(--red)':p.status==='Due Soon'?'var(--amber)':'var(--text)'}},p.due),
+          h('td',{style:{color:'var(--muted)',fontSize:12}},p.last),
+          h('td',null,h(Badge,{cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'},p.status)),
+          h('td',null,p.status!=='Completed'&&h('button',{className:'btn btn-ghost btn-sm',onClick:()=>done(p.id)},ico('ti-check'),' Done'))
+        )))
+      )
+    )
   );
 }
 
 // ── AI ASSISTANT ──────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are Inperium AI, the policy-aware facilities management assistant for DSC Solutions. You help pod owners manage janitorial operations, quality assurance, worker scheduling, and client satisfaction.
+const SYS=`You are Inperium AI, the policy-aware facilities management assistant for DSC Solutions. Pod 3 covers Harrisburg/Lancaster corridor. Cerberus SOP tiers: A=Critical/Emergency, B=Daily Ops, C=Weekly, D=Scheduled Maintenance. Call-out policy: 3+ = verbal coaching, 5+ = written warning, 7+ = PIP within rolling 90 days. Always lead with coverage solution first, then documentation. Alan Kaufman is Managing Director. Sharlene is Fleet Manager. Be direct and operational. Keep responses concise.`;
 
-Key context:
-- DSC Solutions is a facilities management company operating across 17 states with ~450 employees, serving Fortune 500 companies and government agencies
-- You assist with Cerberus SOP tiers: A (Critical/Emergency), B (Daily Ops), C (Weekly), D (Scheduled Maintenance)
-- You understand call-out policies: 3+ call-outs trigger coaching review; 5+ may trigger HR involvement
-- You can help dispatch tickets, interpret satisfaction scores, write SOPs, and coach supervisors
-- Be direct, specific, and action-oriented. Alan Kaufman is the Managing Director. Sharlene is the Fleet Manager.
-- Pod 3 covers the Harrisburg/Lancaster corridor.
+function AIAssistant(){
+  const [msgs,setMsgs]=useState([{role:'assistant',text:"Hey — I'm Inperium AI. Briefed on Cerberus SOPs, Pod 3 accounts, call-out policy, and ticket protocols. What do you need?"}]);
+  const [input,setInput]=useState('');
+  const [loading,setLoading]=useState(false);
+  const endRef=useRef(null);
+  useEffect(()=>{if(endRef.current)endRef.current.scrollIntoView({behavior:'smooth'});},[msgs,loading]);
 
-When asked about call-out guidance: remind of progressive discipline — verbal coaching at 3, written warning at 5, PIP at 7 within rolling 90 days, per DSC policy. Always lead with coverage solution first, then documentation.
-
-Keep responses concise and operational.`;
-
-function AIAssistant() {
-  const [msgs, setMsgs] = useState([
-    {
-      role: "assistant",
-      text: "Hey — I'm Inperium AI. I'm briefed on Cerberus SOP tiers, your active accounts, call-out policy, and ticket protocols. What do you need?",
-    }
-  ]);
-  const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const endRef = useRef(null);
-
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, loading]);
-
-  async function send() {
-    if (!input.trim() || loading) return;
-    const userText = input.trim();
-    setInput("");
-    const newMsgs = [...msgs, { role: "user", text: userText }];
-    setMsgs(newMsgs);
-    setLoading(true);
-    try {
-      const apiMessages = newMsgs.map(m => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.text }));
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: apiMessages,
-        }),
+  async function send(){
+    if(!input.trim()||loading)return;
+    const txt=input.trim();setInput('');
+    const nm=[...msgs,{role:'user',text:txt}];
+    setMsgs(nm);setLoading(true);
+    try{
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,
+          messages:nm.map(m=>({role:m.role==='assistant'?'assistant':'user',content:m.text}))
+        })
       });
-      const data = await res.json();
-      const reply = data.content?.find(b => b.type === "text")?.text || "No response.";
-      setMsgs(prev => [...prev, { role: "assistant", text: reply }]);
-    } catch (err) {
-      setMsgs(prev => [...prev, { role: "assistant", text: "Connection error. Check your API key or network." }]);
+      const data=await res.json();
+      const reply=data.content&&data.content.find(b=>b.type==='text')?data.content.find(b=>b.type==='text').text:'No response.';
+      setMsgs(p=>[...p,{role:'assistant',text:reply}]);
+    }catch(e){
+      setMsgs(p=>[...p,{role:'assistant',text:'Connection error — check network or API key.'}]);
     }
     setLoading(false);
   }
 
-  function handleKey(e) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
-  }
+  const QP=["Elton Craig has 4 call-outs — what's our policy?","Draft a Tier A SOP for biohazard cleanup","Satisfaction at Armstrong dropped to 79 — recommended actions?","What should I check on a walkthrough for Commonwealth PA?"];
 
-  const quickPrompts = [
-    "Elton Craig has 4 call-outs — what's our policy?",
-    "Draft a Tier A SOP for biohazard cleanup",
-    "Satisfaction at Armstrong dropped to 79 — recommended actions?",
-    "What should I check on a building walkthrough for Commonwealth PA?",
-  ];
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 140px)" }}>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
-        {quickPrompts.map(q => (
-          <button key={q} className="btn btn-ghost btn-sm" onClick={() => setInput(q)} style={{ fontSize: 11 }}>
-            {q}
-          </button>
-        ))}
-      </div>
-
-      <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-        <div className="chat-messages" style={{ flex: 1, overflowY: "auto" }}>
-          {msgs.map((m, i) => (
-            <div key={i} className={"chat-msg " + (m.role === "user" ? "user" : "")}>
-              {m.role === "assistant" && (
-                <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,var(--accent),var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <i className="ti ti-sparkles" style={{ fontSize: 15, color: "#fff" }} />
-                </div>
-              )}
-              <div className="chat-bubble" style={{ whiteSpace: "pre-wrap" }}>{m.text}</div>
-            </div>
-          ))}
-          {loading && (
-            <div className="chat-msg">
-              <div style={{ width: 30, height: 30, borderRadius: 8, background: "linear-gradient(135deg,var(--accent),var(--purple))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <i className="ti ti-sparkles" style={{ fontSize: 15, color: "#fff" }} />
-              </div>
-              <div className="chat-bubble"><div className="typing-dots"><span /><span /><span /></div></div>
-            </div>
-          )}
-          <div ref={endRef} />
-        </div>
-        <div className="chat-input-row">
-          <textarea
-            className="chat-input"
-            placeholder="Ask about SOPs, call-out policy, satisfaction scores, tickets..."
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKey}
-            rows={1}
-          />
-          <button className="btn btn-primary" onClick={send} disabled={!input.trim() || loading} style={{ height: 42, alignSelf: "flex-end" }}>
-            <i className="ti ti-send" />
-          </button>
-        </div>
-      </div>
-    </div>
+  return h('div',{style:{display:'flex',flexDirection:'column',height:'calc(100vh - 140px)'}},
+    h('div',{style:{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}},
+      QP.map(q=>h('button',{key:q,className:'btn btn-ghost btn-sm',style:{fontSize:11},onClick:()=>setInput(q)},q))
+    ),
+    h('div',{className:'card',style:{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}},
+      h('div',{style:{flex:1,overflowY:'auto',display:'flex',flexDirection:'column',gap:14,paddingBottom:8}},
+        msgs.map((m,i)=>h('div',{key:i,className:'chat-msg '+(m.role==='user'?'user':'')},
+          m.role==='assistant'&&h('div',{style:{width:30,height:30,borderRadius:8,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+            ico('ti-sparkles',{fontSize:15,color:'#fff'})
+          ),
+          h('div',{className:'chat-bubble',style:{whiteSpace:'pre-wrap'}},m.text)
+        )),
+        loading&&h('div',{className:'chat-msg'},
+          h('div',{style:{width:30,height:30,borderRadius:8,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},ico('ti-sparkles',{fontSize:15,color:'#fff'})),
+          h('div',{className:'chat-bubble'},h('div',{className:'typing-dots'},h('span'),h('span'),h('span')))
+        ),
+        h('div',{ref:endRef})
+      ),
+      h('div',{style:{display:'flex',gap:8,marginTop:12}},
+        h('textarea',{className:'chat-input',placeholder:'Ask about SOPs, call-out policy, satisfaction scores...',value:input,rows:1,
+          onChange:e=>setInput(e.target.value),
+          onKeyDown:e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}}}),
+        h('button',{className:'btn btn-primary',onClick:send,disabled:!input.trim()||loading,style:{height:42,alignSelf:'flex-end'}},ico('ti-send'))
+      )
+    )
   );
 }
 
 // ── APP ───────────────────────────────────────────────────────────────────────
-const NAV = [
-  { id: "overview",     label: "Overview",       icon: "ti-layout-dashboard" },
-  { id: "accounts",     label: "Accounts",        icon: "ti-building" },
-  { id: "qa",           label: "QA Tasks",        icon: "ti-checklist",     badge: "3",  badgeColor: "" },
-  { id: "satisfaction", label: "Satisfaction",    icon: "ti-star" },
-  { id: "walkthrough",  label: "Walkthrough",     icon: "ti-map-search",    badge: null },
-  { id: "qr",           label: "QR Feedback",     icon: "ti-qrcode",        badge: "2",  badgeColor: "red" },
-  { id: "tickets",      label: "Tickets",         icon: "ti-ticket",        badge: "3",  badgeColor: "red" },
-  { id: "workers",      label: "Workers",         icon: "ti-users",         badge: "1",  badgeColor: "" },
-  { id: "pm",           label: "Preventive PM",   icon: "ti-tool",          badge: "1",  badgeColor: "red" },
-  { id: "ai",           label: "AI Assistant",    icon: "ti-sparkles",      badge: null },
+const NAV=[
+  {id:'overview',label:'Overview',icon:'ti-layout-dashboard'},
+  {id:'accounts',label:'Accounts',icon:'ti-building'},
+  {id:'qa',label:'QA Tasks',icon:'ti-checklist',badge:'3',bc:'amber'},
+  {id:'satisfaction',label:'Satisfaction',icon:'ti-star'},
+  {id:'walkthrough',label:'Walkthrough',icon:'ti-map-search'},
+  {id:'qr',label:'QR Feedback',icon:'ti-qrcode',badge:'2',bc:'red'},
+  {id:'tickets',label:'Tickets',icon:'ti-ticket',badge:'3',bc:'red'},
+  {id:'workers',label:'Workers',icon:'ti-users',badge:'1',bc:'amber'},
+  {id:'pm',label:'Preventive PM',icon:'ti-tool',badge:'1',bc:'red'},
+  {id:'ai',label:'AI Assistant',icon:'ti-sparkles'},
 ];
+const LABELS={overview:'Overview',accounts:'Accounts',qa:'QA Tasks — Cerberus SOPs',satisfaction:'Building Satisfaction',walkthrough:'iPad Building Walkthrough',qr:'QR Feedback Feed',tickets:'Tickets & Dispatch',workers:'Workers On-Site',pm:'Preventive PM',ai:'AI Assistant'};
 
-const PAGE_LABELS = {
-  overview: "Overview", accounts: "Accounts", qa: "QA Tasks — Cerberus SOPs",
-  satisfaction: "Building Satisfaction", walkthrough: "iPad Building Walkthrough",
-  qr: "QR Feedback Feed", tickets: "Tickets & Dispatch", workers: "Workers On-Site",
-  pm: "Preventive PM", ai: "AI Assistant",
-};
+function App(){
+  const [page,setPage]=useState('overview');
+  const [toast,setToast]=useState(null);
+  const props={onToast:setToast,setPage};
 
-function App() {
-  const [page, setPage] = useState("overview");
-  const [toast, setToast] = useState(null);
-
-  function showToast(msg) { setToast(msg); }
-
-  const pageProps = { onToast: showToast, setPage };
-
-  return (
-    <div id="app-wrap" style={{ display: "flex", width: "100%", height: "100vh", overflow: "hidden" }}>
-      {toast && <Toast msg={toast} icon="ti-check" onDone={() => setToast(null)} />}
-
-      {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-logo">
-          <div className="logo-mark">I</div>
-          <div>
-            <div className="logo-text">Inperium</div>
-            <div className="logo-sub">DSC Solutions</div>
-          </div>
-        </div>
-
-        <div className="nav-section" style={{ flex: 1, overflowY: "auto" }}>
-          <div className="nav-label">Pod 3 — Harrisburg/Lancaster</div>
-          {NAV.map(n => (
-            <div key={n.id} className={"nav-item " + (page === n.id ? "active" : "")}
-              onClick={() => setPage(n.id)}>
-              <i className={"ti " + n.icon} />
-              <span>{n.label}</span>
-              {n.badge && (
-                <span className={"nav-badge " + (n.badgeColor === "red" ? "" : n.badgeColor === "" ? "amber" : n.badgeColor)}>
-                  {n.badge}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="sidebar-footer">
-          <div className="user-chip">
-            <div className="avatar">AK</div>
-            <div>
-              <div className="user-name">Alan K.</div>
-              <div className="user-role">Managing Director</div>
-            </div>
-            <i className="ti ti-dots-vertical" style={{ marginLeft: "auto", color: "var(--muted)", fontSize: 16 }} />
-          </div>
-        </div>
-      </div>
-
-      {/* Main */}
-      <div className="main">
-        <div className="topbar">
-          <div>
-            <div className="topbar-bread">
-              <span style={{ color: "var(--muted2)" }}>Inperium</span>
-              <i className="ti ti-chevron-right" style={{ fontSize: 12 }} />
-              <span>{PAGE_LABELS[page]}</span>
-            </div>
-          </div>
-          <div className="topbar-actions">
-            <span style={{ fontSize: 11, background: "rgba(34,197,94,.1)", color: "var(--green)", border: "1px solid rgba(34,197,94,.2)", padding: "3px 10px", borderRadius: 99, fontWeight: 600 }}>
-              <i className="ti ti-circle-filled" style={{ fontSize: 7, marginRight: 4 }} />Live
-            </span>
-            <button className="topbar-icon-btn"><i className="ti ti-bell" /></button>
-            <button className="topbar-icon-btn"><i className="ti ti-settings" /></button>
-          </div>
-        </div>
-
-        <div className="content">
-          {page === "overview"     && <Overview {...pageProps} />}
-          {page === "accounts"     && <Accounts {...pageProps} />}
-          {page === "qa"           && <QATasks {...pageProps} />}
-          {page === "satisfaction" && <BuildingSatisfaction {...pageProps} />}
-          {page === "walkthrough"  && <Walkthrough {...pageProps} />}
-          {page === "qr"           && <QRFeedback {...pageProps} />}
-          {page === "tickets"      && <Tickets {...pageProps} />}
-          {page === "workers"      && <Workers {...pageProps} />}
-          {page === "pm"           && <PreventivePM {...pageProps} />}
-          {page === "ai"           && <AIAssistant {...pageProps} />}
-        </div>
-      </div>
-    </div>
+  return h('div',{style:{display:'flex',width:'100%',height:'100vh',overflow:'hidden'}},
+    toast&&h(Toast,{msg:toast,onDone:()=>setToast(null)}),
+    h('div',{className:'sidebar'},
+      h('div',{className:'sidebar-logo'},
+        h('div',{className:'logo-mark'},'I'),
+        h('div',null,h('div',{className:'logo-text'},'Inperium'),h('div',{className:'logo-sub'},'DSC Solutions'))
+      ),
+      h('div',{className:'nav-section'},
+        h('div',{className:'nav-label'},'Pod 3 — Harrisburg/Lancaster'),
+        NAV.map(n=>h('div',{key:n.id,className:'nav-item '+(page===n.id?'active':''),onClick:()=>setPage(n.id)},
+          ico(n.icon),
+          h('span',null,n.label),
+          n.badge&&h('span',{className:'nav-badge '+(n.bc==='amber'?'amber':'')},n.badge)
+        ))
+      ),
+      h('div',{className:'sidebar-footer'},
+        h('div',{className:'user-chip'},
+          h('div',{className:'avatar'},'AK'),
+          h('div',null,h('div',{className:'user-name'},'Alan K.'),h('div',{className:'user-role'},'Managing Director')),
+          ico('ti-dots-vertical',{marginLeft:'auto',color:'var(--muted)',fontSize:16})
+        )
+      )
+    ),
+    h('div',{className:'main'},
+      h('div',{className:'topbar'},
+        h('div',{className:'topbar-bread'},
+          h('span',{style:{color:'var(--muted2)'}},'Inperium'),
+          ico('ti-chevron-right',{fontSize:12}),
+          h('span',null,LABELS[page])
+        ),
+        h('div',{className:'topbar-actions'},
+          h('span',{className:'live-pill'},ico('ti-circle-filled',{fontSize:7}),' Live'),
+          h('button',{className:'topbar-icon-btn'},ico('ti-bell')),
+          h('button',{className:'topbar-icon-btn'},ico('ti-settings'))
+        )
+      ),
+      h('div',{className:'content'},
+        page==='overview'&&h(Overview,props),
+        page==='accounts'&&h(Accounts,props),
+        page==='qa'&&h(QATasks,props),
+        page==='satisfaction'&&h(BuildingSatisfaction,props),
+        page==='walkthrough'&&h(Walkthrough,props),
+        page==='qr'&&h(QRFeedback,props),
+        page==='tickets'&&h(Tickets,props),
+        page==='workers'&&h(Workers,props),
+        page==='pm'&&h(PreventivePM,props),
+        page==='ai'&&h(AIAssistant,props)
+      )
+    )
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')).render(h(App,null));
 </script>
 </body>
 </html>
