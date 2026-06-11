@@ -1,10 +1,10 @@
 // api/debug-auth.js — TEMPORARY, delete after login works
-import { createHash } from 'crypto';
+const { createHash } = require('crypto');
 
 const KV_URL = process.env.KV_REST_API_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     // Read the stored user
     const getRes = await fetch(`${KV_URL}/get/${encodeURIComponent('user:alan_c@dscsolutionsfm.com')}`, {
