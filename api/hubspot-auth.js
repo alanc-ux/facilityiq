@@ -13,7 +13,7 @@ const SCOPES = [
   'crm.objects.notes.write',
 ].join(' ');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const url = new URL(req.url, `https://${req.headers.host}`);
   const isCallback = url.pathname.endsWith('/callback');
 
