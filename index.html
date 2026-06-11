@@ -309,211 +309,556 @@ function BarChartSVG({data,colors,ht}){
 }
 
 // ── ACCOUNT DETAIL MODAL ──────────────────────────────────────────────────────
-function AccountDetailModal({acct,tickets,workers,pm,onClose,onToast}){
-  const [tab,setTab]=useState('overview');
-  const acctTickets=tickets.filter(t=>t.acct===acct.id);
-  const acctWorkers=workers.filter(w=>w.site===acct.id);
-  const acctPM=pm.filter(p=>p.acct===acct.id);
-  const qrItems=QR_FEED.filter(q=>q.acct===acct.id);
-  const qaTasks=(QA_TEMPLATES[acct.industry]||QA_TEMPLATES.Default);
-  const tabs=['overview','qa','tickets','workers','pm','qr','walkthrough'];
+function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
+  const [tab, setTab] = useState('overview');
+  const [surveyScores, setSurveyScores] = useState({q1:0, q2:0, q3:0});
+  const [surveyResolved, setSurveyResolved] = useState('');
+  const [surveyComment, setSurveyComment] = useState('');
+  const [surveySubmitted, setSurveySubmitted] = useState(false);
+  const [inspType, setInspType] = useState('');
+  const [customItems, setCustomItems] = useState([]);
+  const [newItem, setNewItem] = useState('');
+  const [inspScores, setInspScores] = useState({});
+  const [inspSubmitted, setInspSubmitted] = useState(false);
+  const [schedFilter, setSchedFilter] = useState('all');
+  const [showQRGen, setShowQRGen] = useState(false);
+  const [qrArea, setQrArea] = useState('');
 
-  return h('div',{className:'modal-backdrop',onClick:onClose},
-    h('div',{className:'modal modal-lg',onClick:e=>e.stopPropagation(),style:{width:880}},
-      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:14}},
-        h('div',{style:{width:36,height:36,borderRadius:9,background:'rgba(79,126,255,.15)',display:'flex',alignItems:'center',justifyContent:'center'}},
-          ico('ti-building',{color:'var(--accent2)',fontSize:18})
-        ),
-        h('div',null,
-          h('div',{style:{fontWeight:700,fontSize:15}},acct.name),
-          h('div',{style:{fontSize:11,color:'var(--muted)'}},acct.addr+' · '+acct.sqft+' sq ft · '+acct.tier)
-        ),
-        acct.score>0&&h('div',{style:{marginLeft:'auto',textAlign:'right'}},
-          h('div',{style:{fontSize:22,fontWeight:700,color:acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'}},''+acct.score),
-          h('div',{style:{fontSize:10,color:'var(--muted)'}},acct.score>=85?'On Track':acct.score>=70?'Watch':'At Risk')
-        ),
-        h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:acct.score>0?8:'auto'},onClick:onClose},ico('ti-x'))
-      ),
-      h('div',{className:'tab-bar'},
-        tabs.map(t=>h('button',{key:t,className:'tab-btn '+(tab===t?'active':''),onClick:()=>setTab(t)},t.charAt(0).toUpperCase()+t.slice(1)))
-      ),
+  const acctTickets = tickets.filter(t => t.acct === acct.id);
+  const acctWorkers = workers.filter(w => w.site === acct.id);
+  const acctPM = pm.filter(p => p.acct === acct.id);
+  const openComplaints = acctTickets.filter(t => t.status === 'Open' || t.status === 'In Progress');
 
-      tab==='overview'&&h(Fragment,null,
-        h('div',{className:'grid g4',style:{marginBottom:14}},
-          [{l:'Satisfaction',v:acct.score||'N/A',c:acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'},{l:'Open Tickets',v:acctTickets.filter(t=>t.status==='Open').length,c:'var(--red)'},{l:'Workers',v:acctWorkers.length,c:'var(--accent2)'},{l:'PM Items',v:acctPM.filter(p=>p.status!=='Completed').length,c:'var(--amber)'}]
-          .map(s=>h('div',{key:s.l,className:'stat-card'},
-            h('div',{className:'stat-label'},s.l),
-            h('div',{className:'stat-value',style:{color:s.c}},s.v)
+  const TABS = [
+    {id:'overview', label:'Overview'},
+    {id:'pm', label:'Preventive PM'},
+    {id:'satisfaction', label:'Satisfaction'},
+    {id:'complaints', label:'Complaints', badge: openComplaints.length},
+    {id:'schedule', label:'Schedule'},
+    {id:'qa', label:'Quality Assurance'},
+    {id:'workers', label:'Workers'},
+  ];
+
+  // Schedule data
+  const SCHEDULE = [
+    {id:1, type:'cleaning', crew:'Marcus Johnson', task:'Daily Janitorial — All Floors', days:['Mon','Tue','Wed','Thu','Fri'], time:'6:00 AM', status:'Active'},
+    {id:2, type:'cleaning', crew:'Dana Reyes', task:'Restroom Deep Clean', days:['Mon','Wed','Fri'], time:'7:00 AM', status:'Active'},
+    {id:3, type:'pm', crew:'Priya Nair', task:'Floor Buffing & Polish', days:['Fri'], time:'8:00 PM', status:'Active'},
+    {id:4, type:'cleaning', crew:'Sharlene Torres', task:'Lobby & Common Areas', days:['Mon','Tue','Wed','Thu','Fri','Sat'], time:'5:00 AM', status:'Active'},
+    {id:5, type:'pm', crew:'PM Contractor', task:'HVAC Filter Check', days:['1st Mon'], time:'9:00 AM', status:'Due Soon'},
+    {id:6, type:'landscaping', crew:'Grounds Team', task:'Exterior Grounds Maintenance', days:['Tue','Fri'], time:'7:00 AM', status:'Active'},
+    {id:7, type:'pm', crew:'PM Contractor', task:'Carpet Deep Extraction', days:['Last Fri'], time:'6:00 PM', status:'Scheduled'},
+  ];
+
+  const filteredSchedule = schedFilter === 'all' ? SCHEDULE : SCHEDULE.filter(s => s.type === schedFilter);
+
+  const AREAS = acct.areas && acct.areas.length > 0 ? acct.areas : ['Main Lobby','Floor 1','Floor 2','Restrooms','Common Areas'];
+
+  const THOROUGH_ITEMS = [
+    'Floors — swept, mopped, buffed',
+    'Restrooms — deep clean & restock',
+    'High-touch surfaces disinfected',
+    'Trash removal & liner replacement',
+    'Glass & mirrors streak-free',
+    'Dusting — furniture, vents, fixtures',
+    'Break room appliances wiped down',
+    'Odor check & air freshener',
+    'Supply inventory check',
+    'Lighting check — report outages',
+  ];
+
+  const QUICK_ITEMS = [
+    'Floors — swept',
+    'Restrooms — spot check & restock',
+    'Trash removal',
+    'High-touch surfaces wiped',
+    'Odor check',
+  ];
+
+  const inspItems = inspType === 'thorough' ? THOROUGH_ITEMS : inspType === 'quick' ? QUICK_ITEMS : customItems;
+
+  function handleInspSubmit() {
+    const low = Object.entries(inspScores).filter(([,v]) => v <= 2);
+    setInspSubmitted(true);
+    if (low.length > 0) onToast(low.length + ' auto-ticket' + (low.length > 1 ? 's' : '') + ' created');
+    else onToast('Inspection submitted — no issues found');
+  }
+
+  const typeColor = t => t === 'cleaning' ? 'var(--accent2)' : t === 'pm' ? 'var(--amber)' : t === 'landscaping' ? 'var(--green)' : 'var(--muted)';
+  const typeBg = t => t === 'cleaning' ? 'rgba(79,126,255,.1)' : t === 'pm' ? 'rgba(245,158,11,.1)' : t === 'landscaping' ? 'rgba(34,197,94,.1)' : 'rgba(123,127,153,.08)';
+
+  return h('div', {className:'modal-backdrop', onClick:onClose},
+    h('div', {className:'modal', style:{width:920, maxWidth:'96vw', padding:0, overflow:'hidden', display:'flex', flexDirection:'column', maxHeight:'88vh'}, onClick:e=>e.stopPropagation()},
+
+      // ── HEADER ──
+      h('div', {style:{padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:12, flexShrink:0}},
+        h('div', {style:{display:'flex', alignItems:'center', gap:8, flex:1, minWidth:0}},
+          h('div', {style:{width:34, height:34, borderRadius:8, background:'rgba(79,126,255,.12)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0}},
+            ico('ti-building', {color:'var(--accent2)', fontSize:17})
+          ),
+          h('div', {style:{minWidth:0}},
+            h('div', {style:{fontWeight:700, fontSize:15, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}, acct.name),
+            h('div', {style:{fontSize:11, color:'var(--muted)'}}, acct.addr)
+          )
+        ),
+        // Stats row
+        h('div', {style:{display:'flex', gap:16, flexShrink:0}},
+          [{l:'Building Health', v: acct.score > 0 ? acct.score+'%' : 'N/A', c: acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'},
+           {l:'Open Complaints', v: openComplaints.length, c:'var(--red)'},
+           {l:'PM Due', v: acctPM.filter(p=>p.status==='Due Soon'||p.status==='Overdue').length, c:'var(--amber)'},
+           {l:'Workers', v: acctWorkers.length, c:'var(--accent2)'},
+          ].map(s => h('div', {key:s.l, style:{textAlign:'center'}},
+            h('div', {style:{fontSize:16, fontWeight:700, color:s.c}}, s.v),
+            h('div', {style:{fontSize:9, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'.5px'}}, s.l)
           ))
         ),
-        h('div',{className:'grid g2'},
-          h('div',null,
-            h('div',{className:'card-title'},ico('ti-map-pin'),' Areas / QR Zones'),
-            acct.areas.map((a,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 0',borderTop:i?'1px solid var(--border)':'none'}},
-              h('span',{style:{fontSize:12.5}},a),
-              h('div',{style:{display:'flex',gap:5}},
-                h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('QR code generated for '+a)},ico('ti-qrcode'),' QR'),
-                h('button',{className:'btn btn-ghost btn-sm'},ico('ti-scan'))
+        // AI active pill
+        h('div', {style:{display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderRadius:99, border:'1px solid var(--purple)', background:'rgba(167,139,250,.08)', color:'var(--purple)', fontSize:11, fontWeight:600, flexShrink:0}},
+          h('div', {style:{width:6, height:6, borderRadius:99, background:'var(--purple)', boxShadow:'0 0 6px var(--purple)'}}),
+          'AI active'
+        ),
+        h('button', {className:'btn btn-ghost btn-sm', style:{marginLeft:8}, onClick:onClose}, ico('ti-x'))
+      ),
+
+      // ── TAB BAR ──
+      h('div', {style:{display:'flex', borderBottom:'1px solid var(--border)', overflowX:'auto', flexShrink:0, padding:'0 20px'}},
+        TABS.map(t => h('button', {key:t.id,
+          style:{padding:'10px 16px', fontSize:12, fontWeight:600, cursor:'pointer', border:'none',
+            background:'transparent', color: tab===t.id ? 'var(--accent2)' : 'var(--muted)',
+            borderBottom: tab===t.id ? '2px solid var(--accent)' : '2px solid transparent',
+            fontFamily:'inherit', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:6},
+          onClick:()=>setTab(t.id)},
+          t.label,
+          t.badge > 0 && h('span', {style:{background:'var(--red)', color:'#fff', fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:99}}, t.badge)
+        ))
+      ),
+
+      // ── CONTENT ──
+      h('div', {style:{flex:1, overflowY:'auto', padding:'20px'}},
+
+        // OVERVIEW
+        tab==='overview' && h(Fragment, null,
+          // Cleanliness score by area
+          h('div', {className:'grid g2', style:{marginBottom:16}},
+            h('div', {className:'card'},
+              h('div', {className:'card-title'}, ico('ti-chart-bar'), ' Cleanliness Score by Area'),
+              h('div', {style:{display:'flex', flexDirection:'column', gap:10}},
+                AREAS.map((area, i) => {
+                  const score = [88,74,92,65,81,78,85][i % 7];
+                  return h('div', {key:area, style:{display:'flex', alignItems:'center', gap:10}},
+                    h('div', {style:{width:130, fontSize:11, color:'var(--muted)', flexShrink:0}}, area),
+                    h('div', {style:{flex:1}},
+                      h('div', {className:'progress-bar'},
+                        h('div', {className:'progress-fill', style:{width:score+'%', background: score>=85?'var(--green)':score>=70?'var(--amber)':'var(--red)'}})
+                      )
+                    ),
+                    h('div', {style:{width:28, textAlign:'right', fontSize:11, fontWeight:700, color:score>=85?'var(--green)':score>=70?'var(--amber)':'var(--red)'}}, score)
+                  );
+                })
               )
+            ),
+            h('div', {className:'card'},
+              h('div', {className:'card-title'}, ico('ti-clock'), ' Upcoming Preventive PM'),
+              acctPM.length === 0
+                ? h('div', {style:{fontSize:12, color:'var(--muted)'}}, 'No PM items scheduled')
+                : acctPM.slice(0,5).map(p => h('div', {key:p.id, style:{display:'flex', alignItems:'center', gap:10, padding:'8px 0', borderTop:'1px solid var(--border)'}},
+                    h('div', {style:{flex:1}},
+                      h('div', {style:{fontSize:12, fontWeight:500}}, p.task),
+                      h('div', {style:{fontSize:10, color:'var(--muted)'}}, 'Due: '+p.due+' · '+p.freq)
+                    ),
+                    h(Badge, {cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':'blue'}, p.status)
+                  ))
+            )
+          ),
+          // Recent complaints
+          h('div', {className:'card'},
+            h('div', {className:'card-title'}, ico('ti-alert-triangle'), ' Recent Complaints'),
+            acctTickets.length === 0
+              ? h('div', {style:{fontSize:12, color:'var(--muted)', padding:'8px 0'}}, 'No recent complaints')
+              : acctTickets.slice(0,4).map(t => h('div', {key:t.id, style:{display:'flex', alignItems:'center', gap:10, padding:'9px 0', borderTop:'1px solid var(--border)'}},
+                  h('div', {style:{width:3, alignSelf:'stretch', borderRadius:99, background:t.priority==='High'?'var(--red)':t.priority==='Medium'?'var(--amber)':'var(--muted)', flexShrink:0}}),
+                  h('div', {style:{flex:1}},
+                    h('div', {style:{fontSize:12, fontWeight:500}}, t.title),
+                    h('div', {style:{fontSize:10, color:'var(--muted)'}}, t.assigned+' · '+t.created)
+                  ),
+                  h(Badge, {cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'}, t.status)
+                ))
+          )
+        ),
+
+        // PREVENTIVE PM
+        tab==='pm' && h(Fragment, null,
+          h('div', {className:'grid g4', style:{marginBottom:16}},
+            [{l:'Overdue', v:acctPM.filter(p=>p.status==='Overdue').length, c:'var(--red)'},
+             {l:'Due Soon', v:acctPM.filter(p=>p.status==='Due Soon').length, c:'var(--amber)'},
+             {l:'Scheduled', v:acctPM.filter(p=>p.status==='Scheduled').length, c:'var(--accent2)'},
+             {l:'Completed', v:acctPM.filter(p=>p.status==='Completed').length, c:'var(--green)'},
+            ].map(s => h('div', {key:s.l, className:'stat-card'},
+              h('div', {className:'stat-label'}, s.l),
+              h('div', {className:'stat-value', style:{color:s.c}}, s.v)
             ))
           ),
-          h('div',null,
-            h('div',{className:'card-title'},ico('ti-users'),' Assigned Workers'),
-            acctWorkers.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'8px 0'}},'No workers assigned'):
-            acctWorkers.map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'7px 0',borderTop:'1px solid var(--border)'}},
-              h('div',{className:'worker-avatar',style:{background:w.color,width:28,height:28,fontSize:10}},w.name.split(' ').map(p=>p[0]).join('')),
-              h('div',{style:{flex:1}},
-                h('div',{style:{fontSize:12,fontWeight:500}},w.name),
-                h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role+' · '+w.shift)
+          h('div', {className:'card', style:{padding:0}},
+            h('table', {className:'tbl'},
+              h('thead', null, h('tr', null, ['Task','Frequency','Due','Last Done','Status',''].map(c=>h('th',{key:c},c)))),
+              h('tbody', null,
+                acctPM.length === 0
+                  ? h('tr', null, h('td', {colSpan:6, style:{textAlign:'center', color:'var(--muted)', padding:24}}, 'No PM items for this account'))
+                  : acctPM.map(p => h('tr', {key:p.id},
+                      h('td', {style:{fontWeight:500, fontSize:12}}, p.task),
+                      h('td', null, h(Tag, {t:p.freq})),
+                      h('td', {style:{fontWeight:700, color:p.status==='Overdue'?'var(--red)':p.status==='Due Soon'?'var(--amber)':'var(--text)', fontSize:12}}, p.due),
+                      h('td', {style:{color:'var(--muted)', fontSize:11}}, p.last),
+                      h('td', null, h(Badge, {cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'}, p.status)),
+                      h('td', null, p.status!=='Completed' && h('button', {className:'btn btn-ghost btn-sm', onClick:()=>onToast('PM item marked complete')}, ico('ti-check'), ' Done'))
+                    ))
+              )
+            )
+          )
+        ),
+
+        // SATISFACTION
+        tab==='satisfaction' && h('div', {className:'grid g2'},
+          // Left — survey form
+          h('div', {className:'card'},
+            h('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}},
+              h('div', {style:{fontSize:14, fontWeight:600}}, 'Occupant satisfaction survey'),
+              h('div', {style:{fontSize:11, color:'var(--muted)'}}, 'Sent via QR · email · kiosk')
+            ),
+            surveySubmitted
+              ? h('div', {style:{textAlign:'center', padding:'32px 0'}},
+                  ico('ti-circle-check', {fontSize:40, color:'var(--green)', display:'block', marginBottom:12}),
+                  h('div', {style:{fontSize:14, fontWeight:600, marginBottom:6}}, 'Feedback submitted!'),
+                  h('div', {style:{fontSize:12, color:'var(--muted)', marginBottom:16}}, 'Thank you for your response.'),
+                  h('button', {className:'btn btn-ghost btn-sm', onClick:()=>{setSurveySubmitted(false);setSurveyScores({q1:0,q2:0,q3:0});setSurveyResolved('');setSurveyComment('');}}, ico('ti-refresh'), ' New Survey')
+                )
+              : h(Fragment, null,
+                  // Q1
+                  h('div', {style:{marginBottom:18}},
+                    h('div', {style:{fontSize:13, marginBottom:10}}, 'How would you rate the overall cleanliness of the building today?'),
+                    h('div', {style:{display:'flex', gap:8}},
+                      [1,2,3,4,5].map(n => h('button', {key:n,
+                        style:{flex:1, padding:'12px 0', borderRadius:8, border:'1px solid var(--border2)',
+                          background: surveyScores.q1===n ? 'var(--green)' : 'var(--surface)',
+                          color: surveyScores.q1===n ? '#fff' : 'var(--muted)',
+                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:14,
+                          display:'flex', flexDirection:'column', alignItems:'center', gap:2},
+                        onClick:()=>setSurveyScores(p=>({...p,q1:n}))},
+                        n,
+                        n===1 && h('span',{style:{fontSize:9, fontWeight:400}}, 'Poor'),
+                        n===5 && h('span',{style:{fontSize:9, fontWeight:400}}, 'Excellent')
+                      ))
+                    )
+                  ),
+                  // Q2
+                  h('div', {style:{marginBottom:18}},
+                    h('div', {style:{fontSize:13, marginBottom:10}}, 'How satisfied are you with restroom cleanliness?'),
+                    h('div', {style:{display:'flex', gap:8}},
+                      [1,2,3,4,5].map(n => h('button', {key:n,
+                        style:{flex:1, padding:'12px 0', borderRadius:8, border:'1px solid var(--border2)',
+                          background: surveyScores.q2===n ? 'var(--green)' : 'var(--surface)',
+                          color: surveyScores.q2===n ? '#fff' : 'var(--muted)',
+                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:14},
+                        onClick:()=>setSurveyScores(p=>({...p,q2:n}))},
+                        n
+                      ))
+                    )
+                  ),
+                  // Q3 yes/no
+                  h('div', {style:{marginBottom:18}},
+                    h('div', {style:{fontSize:13, marginBottom:10}}, 'Were any issues reported promptly resolved?'),
+                    h('div', {style:{display:'flex', gap:8}},
+                      ['Yes','No','N/A'].map(opt => h('button', {key:opt,
+                        style:{flex:1, padding:'11px 0', borderRadius:8, border:'1px solid var(--border2)',
+                          background: surveyResolved===opt ? 'var(--green)' : 'var(--surface)',
+                          color: surveyResolved===opt ? '#fff' : 'var(--muted)',
+                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:13},
+                        onClick:()=>setSurveyResolved(opt)},
+                        opt
+                      ))
+                    )
+                  ),
+                  // Comment
+                  h('div', {style:{marginBottom:16}},
+                    h('div', {style:{fontSize:13, marginBottom:8}}, 'Any specific feedback or complaints?'),
+                    h('textarea', {style:{width:'100%', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8,
+                      padding:'10px 12px', color:'var(--text)', fontFamily:'inherit', fontSize:12, resize:'none', outline:'none', minHeight:80},
+                      placeholder:'Optional — describe the issue and location...',
+                      value:surveyComment, onChange:e=>setSurveyComment(e.target.value)})
+                  ),
+                  h('button', {className:'btn btn-primary', style:{width:'100%', justifyContent:'center', padding:'11px'},
+                    onClick:()=>{setSurveySubmitted(true);onToast('Survey submitted for '+acct.name);}},
+                    'Submit feedback'
+                  )
+                )
+          ),
+
+          // Right — distribution + AI insight
+          h('div', {style:{display:'flex', flexDirection:'column', gap:12}},
+            h('div', {className:'card'},
+              h('div', {style:{fontSize:14, fontWeight:600, marginBottom:14}}, 'Survey distribution'),
+              [
+                {icon:'ti-qrcode', label:'QR codes', desc:'Posted in each restroom, lobby, and common area.', count:'Scans this month: 31'},
+                {icon:'ti-mail', label:'Email campaign', desc:'Monthly email to all tenant contacts.', count:'Responses this month: 12'},
+                {icon:'ti-device-tablet', label:'Lobby kiosk', desc:'iPad kiosk at building entrance.', count:'Responses this month: 4'},
+              ].map(item => h('div', {key:item.label, style:{padding:'12px', background:'var(--surface)', borderRadius:8, border:'1px solid var(--border)', marginBottom:8}},
+                h('div', {style:{display:'flex', alignItems:'center', gap:8, marginBottom:4}},
+                  h('div', {style:{width:16, height:16, borderRadius:3, border:'1px solid var(--border2)', flexShrink:0}}),
+                  ico(item.icon, {color:'var(--muted)', fontSize:14}),
+                  h('span', {style:{fontWeight:600, fontSize:13}}, item.label)
+                ),
+                h('div', {style:{fontSize:11, color:'var(--muted)', paddingLeft:24}}, item.desc),
+                h('div', {style:{fontSize:11, color:'var(--muted)', paddingLeft:24}}, item.count)
+              )),
+              // Generate QR
+              h('button', {className:'btn btn-ghost btn-sm', style:{width:'100%', justifyContent:'center'},
+                onClick:()=>setShowQRGen(true)},
+                ico('ti-qrcode'), ' Generate QR Code for Area'
               ),
-              h('div',{className:'status-dot '+(w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted')})
+              showQRGen && h('div', {style:{marginTop:10, display:'flex', gap:6}},
+                h('select', {className:'field-input', value:qrArea, onChange:e=>setQrArea(e.target.value)},
+                  h('option', {value:''}, 'Select area...'),
+                  AREAS.map(a => h('option', {key:a, value:a}, a))
+                ),
+                h('button', {className:'btn btn-primary btn-sm', disabled:!qrArea,
+                  onClick:()=>{onToast('QR code generated for '+qrArea+' — '+acct.name);setShowQRGen(false);setQrArea('');}},
+                  'Generate'
+                )
+              )
+            ),
+            // AI insight
+            h('div', {style:{padding:'14px', background:'rgba(79,126,255,.06)', border:'1px solid rgba(79,126,255,.2)', borderRadius:10}},
+              h('div', {style:{display:'flex', alignItems:'center', gap:8, marginBottom:10}},
+                h('div', {style:{width:16, height:16, borderRadius:3, border:'1px solid var(--accent)', flexShrink:0}}),
+                h('span', {style:{fontWeight:600, fontSize:13, color:'var(--accent2)'}}, 'AI response insight')
+              ),
+              h('div', {style:{fontSize:12, color:'var(--muted)', lineHeight:1.6}},
+                'QR scans spike on Tuesdays and Thursdays — likely after morning checks. ',
+                h('span', {style:{color:'var(--accent2)'}}, 'Consider adding a kiosk to floor 2'),
+                ' where satisfaction scores are lowest this month.'
+              )
+            )
+          )
+        ),
+
+        // COMPLAINTS
+        tab==='complaints' && h(Fragment, null,
+          h('div', {className:'grid g4', style:{marginBottom:16}},
+            [{l:'Open', v:acctTickets.filter(t=>t.status==='Open').length, c:'var(--red)'},
+             {l:'In Progress', v:acctTickets.filter(t=>t.status==='In Progress').length, c:'var(--amber)'},
+             {l:'Resolved', v:acctTickets.filter(t=>t.status==='Resolved').length, c:'var(--green)'},
+             {l:'Total', v:acctTickets.length, c:'var(--muted)'},
+            ].map(s => h('div', {key:s.l, className:'stat-card'},
+              h('div', {className:'stat-label'}, s.l),
+              h('div', {className:'stat-value', style:{color:s.c}}, s.v)
             ))
+          ),
+          h('div', {style:{display:'flex', flexDirection:'column', gap:8}},
+            acctTickets.length === 0
+              ? h('div', {style:{textAlign:'center', padding:'40px', color:'var(--muted)', fontSize:12}}, 'No complaints for this account')
+              : acctTickets.map(t => h('div', {key:t.id, className:'ticket-card'},
+                  h('div', {className:'priority-bar', style:{background:t.priority==='High'?'var(--red)':t.priority==='Medium'?'var(--amber)':'var(--muted)'}}),
+                  h('div', {style:{flex:1}},
+                    h('div', {style:{display:'flex', alignItems:'center', gap:7, marginBottom:5}},
+                      h('span', {style:{fontFamily:'monospace', fontSize:10, color:'var(--muted)'}}, t.id),
+                      h(Badge, {cls:t.priority==='High'?'red':t.priority==='Medium'?'amber':'muted'}, t.priority),
+                      t.hubspot && h('span', {className:'hs-badge'}, 'HS'),
+                      h('span', {style:{marginLeft:'auto', fontSize:10, color:'var(--muted)'}}, t.created)
+                    ),
+                    h('div', {style:{fontWeight:600, fontSize:12, marginBottom:4}}, t.title),
+                    h('div', {style:{fontSize:10, color:'var(--muted)', display:'flex', gap:10}},
+                      h('span', null, ico('ti-user'), ' ', t.assigned),
+                      h('span', null, ico('ti-source-code'), ' ', t.source)
+                    )
+                  ),
+                  h('div', {style:{display:'flex', flexDirection:'column', gap:6, alignItems:'flex-end'}},
+                    h(Badge, {cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'}, t.status),
+                    h('button', {className:'btn btn-ghost btn-sm', onClick:()=>onToast('Dispatched '+t.id+' to account workers')}, ico('ti-send'), ' Dispatch')
+                  )
+                ))
+          )
+        ),
+
+        // SCHEDULE
+        tab==='schedule' && h(Fragment, null,
+          h('div', {style:{display:'flex', gap:8, marginBottom:16, flexWrap:'wrap'}},
+            ['all','cleaning','pm','landscaping'].map(f =>
+              h('button', {key:f, className:'btn btn-sm '+(schedFilter===f?'btn-primary':'btn-ghost'),
+                onClick:()=>setSchedFilter(f)},
+                f === 'all' ? 'All Activities' : f.charAt(0).toUpperCase()+f.slice(1)
+              )
+            ),
+            h('button', {className:'btn btn-primary btn-sm', style:{marginLeft:'auto'}}, ico('ti-plus'), ' Add Activity')
+          ),
+          h('div', {className:'card', style:{padding:0}},
+            h('table', {className:'tbl'},
+              h('thead', null, h('tr', null, ['Type','Task','Crew','Days','Time','Status'].map(c=>h('th',{key:c},c)))),
+              h('tbody', null,
+                filteredSchedule.map(s => h('tr', {key:s.id},
+                  h('td', null,
+                    h('span', {style:{background:typeBg(s.type), color:typeColor(s.type), padding:'2px 8px', borderRadius:99, fontSize:10, fontWeight:700}},
+                      s.type.charAt(0).toUpperCase()+s.type.slice(1)
+                    )
+                  ),
+                  h('td', {style:{fontWeight:500, fontSize:12}}, s.task),
+                  h('td', {style:{fontSize:11, color:'var(--muted)'}}, s.crew),
+                  h('td', null,
+                    h('div', {style:{display:'flex', gap:3, flexWrap:'wrap'}},
+                      s.days.map(d => h('span', {key:d, style:{background:'var(--border)', borderRadius:4, padding:'1px 5px', fontSize:9, color:'var(--muted)', fontWeight:600}}, d))
+                    )
+                  ),
+                  h('td', {style:{fontSize:11, color:'var(--muted)', whiteSpace:'nowrap'}}, s.time),
+                  h('td', null, h(Badge, {cls:s.status==='Active'?'green':s.status==='Due Soon'?'amber':'blue'}, s.status))
+                ))
+              )
+            )
+          )
+        ),
+
+        // QUALITY ASSURANCE
+        tab==='qa' && h(Fragment, null,
+          !inspType && h(Fragment, null,
+            h('div', {style:{fontSize:13, fontWeight:600, color:'var(--text)', marginBottom:16}}, 'Select Inspection Type'),
+            h('div', {className:'grid g3'},
+              [
+                {id:'thorough', icon:'ti-clipboard-list', label:'Thorough Inspection', desc:'Full building walkthrough — '+THOROUGH_ITEMS.length+' checkpoints across all areas. Recommended weekly.', color:'var(--accent2)'},
+                {id:'quick', icon:'ti-bolt', label:'Quick Inspection', desc:'Rapid spot-check — '+QUICK_ITEMS.length+' key items. Ideal for daily verification rounds.', color:'var(--green)'},
+                {id:'custom', icon:'ti-settings', label:'Custom Inspection', desc:'Build your own checklist. Add any items specific to this facility.', color:'var(--amber)'},
+              ].map(type => h('div', {key:type.id,
+                style:{background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, padding:'20px', cursor:'pointer', transition:'all .15s'},
+                onClick:()=>setInspType(type.id)},
+                h('div', {style:{width:40, height:40, borderRadius:9, background:type.color+'18', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12}},
+                  ico(type.icon, {fontSize:20, color:type.color})
+                ),
+                h('div', {style:{fontWeight:700, fontSize:13, marginBottom:6}}, type.label),
+                h('div', {style:{fontSize:11, color:'var(--muted)', lineHeight:1.5}}, type.desc)
+              ))
+            )
+          ),
+
+          inspType && !inspSubmitted && h(Fragment, null,
+            h('div', {style:{display:'flex', alignItems:'center', gap:10, marginBottom:16}},
+              h('button', {className:'btn btn-ghost btn-sm', onClick:()=>{setInspType('');setInspScores({});setCustomItems([]);}}, ico('ti-arrow-left'), ' Back'),
+              h('div', {style:{fontWeight:700, fontSize:14}},
+                inspType==='thorough'?'Thorough Inspection':inspType==='quick'?'Quick Inspection':'Custom Inspection'
+              ),
+              h('div', {style:{marginLeft:'auto', fontSize:11, color:'var(--muted)'}},
+                Object.keys(inspScores).length + ' of ' + (AREAS.length * inspItems.length) + ' scored'
+              )
+            ),
+
+            inspType === 'custom' && h('div', {style:{marginBottom:16, display:'flex', gap:8}},
+              h('input', {className:'field-input', placeholder:'Add checklist item...', value:newItem,
+                onChange:e=>setNewItem(e.target.value),
+                onKeyDown:e=>e.key==='Enter'&&newItem.trim()&&(setCustomItems(p=>[...p,newItem.trim()]),setNewItem(''))}),
+              h('button', {className:'btn btn-primary btn-sm', disabled:!newItem.trim(),
+                onClick:()=>{setCustomItems(p=>[...p,newItem.trim()]);setNewItem('');}},
+                ico('ti-plus'), ' Add'
+              )
+            ),
+
+            inspItems.length === 0 && inspType === 'custom'
+              ? h('div', {style:{textAlign:'center', padding:'32px', color:'var(--muted)', fontSize:12}}, 'Add checklist items above to begin')
+              : h(Fragment, null,
+                  AREAS.map(area => h('div', {key:area, style:{marginBottom:16}},
+                    h('div', {style:{fontWeight:600, fontSize:13, marginBottom:8, padding:'6px 0', borderBottom:'1px solid var(--border)'}}, area),
+                    inspItems.map(item => {
+                      const key = area+'::'+item;
+                      const val = inspScores[key];
+                      return h('div', {key:item, style:{display:'flex', alignItems:'center', gap:10, marginBottom:8}},
+                        h('div', {style:{flex:1, fontSize:12, color:'var(--muted)'}}, item),
+                        h('div', {style:{display:'flex', gap:4}},
+                          [1,2,3,4,5].map(n => h('button', {key:n,
+                            className:'score-btn s'+n+(val===n?' active':''),
+                            onClick:()=>setInspScores(p=>({...p,[key]:n}))}, n))
+                        ),
+                        val && val<=2 && h(Badge, {cls:'red'}, 'Issue')
+                      );
+                    })
+                  )),
+                  h('div', {style:{display:'flex', justifyContent:'flex-end', paddingTop:12, borderTop:'1px solid var(--border)'}},
+                    h('button', {className:'btn btn-primary', onClick:handleInspSubmit}, ico('ti-send'), ' Submit Inspection')
+                  )
+                )
+          ),
+
+          inspSubmitted && h('div', null,
+            h('div', {style:{display:'flex', alignItems:'center', gap:12, padding:'16px', background:'rgba(34,197,94,.06)', borderRadius:9, border:'1px solid rgba(34,197,94,.2)', marginBottom:16}},
+              ico('ti-circle-check', {fontSize:22, color:'var(--green)'}),
+              h('div', null,
+                h('div', {style:{fontWeight:600}}, 'Inspection submitted — '+acct.name),
+                h('div', {style:{fontSize:11, color:'var(--muted)'}},
+                  Object.values(inspScores).filter(v=>v<=2).length + ' issues found · Synced to HubSpot'
+                )
+              ),
+              h('button', {className:'btn btn-ghost btn-sm', style:{marginLeft:'auto'},
+                onClick:()=>{setInspType('');setInspScores({});setInspSubmitted(false);setCustomItems([]);}},
+                ico('ti-refresh'), ' New Inspection'
+              )
+            ),
+            Object.entries(inspScores).filter(([,v])=>v<=2).map(([key,val]) => {
+              const [area,item] = key.split('::');
+              return h('div', {key, style:{display:'flex', alignItems:'center', gap:10, padding:'9px 0', borderTop:'1px solid var(--border)'}},
+                h('div', {style:{width:3, height:32, borderRadius:99, background:val===1?'var(--red)':'var(--amber)', flexShrink:0}}),
+                h('div', {style:{flex:1}},
+                  h('div', {style:{fontSize:12, fontWeight:500}}, area+' — '+item+': '+val+'/5'),
+                  h('div', {style:{fontSize:10, color:'var(--muted)'}}, acct.name+' · Auto-ticket created')
+                ),
+                h(Badge, {cls:'red'}, 'Open')
+              );
+            })
+          )
+        ),
+
+        // WORKERS
+        tab==='workers' && h(Fragment, null,
+          h('div', {style:{marginBottom:12}},
+            h('div', {style:{fontSize:12, color:'var(--muted)', marginBottom:10}},
+              acctWorkers.length + ' assigned workers'
+            ),
+            acctWorkers.length === 0
+              ? h('div', {style:{fontSize:12, color:'var(--muted)', padding:'16px 0'}}, 'No workers assigned to this account')
+              : acctWorkers.map(w => h('div', {key:w.id, style:{display:'flex', alignItems:'center', gap:9, padding:'9px 0', borderTop:'1px solid var(--border)'}},
+                  h('div', {className:'worker-avatar', style:{background:w.color}}, w.name.split(' ').map(p=>p[0]).join('')),
+                  h('div', {style:{flex:1}},
+                    h('div', {style:{fontSize:13, fontWeight:500}}, w.name),
+                    h('div', {style:{fontSize:10, color:'var(--muted)'}}, w.role + (w.shift?' · '+w.shift:''))
+                  ),
+                  w.callouts > 0 && h(Badge, {cls:w.callouts>=3?'red':'amber'}, w.callouts+' CO'),
+                  h(Badge, {cls:w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted'}, w.status)
+                ))
+          ),
+          // Bench workers trained on this account
+          h('div', {style:{borderTop:'1px solid var(--border)', paddingTop:14, marginTop:4}},
+            h('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10}},
+              h('div', {style:{fontSize:12, color:'var(--muted)'}}, 'Available bench workers trained for this account'),
+              h('button', {className:'btn btn-green btn-sm',
+                onClick:()=>onToast('Coverage request sent to all available bench workers')},
+                ico('ti-send'), ' Request Coverage — All'
+              )
+            ),
+            getWorkers().filter(w => w.bench && (Array.isArray(w.trained) ? w.trained.includes(acct.id) : true))
+              .map(w => h('div', {key:w.id, style:{display:'flex', alignItems:'center', gap:9, padding:'8px 0', borderTop:'1px solid var(--border)'}},
+                h('div', {className:'worker-avatar', style:{background:w.color, width:28, height:28, fontSize:10}}, w.name.split(' ').map(p=>p[0]).join('')),
+                h('div', {style:{flex:1}},
+                  h('div', {style:{fontSize:12, fontWeight:500}}, w.name),
+                  h('div', {style:{fontSize:10, color:'var(--muted)'}}, w.role+' · Flex')
+                ),
+                h(Badge, {cls:'green'}, 'Available'),
+                h('button', {className:'btn btn-green btn-sm',
+                  onClick:()=>onToast('Coverage request sent to '+w.name)},
+                  ico('ti-send'), ' Request'
+                )
+              ))
           )
         )
-      ),
 
-      tab==='qa'&&h('div',null,
-        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
-          h('div',{style:{fontSize:12,color:'var(--muted)'}},acct.industry+' — Quality Assurance Checklist'),
-          h('button',{className:'btn btn-primary btn-sm'},ico('ti-plus'),' Add Task')
-        ),
-        qaTasks.map((task,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderTop:i?'1px solid var(--border)':'none'}},
-          h('div',{style:{width:20,height:20,borderRadius:5,border:'1.5px solid var(--border2)',flexShrink:0,cursor:'pointer'}}),
-          h('span',{style:{flex:1,fontSize:12.5}},task),
-          h(Badge,{cls:'muted'},'Pending'),
-          h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Task marked complete')},ico('ti-check'))
-        ))
-      ),
-
-      tab==='tickets'&&h('div',null,
-        acctTickets.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'16px 0'}},'No tickets for this account'):
-        acctTickets.map(t=>h('div',{key:t.id,className:'ticket-card',style:{marginBottom:8}},
-          h('div',{className:'priority-bar',style:{background:pc(t.priority)}}),
-          h('div',{style:{flex:1}},
-            h('div',{style:{fontSize:12,fontWeight:600}},t.title),
-            h('div',{style:{fontSize:10,color:'var(--muted)',marginTop:2}},t.assigned+' · '+t.created)
-          ),
-          h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status)
-        ))
-      ),
-
-      tab==='workers'&&h('div',null,
-        h('div',{style:{marginBottom:12}},
-          h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:10}},'Assigned workers'),
-          acctWorkers.map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'8px 0',borderTop:'1px solid var(--border)'}},
-            h('div',{className:'worker-avatar',style:{background:w.color}},w.name.split(' ').map(p=>p[0]).join('')),
-            h('div',{style:{flex:1}},h('div',{style:{fontSize:12,fontWeight:500}},w.name),h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role)),
-            h(Badge,{cls:w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted'},w.status)
-          ))
-        ),
-        h('div',{style:{borderTop:'1px solid var(--border)',paddingTop:12,marginTop:4}},
-          h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}},
-            h('div',{style:{fontSize:12,color:'var(--muted)'}},'Available bench — trained on this account'),
-            h('button',{className:'btn btn-primary btn-sm',onClick:()=>onToast('Coverage request sent to all available bench workers')},ico('ti-send'),' Request Coverage (All)')
-          ),
-          getWorkers().filter(w=>w.bench&&w.trained.includes(acct.id)).map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'7px 0',borderTop:'1px solid var(--border)'}},
-            h('div',{className:'worker-avatar',style:{background:w.color,width:28,height:28,fontSize:10}},w.name.split(' ').map(p=>p[0]).join('')),
-            h('div',{style:{flex:1}},h('div',{style:{fontSize:12,fontWeight:500}},w.name),h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role+' · Flex')),
-            h('button',{className:'btn btn-green btn-sm',onClick:()=>onToast('Coverage request sent to '+w.name)},ico('ti-send'),' Request')
-          ))
-        )
-      ),
-
-      tab==='pm'&&h('div',null,
-        acctPM.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'16px 0'}},'No PM items for this account'):
-        acctPM.map(p=>h('div',{key:p.id,style:{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderTop:'1px solid var(--border)'}},
-          h('div',{style:{flex:1}},
-            h('div',{style:{fontSize:12.5,fontWeight:500}},p.task),
-            h('div',{style:{fontSize:10,color:'var(--muted)',marginTop:2}},'Due: '+p.due+' · Last: '+p.last+' · '+p.freq)
-          ),
-          h(Badge,{cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'},p.status)
-        ))
-      ),
-
-      tab==='qr'&&h('div',null,
-        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
-          h('div',{style:{fontSize:12,color:'var(--muted)'}},qrItems.length+' responses for this account'),
-          h('button',{className:'btn btn-primary btn-sm',onClick:()=>onToast('QR zone creator opened')},ico('ti-plus'),' Add QR Zone')
-        ),
-        qrItems.length===0?h('div',{style:{fontSize:12,color:'var(--muted)',padding:'16px 0'}},'No QR feedback yet for this account'):
-        qrItems.map(q=>h('div',{key:q.id,className:'qr-card',style:{marginBottom:8}},
-          h('div',{style:{flex:1}},
-            h('div',{style:{display:'flex',alignItems:'center',gap:8,marginBottom:3}},
-              h('span',{style:{fontWeight:600,fontSize:12.5}},q.location),
-              h(Stars,{n:q.rating}),
-              h('span',{style:{marginLeft:'auto',fontSize:10,color:'var(--muted)'}},q.time)
-            ),
-            h('div',{style:{fontSize:12,color:'var(--muted)',fontStyle:'italic'}},'"'+q.comment+'"')
-          ),
-          q.auto&&h(Badge,{cls:'red'},'Auto-Ticket')
-        ))
-      ),
-
-      tab==='walkthrough'&&h(AccountWalkthrough,{acct,onToast})
-    )
+      ) // end content
+    ) // end modal
   );
 }
 
-function AccountWalkthrough({acct,onToast}){
-  const [scores,setScores]=useState({});
-  const [submitted,setSubmitted]=useState(false);
-  const [autoTickets,setAutoTickets]=useState([]);
-  const checkItems=['Floors','Dusting','Trash','Restrooms','Glass/Mirrors','High-touch Surfaces','Odor','Supplies Stocked'];
 
-  if(submitted)return h('div',null,
-    h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:12,padding:'12px',background:'rgba(34,197,94,.06)',borderRadius:9,border:'1px solid rgba(34,197,94,.2)'}},
-      ico('ti-circle-check',{fontSize:20,color:'var(--green)'}),
-      h('div',null,
-        h('div',{style:{fontWeight:600}},acct.name+' — Walkthrough Submitted'),
-        h('div',{style:{fontSize:11,color:'var(--muted)'}},autoTickets.length+' auto-tickets created')
-      ),
-      h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>{setScores({});setSubmitted(false);setAutoTickets([]);}},ico('ti-refresh'),' New')
-    ),
-    autoTickets.length>0&&autoTickets.map((t,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:9,padding:'8px 0',borderTop:i?'1px solid var(--border)':'none'}},
-      h('div',{style:{width:3,height:32,borderRadius:99,background:t.score===1?'var(--red)':'var(--amber)',flexShrink:0}}),
-      h('div',{flex:1},
-        h('div',{style:{fontSize:12,fontWeight:500}},t.area+' — '+t.item+': '+t.score+'/5'),
-        h('div',{style:{fontSize:10,color:'var(--muted)'}},acct.name+' · Auto-ticket created')
-      ),
-      h(Badge,{cls:'red'},'Open')
-    ))
-  );
-
-  return h('div',null,
-    h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:12}},
-      'Score each area 1–5. Scores ≤ 2 auto-create tickets.'
-    ),
-    acct.areas.map(area=>h('div',{key:area,style:{marginBottom:14}},
-      h('div',{style:{fontWeight:600,fontSize:13,marginBottom:8,color:'var(--text)'}},area),
-      checkItems.map(item=>{
-        const key=area+'::'+item;
-        const val=scores[key];
-        return h('div',{key:item,style:{display:'flex',alignItems:'center',gap:8,marginBottom:6}},
-          h('div',{style:{width:140,fontSize:11,color:'var(--muted)',flexShrink:0}},item),
-          h('div',{style:{display:'flex',gap:4}},
-            [1,2,3,4,5].map(n=>h('button',{key:n,
-              className:'score-btn s'+n+(val===n?' active':''),
-              onClick:()=>setScores(p=>({...p,[key]:n}))
-            },n))
-          ),
-          val&&val<=2&&h(Badge,{cls:'red'},'Ticket')
-        );
-      })
-    )),
-    h('div',{style:{display:'flex',justifyContent:'flex-end',paddingTop:8,borderTop:'1px solid var(--border)'}},
-      h('button',{className:'btn btn-primary',onClick:async()=>{
-        const t=[];
-        Object.entries(scores).forEach(([key,val])=>{
-          if(val<=2){const[area,item]=key.split('::');t.push({area,item,score:val});}
-        });
-        setAutoTickets(t);setSubmitted(true);
-        onToast('Submitting walkthrough...');
-        await hsSync('push_walkthrough',{accountName:acct.name,scores,autoTickets:t.length,submittedBy:'Pod Manager'});
-        onToast(t.length>0?t.length+' tickets synced to HubSpot':'Walkthrough synced to HubSpot ✓');
-      }},ico('ti-send'),' Submit Walkthrough')
-    )
-  );
-}
 
 // ── OVERVIEW ──────────────────────────────────────────────────────────────────
 function Overview(){
@@ -1534,552 +1879,4 @@ function App(){
 ReactDOM.createRoot(document.getElementById('root')).render(h(App,null));
 </script>
 </body>
-</html>// ── ACCOUNT DETAIL MODAL ──────────────────────────────────────────────────────
-function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
-  const [tab, setTab] = useState('overview');
-  const [surveyScores, setSurveyScores] = useState({q1:0, q2:0, q3:0});
-  const [surveyResolved, setSurveyResolved] = useState('');
-  const [surveyComment, setSurveyComment] = useState('');
-  const [surveySubmitted, setSurveySubmitted] = useState(false);
-  const [inspType, setInspType] = useState('');
-  const [customItems, setCustomItems] = useState([]);
-  const [newItem, setNewItem] = useState('');
-  const [inspScores, setInspScores] = useState({});
-  const [inspSubmitted, setInspSubmitted] = useState(false);
-  const [schedFilter, setSchedFilter] = useState('all');
-  const [showQRGen, setShowQRGen] = useState(false);
-  const [qrArea, setQrArea] = useState('');
-
-  const acctTickets = tickets.filter(t => t.acct === acct.id);
-  const acctWorkers = workers.filter(w => w.site === acct.id);
-  const acctPM = pm.filter(p => p.acct === acct.id);
-  const openComplaints = acctTickets.filter(t => t.status === 'Open' || t.status === 'In Progress');
-
-  const TABS = [
-    {id:'overview', label:'Overview'},
-    {id:'pm', label:'Preventive PM'},
-    {id:'satisfaction', label:'Satisfaction'},
-    {id:'complaints', label:'Complaints', badge: openComplaints.length},
-    {id:'schedule', label:'Schedule'},
-    {id:'qa', label:'Quality Assurance'},
-    {id:'workers', label:'Workers'},
-  ];
-
-  // Schedule data
-  const SCHEDULE = [
-    {id:1, type:'cleaning', crew:'Marcus Johnson', task:'Daily Janitorial — All Floors', days:['Mon','Tue','Wed','Thu','Fri'], time:'6:00 AM', status:'Active'},
-    {id:2, type:'cleaning', crew:'Dana Reyes', task:'Restroom Deep Clean', days:['Mon','Wed','Fri'], time:'7:00 AM', status:'Active'},
-    {id:3, type:'pm', crew:'Priya Nair', task:'Floor Buffing & Polish', days:['Fri'], time:'8:00 PM', status:'Active'},
-    {id:4, type:'cleaning', crew:'Sharlene Torres', task:'Lobby & Common Areas', days:['Mon','Tue','Wed','Thu','Fri','Sat'], time:'5:00 AM', status:'Active'},
-    {id:5, type:'pm', crew:'PM Contractor', task:'HVAC Filter Check', days:['1st Mon'], time:'9:00 AM', status:'Due Soon'},
-    {id:6, type:'landscaping', crew:'Grounds Team', task:'Exterior Grounds Maintenance', days:['Tue','Fri'], time:'7:00 AM', status:'Active'},
-    {id:7, type:'pm', crew:'PM Contractor', task:'Carpet Deep Extraction', days:['Last Fri'], time:'6:00 PM', status:'Scheduled'},
-  ];
-
-  const filteredSchedule = schedFilter === 'all' ? SCHEDULE : SCHEDULE.filter(s => s.type === schedFilter);
-
-  const AREAS = acct.areas && acct.areas.length > 0 ? acct.areas : ['Main Lobby','Floor 1','Floor 2','Restrooms','Common Areas'];
-
-  const THOROUGH_ITEMS = [
-    'Floors — swept, mopped, buffed',
-    'Restrooms — deep clean & restock',
-    'High-touch surfaces disinfected',
-    'Trash removal & liner replacement',
-    'Glass & mirrors streak-free',
-    'Dusting — furniture, vents, fixtures',
-    'Break room appliances wiped down',
-    'Odor check & air freshener',
-    'Supply inventory check',
-    'Lighting check — report outages',
-  ];
-
-  const QUICK_ITEMS = [
-    'Floors — swept',
-    'Restrooms — spot check & restock',
-    'Trash removal',
-    'High-touch surfaces wiped',
-    'Odor check',
-  ];
-
-  const inspItems = inspType === 'thorough' ? THOROUGH_ITEMS : inspType === 'quick' ? QUICK_ITEMS : customItems;
-
-  function handleInspSubmit() {
-    const low = Object.entries(inspScores).filter(([,v]) => v <= 2);
-    setInspSubmitted(true);
-    if (low.length > 0) onToast(low.length + ' auto-ticket' + (low.length > 1 ? 's' : '') + ' created');
-    else onToast('Inspection submitted — no issues found');
-  }
-
-  const typeColor = t => t === 'cleaning' ? 'var(--accent2)' : t === 'pm' ? 'var(--amber)' : t === 'landscaping' ? 'var(--green)' : 'var(--muted)';
-  const typeBg = t => t === 'cleaning' ? 'rgba(79,126,255,.1)' : t === 'pm' ? 'rgba(245,158,11,.1)' : t === 'landscaping' ? 'rgba(34,197,94,.1)' : 'rgba(123,127,153,.08)';
-
-  return h('div', {className:'modal-backdrop', onClick:onClose},
-    h('div', {className:'modal', style:{width:920, maxWidth:'96vw', padding:0, overflow:'hidden', display:'flex', flexDirection:'column', maxHeight:'88vh'}, onClick:e=>e.stopPropagation()},
-
-      // ── HEADER ──
-      h('div', {style:{padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:12, flexShrink:0}},
-        h('div', {style:{display:'flex', alignItems:'center', gap:8, flex:1, minWidth:0}},
-          h('div', {style:{width:34, height:34, borderRadius:8, background:'rgba(79,126,255,.12)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0}},
-            ico('ti-building', {color:'var(--accent2)', fontSize:17})
-          ),
-          h('div', {style:{minWidth:0}},
-            h('div', {style:{fontWeight:700, fontSize:15, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}, acct.name),
-            h('div', {style:{fontSize:11, color:'var(--muted)'}}, acct.addr)
-          )
-        ),
-        // Stats row
-        h('div', {style:{display:'flex', gap:16, flexShrink:0}},
-          [{l:'Building Health', v: acct.score > 0 ? acct.score+'%' : 'N/A', c: acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'},
-           {l:'Open Complaints', v: openComplaints.length, c:'var(--red)'},
-           {l:'PM Due', v: acctPM.filter(p=>p.status==='Due Soon'||p.status==='Overdue').length, c:'var(--amber)'},
-           {l:'Workers', v: acctWorkers.length, c:'var(--accent2)'},
-          ].map(s => h('div', {key:s.l, style:{textAlign:'center'}},
-            h('div', {style:{fontSize:16, fontWeight:700, color:s.c}}, s.v),
-            h('div', {style:{fontSize:9, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'.5px'}}, s.l)
-          ))
-        ),
-        // AI active pill
-        h('div', {style:{display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderRadius:99, border:'1px solid var(--purple)', background:'rgba(167,139,250,.08)', color:'var(--purple)', fontSize:11, fontWeight:600, flexShrink:0}},
-          h('div', {style:{width:6, height:6, borderRadius:99, background:'var(--purple)', boxShadow:'0 0 6px var(--purple)'}}),
-          'AI active'
-        ),
-        h('button', {className:'btn btn-ghost btn-sm', style:{marginLeft:8}, onClick:onClose}, ico('ti-x'))
-      ),
-
-      // ── TAB BAR ──
-      h('div', {style:{display:'flex', borderBottom:'1px solid var(--border)', overflowX:'auto', flexShrink:0, padding:'0 20px'}},
-        TABS.map(t => h('button', {key:t.id,
-          style:{padding:'10px 16px', fontSize:12, fontWeight:600, cursor:'pointer', border:'none',
-            background:'transparent', color: tab===t.id ? 'var(--accent2)' : 'var(--muted)',
-            borderBottom: tab===t.id ? '2px solid var(--accent)' : '2px solid transparent',
-            fontFamily:'inherit', whiteSpace:'nowrap', display:'flex', alignItems:'center', gap:6},
-          onClick:()=>setTab(t.id)},
-          t.label,
-          t.badge > 0 && h('span', {style:{background:'var(--red)', color:'#fff', fontSize:9, fontWeight:700, padding:'1px 5px', borderRadius:99}}, t.badge)
-        ))
-      ),
-
-      // ── CONTENT ──
-      h('div', {style:{flex:1, overflowY:'auto', padding:'20px'}},
-
-        // OVERVIEW
-        tab==='overview' && h(Fragment, null,
-          // Cleanliness score by area
-          h('div', {className:'grid g2', style:{marginBottom:16}},
-            h('div', {className:'card'},
-              h('div', {className:'card-title'}, ico('ti-chart-bar'), ' Cleanliness Score by Area'),
-              h('div', {style:{display:'flex', flexDirection:'column', gap:10}},
-                AREAS.map((area, i) => {
-                  const score = [88,74,92,65,81,78,85][i % 7];
-                  return h('div', {key:area, style:{display:'flex', alignItems:'center', gap:10}},
-                    h('div', {style:{width:130, fontSize:11, color:'var(--muted)', flexShrink:0}}, area),
-                    h('div', {style:{flex:1}},
-                      h('div', {className:'progress-bar'},
-                        h('div', {className:'progress-fill', style:{width:score+'%', background: score>=85?'var(--green)':score>=70?'var(--amber)':'var(--red)'}})
-                      )
-                    ),
-                    h('div', {style:{width:28, textAlign:'right', fontSize:11, fontWeight:700, color:score>=85?'var(--green)':score>=70?'var(--amber)':'var(--red)'}}, score)
-                  );
-                })
-              )
-            ),
-            h('div', {className:'card'},
-              h('div', {className:'card-title'}, ico('ti-clock'), ' Upcoming Preventive PM'),
-              acctPM.length === 0
-                ? h('div', {style:{fontSize:12, color:'var(--muted)'}}, 'No PM items scheduled')
-                : acctPM.slice(0,5).map(p => h('div', {key:p.id, style:{display:'flex', alignItems:'center', gap:10, padding:'8px 0', borderTop:'1px solid var(--border)'}},
-                    h('div', {style:{flex:1}},
-                      h('div', {style:{fontSize:12, fontWeight:500}}, p.task),
-                      h('div', {style:{fontSize:10, color:'var(--muted)'}}, 'Due: '+p.due+' · '+p.freq)
-                    ),
-                    h(Badge, {cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':'blue'}, p.status)
-                  ))
-            )
-          ),
-          // Recent complaints
-          h('div', {className:'card'},
-            h('div', {className:'card-title'}, ico('ti-alert-triangle'), ' Recent Complaints'),
-            acctTickets.length === 0
-              ? h('div', {style:{fontSize:12, color:'var(--muted)', padding:'8px 0'}}, 'No recent complaints')
-              : acctTickets.slice(0,4).map(t => h('div', {key:t.id, style:{display:'flex', alignItems:'center', gap:10, padding:'9px 0', borderTop:'1px solid var(--border)'}},
-                  h('div', {style:{width:3, alignSelf:'stretch', borderRadius:99, background:t.priority==='High'?'var(--red)':t.priority==='Medium'?'var(--amber)':'var(--muted)', flexShrink:0}}),
-                  h('div', {style:{flex:1}},
-                    h('div', {style:{fontSize:12, fontWeight:500}}, t.title),
-                    h('div', {style:{fontSize:10, color:'var(--muted)'}}, t.assigned+' · '+t.created)
-                  ),
-                  h(Badge, {cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'}, t.status)
-                ))
-          )
-        ),
-
-        // PREVENTIVE PM
-        tab==='pm' && h(Fragment, null,
-          h('div', {className:'grid g4', style:{marginBottom:16}},
-            [{l:'Overdue', v:acctPM.filter(p=>p.status==='Overdue').length, c:'var(--red)'},
-             {l:'Due Soon', v:acctPM.filter(p=>p.status==='Due Soon').length, c:'var(--amber)'},
-             {l:'Scheduled', v:acctPM.filter(p=>p.status==='Scheduled').length, c:'var(--accent2)'},
-             {l:'Completed', v:acctPM.filter(p=>p.status==='Completed').length, c:'var(--green)'},
-            ].map(s => h('div', {key:s.l, className:'stat-card'},
-              h('div', {className:'stat-label'}, s.l),
-              h('div', {className:'stat-value', style:{color:s.c}}, s.v)
-            ))
-          ),
-          h('div', {className:'card', style:{padding:0}},
-            h('table', {className:'tbl'},
-              h('thead', null, h('tr', null, ['Task','Frequency','Due','Last Done','Status',''].map(c=>h('th',{key:c},c)))),
-              h('tbody', null,
-                acctPM.length === 0
-                  ? h('tr', null, h('td', {colSpan:6, style:{textAlign:'center', color:'var(--muted)', padding:24}}, 'No PM items for this account'))
-                  : acctPM.map(p => h('tr', {key:p.id},
-                      h('td', {style:{fontWeight:500, fontSize:12}}, p.task),
-                      h('td', null, h(Tag, {t:p.freq})),
-                      h('td', {style:{fontWeight:700, color:p.status==='Overdue'?'var(--red)':p.status==='Due Soon'?'var(--amber)':'var(--text)', fontSize:12}}, p.due),
-                      h('td', {style:{color:'var(--muted)', fontSize:11}}, p.last),
-                      h('td', null, h(Badge, {cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'}, p.status)),
-                      h('td', null, p.status!=='Completed' && h('button', {className:'btn btn-ghost btn-sm', onClick:()=>onToast('PM item marked complete')}, ico('ti-check'), ' Done'))
-                    ))
-              )
-            )
-          )
-        ),
-
-        // SATISFACTION
-        tab==='satisfaction' && h('div', {className:'grid g2'},
-          // Left — survey form
-          h('div', {className:'card'},
-            h('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}},
-              h('div', {style:{fontSize:14, fontWeight:600}}, 'Occupant satisfaction survey'),
-              h('div', {style:{fontSize:11, color:'var(--muted)'}}, 'Sent via QR · email · kiosk')
-            ),
-            surveySubmitted
-              ? h('div', {style:{textAlign:'center', padding:'32px 0'}},
-                  ico('ti-circle-check', {fontSize:40, color:'var(--green)', display:'block', marginBottom:12}),
-                  h('div', {style:{fontSize:14, fontWeight:600, marginBottom:6}}, 'Feedback submitted!'),
-                  h('div', {style:{fontSize:12, color:'var(--muted)', marginBottom:16}}, 'Thank you for your response.'),
-                  h('button', {className:'btn btn-ghost btn-sm', onClick:()=>{setSurveySubmitted(false);setSurveyScores({q1:0,q2:0,q3:0});setSurveyResolved('');setSurveyComment('');}}, ico('ti-refresh'), ' New Survey')
-                )
-              : h(Fragment, null,
-                  // Q1
-                  h('div', {style:{marginBottom:18}},
-                    h('div', {style:{fontSize:13, marginBottom:10}}, 'How would you rate the overall cleanliness of the building today?'),
-                    h('div', {style:{display:'flex', gap:8}},
-                      [1,2,3,4,5].map(n => h('button', {key:n,
-                        style:{flex:1, padding:'12px 0', borderRadius:8, border:'1px solid var(--border2)',
-                          background: surveyScores.q1===n ? 'var(--green)' : 'var(--surface)',
-                          color: surveyScores.q1===n ? '#fff' : 'var(--muted)',
-                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:14,
-                          display:'flex', flexDirection:'column', alignItems:'center', gap:2},
-                        onClick:()=>setSurveyScores(p=>({...p,q1:n}))},
-                        n,
-                        n===1 && h('span',{style:{fontSize:9, fontWeight:400}}, 'Poor'),
-                        n===5 && h('span',{style:{fontSize:9, fontWeight:400}}, 'Excellent')
-                      ))
-                    )
-                  ),
-                  // Q2
-                  h('div', {style:{marginBottom:18}},
-                    h('div', {style:{fontSize:13, marginBottom:10}}, 'How satisfied are you with restroom cleanliness?'),
-                    h('div', {style:{display:'flex', gap:8}},
-                      [1,2,3,4,5].map(n => h('button', {key:n,
-                        style:{flex:1, padding:'12px 0', borderRadius:8, border:'1px solid var(--border2)',
-                          background: surveyScores.q2===n ? 'var(--green)' : 'var(--surface)',
-                          color: surveyScores.q2===n ? '#fff' : 'var(--muted)',
-                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:14},
-                        onClick:()=>setSurveyScores(p=>({...p,q2:n}))},
-                        n
-                      ))
-                    )
-                  ),
-                  // Q3 yes/no
-                  h('div', {style:{marginBottom:18}},
-                    h('div', {style:{fontSize:13, marginBottom:10}}, 'Were any issues reported promptly resolved?'),
-                    h('div', {style:{display:'flex', gap:8}},
-                      ['Yes','No','N/A'].map(opt => h('button', {key:opt,
-                        style:{flex:1, padding:'11px 0', borderRadius:8, border:'1px solid var(--border2)',
-                          background: surveyResolved===opt ? 'var(--green)' : 'var(--surface)',
-                          color: surveyResolved===opt ? '#fff' : 'var(--muted)',
-                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:13},
-                        onClick:()=>setSurveyResolved(opt)},
-                        opt
-                      ))
-                    )
-                  ),
-                  // Comment
-                  h('div', {style:{marginBottom:16}},
-                    h('div', {style:{fontSize:13, marginBottom:8}}, 'Any specific feedback or complaints?'),
-                    h('textarea', {style:{width:'100%', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8,
-                      padding:'10px 12px', color:'var(--text)', fontFamily:'inherit', fontSize:12, resize:'none', outline:'none', minHeight:80},
-                      placeholder:'Optional — describe the issue and location...',
-                      value:surveyComment, onChange:e=>setSurveyComment(e.target.value)})
-                  ),
-                  h('button', {className:'btn btn-primary', style:{width:'100%', justifyContent:'center', padding:'11px'},
-                    onClick:()=>{setSurveySubmitted(true);onToast('Survey submitted for '+acct.name);}},
-                    'Submit feedback'
-                  )
-                )
-          ),
-
-          // Right — distribution + AI insight
-          h('div', {style:{display:'flex', flexDirection:'column', gap:12}},
-            h('div', {className:'card'},
-              h('div', {style:{fontSize:14, fontWeight:600, marginBottom:14}}, 'Survey distribution'),
-              [
-                {icon:'ti-qrcode', label:'QR codes', desc:'Posted in each restroom, lobby, and common area.', count:'Scans this month: 31'},
-                {icon:'ti-mail', label:'Email campaign', desc:'Monthly email to all tenant contacts.', count:'Responses this month: 12'},
-                {icon:'ti-device-tablet', label:'Lobby kiosk', desc:'iPad kiosk at building entrance.', count:'Responses this month: 4'},
-              ].map(item => h('div', {key:item.label, style:{padding:'12px', background:'var(--surface)', borderRadius:8, border:'1px solid var(--border)', marginBottom:8}},
-                h('div', {style:{display:'flex', alignItems:'center', gap:8, marginBottom:4}},
-                  h('div', {style:{width:16, height:16, borderRadius:3, border:'1px solid var(--border2)', flexShrink:0}}),
-                  ico(item.icon, {color:'var(--muted)', fontSize:14}),
-                  h('span', {style:{fontWeight:600, fontSize:13}}, item.label)
-                ),
-                h('div', {style:{fontSize:11, color:'var(--muted)', paddingLeft:24}}, item.desc),
-                h('div', {style:{fontSize:11, color:'var(--muted)', paddingLeft:24}}, item.count)
-              )),
-              // Generate QR
-              h('button', {className:'btn btn-ghost btn-sm', style:{width:'100%', justifyContent:'center'},
-                onClick:()=>setShowQRGen(true)},
-                ico('ti-qrcode'), ' Generate QR Code for Area'
-              ),
-              showQRGen && h('div', {style:{marginTop:10, display:'flex', gap:6}},
-                h('select', {className:'field-input', value:qrArea, onChange:e=>setQrArea(e.target.value)},
-                  h('option', {value:''}, 'Select area...'),
-                  AREAS.map(a => h('option', {key:a, value:a}, a))
-                ),
-                h('button', {className:'btn btn-primary btn-sm', disabled:!qrArea,
-                  onClick:()=>{onToast('QR code generated for '+qrArea+' — '+acct.name);setShowQRGen(false);setQrArea('');}},
-                  'Generate'
-                )
-              )
-            ),
-            // AI insight
-            h('div', {style:{padding:'14px', background:'rgba(79,126,255,.06)', border:'1px solid rgba(79,126,255,.2)', borderRadius:10}},
-              h('div', {style:{display:'flex', alignItems:'center', gap:8, marginBottom:10}},
-                h('div', {style:{width:16, height:16, borderRadius:3, border:'1px solid var(--accent)', flexShrink:0}}),
-                h('span', {style:{fontWeight:600, fontSize:13, color:'var(--accent2)'}}, 'AI response insight')
-              ),
-              h('div', {style:{fontSize:12, color:'var(--muted)', lineHeight:1.6}},
-                'QR scans spike on Tuesdays and Thursdays — likely after morning checks. ',
-                h('span', {style:{color:'var(--accent2)'}}, 'Consider adding a kiosk to floor 2'),
-                ' where satisfaction scores are lowest this month.'
-              )
-            )
-          )
-        ),
-
-        // COMPLAINTS
-        tab==='complaints' && h(Fragment, null,
-          h('div', {className:'grid g4', style:{marginBottom:16}},
-            [{l:'Open', v:acctTickets.filter(t=>t.status==='Open').length, c:'var(--red)'},
-             {l:'In Progress', v:acctTickets.filter(t=>t.status==='In Progress').length, c:'var(--amber)'},
-             {l:'Resolved', v:acctTickets.filter(t=>t.status==='Resolved').length, c:'var(--green)'},
-             {l:'Total', v:acctTickets.length, c:'var(--muted)'},
-            ].map(s => h('div', {key:s.l, className:'stat-card'},
-              h('div', {className:'stat-label'}, s.l),
-              h('div', {className:'stat-value', style:{color:s.c}}, s.v)
-            ))
-          ),
-          h('div', {style:{display:'flex', flexDirection:'column', gap:8}},
-            acctTickets.length === 0
-              ? h('div', {style:{textAlign:'center', padding:'40px', color:'var(--muted)', fontSize:12}}, 'No complaints for this account')
-              : acctTickets.map(t => h('div', {key:t.id, className:'ticket-card'},
-                  h('div', {className:'priority-bar', style:{background:t.priority==='High'?'var(--red)':t.priority==='Medium'?'var(--amber)':'var(--muted)'}}),
-                  h('div', {style:{flex:1}},
-                    h('div', {style:{display:'flex', alignItems:'center', gap:7, marginBottom:5}},
-                      h('span', {style:{fontFamily:'monospace', fontSize:10, color:'var(--muted)'}}, t.id),
-                      h(Badge, {cls:t.priority==='High'?'red':t.priority==='Medium'?'amber':'muted'}, t.priority),
-                      t.hubspot && h('span', {className:'hs-badge'}, 'HS'),
-                      h('span', {style:{marginLeft:'auto', fontSize:10, color:'var(--muted)'}}, t.created)
-                    ),
-                    h('div', {style:{fontWeight:600, fontSize:12, marginBottom:4}}, t.title),
-                    h('div', {style:{fontSize:10, color:'var(--muted)', display:'flex', gap:10}},
-                      h('span', null, ico('ti-user'), ' ', t.assigned),
-                      h('span', null, ico('ti-source-code'), ' ', t.source)
-                    )
-                  ),
-                  h('div', {style:{display:'flex', flexDirection:'column', gap:6, alignItems:'flex-end'}},
-                    h(Badge, {cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'}, t.status),
-                    h('button', {className:'btn btn-ghost btn-sm', onClick:()=>onToast('Dispatched '+t.id+' to account workers')}, ico('ti-send'), ' Dispatch')
-                  )
-                ))
-          )
-        ),
-
-        // SCHEDULE
-        tab==='schedule' && h(Fragment, null,
-          h('div', {style:{display:'flex', gap:8, marginBottom:16, flexWrap:'wrap'}},
-            ['all','cleaning','pm','landscaping'].map(f =>
-              h('button', {key:f, className:'btn btn-sm '+(schedFilter===f?'btn-primary':'btn-ghost'),
-                onClick:()=>setSchedFilter(f)},
-                f === 'all' ? 'All Activities' : f.charAt(0).toUpperCase()+f.slice(1)
-              )
-            ),
-            h('button', {className:'btn btn-primary btn-sm', style:{marginLeft:'auto'}}, ico('ti-plus'), ' Add Activity')
-          ),
-          h('div', {className:'card', style:{padding:0}},
-            h('table', {className:'tbl'},
-              h('thead', null, h('tr', null, ['Type','Task','Crew','Days','Time','Status'].map(c=>h('th',{key:c},c)))),
-              h('tbody', null,
-                filteredSchedule.map(s => h('tr', {key:s.id},
-                  h('td', null,
-                    h('span', {style:{background:typeBg(s.type), color:typeColor(s.type), padding:'2px 8px', borderRadius:99, fontSize:10, fontWeight:700}},
-                      s.type.charAt(0).toUpperCase()+s.type.slice(1)
-                    )
-                  ),
-                  h('td', {style:{fontWeight:500, fontSize:12}}, s.task),
-                  h('td', {style:{fontSize:11, color:'var(--muted)'}}, s.crew),
-                  h('td', null,
-                    h('div', {style:{display:'flex', gap:3, flexWrap:'wrap'}},
-                      s.days.map(d => h('span', {key:d, style:{background:'var(--border)', borderRadius:4, padding:'1px 5px', fontSize:9, color:'var(--muted)', fontWeight:600}}, d))
-                    )
-                  ),
-                  h('td', {style:{fontSize:11, color:'var(--muted)', whiteSpace:'nowrap'}}, s.time),
-                  h('td', null, h(Badge, {cls:s.status==='Active'?'green':s.status==='Due Soon'?'amber':'blue'}, s.status))
-                ))
-              )
-            )
-          )
-        ),
-
-        // QUALITY ASSURANCE
-        tab==='qa' && h(Fragment, null,
-          !inspType && h(Fragment, null,
-            h('div', {style:{fontSize:13, fontWeight:600, color:'var(--text)', marginBottom:16}}, 'Select Inspection Type'),
-            h('div', {className:'grid g3'},
-              [
-                {id:'thorough', icon:'ti-clipboard-list', label:'Thorough Inspection', desc:'Full building walkthrough — '+THOROUGH_ITEMS.length+' checkpoints across all areas. Recommended weekly.', color:'var(--accent2)'},
-                {id:'quick', icon:'ti-bolt', label:'Quick Inspection', desc:'Rapid spot-check — '+QUICK_ITEMS.length+' key items. Ideal for daily verification rounds.', color:'var(--green)'},
-                {id:'custom', icon:'ti-settings', label:'Custom Inspection', desc:'Build your own checklist. Add any items specific to this facility.', color:'var(--amber)'},
-              ].map(type => h('div', {key:type.id,
-                style:{background:'var(--surface)', border:'1px solid var(--border)', borderRadius:10, padding:'20px', cursor:'pointer', transition:'all .15s'},
-                onClick:()=>setInspType(type.id)},
-                h('div', {style:{width:40, height:40, borderRadius:9, background:type.color+'18', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12}},
-                  ico(type.icon, {fontSize:20, color:type.color})
-                ),
-                h('div', {style:{fontWeight:700, fontSize:13, marginBottom:6}}, type.label),
-                h('div', {style:{fontSize:11, color:'var(--muted)', lineHeight:1.5}}, type.desc)
-              ))
-            )
-          ),
-
-          inspType && !inspSubmitted && h(Fragment, null,
-            h('div', {style:{display:'flex', alignItems:'center', gap:10, marginBottom:16}},
-              h('button', {className:'btn btn-ghost btn-sm', onClick:()=>{setInspType('');setInspScores({});setCustomItems([]);}}, ico('ti-arrow-left'), ' Back'),
-              h('div', {style:{fontWeight:700, fontSize:14}},
-                inspType==='thorough'?'Thorough Inspection':inspType==='quick'?'Quick Inspection':'Custom Inspection'
-              ),
-              h('div', {style:{marginLeft:'auto', fontSize:11, color:'var(--muted)'}},
-                Object.keys(inspScores).length + ' of ' + (AREAS.length * inspItems.length) + ' scored'
-              )
-            ),
-
-            inspType === 'custom' && h('div', {style:{marginBottom:16, display:'flex', gap:8}},
-              h('input', {className:'field-input', placeholder:'Add checklist item...', value:newItem,
-                onChange:e=>setNewItem(e.target.value),
-                onKeyDown:e=>e.key==='Enter'&&newItem.trim()&&(setCustomItems(p=>[...p,newItem.trim()]),setNewItem(''))}),
-              h('button', {className:'btn btn-primary btn-sm', disabled:!newItem.trim(),
-                onClick:()=>{setCustomItems(p=>[...p,newItem.trim()]);setNewItem('');}},
-                ico('ti-plus'), ' Add'
-              )
-            ),
-
-            inspItems.length === 0 && inspType === 'custom'
-              ? h('div', {style:{textAlign:'center', padding:'32px', color:'var(--muted)', fontSize:12}}, 'Add checklist items above to begin')
-              : h(Fragment, null,
-                  AREAS.map(area => h('div', {key:area, style:{marginBottom:16}},
-                    h('div', {style:{fontWeight:600, fontSize:13, marginBottom:8, padding:'6px 0', borderBottom:'1px solid var(--border)'}}, area),
-                    inspItems.map(item => {
-                      const key = area+'::'+item;
-                      const val = inspScores[key];
-                      return h('div', {key:item, style:{display:'flex', alignItems:'center', gap:10, marginBottom:8}},
-                        h('div', {style:{flex:1, fontSize:12, color:'var(--muted)'}}, item),
-                        h('div', {style:{display:'flex', gap:4}},
-                          [1,2,3,4,5].map(n => h('button', {key:n,
-                            className:'score-btn s'+n+(val===n?' active':''),
-                            onClick:()=>setInspScores(p=>({...p,[key]:n}))}, n))
-                        ),
-                        val && val<=2 && h(Badge, {cls:'red'}, 'Issue')
-                      );
-                    })
-                  )),
-                  h('div', {style:{display:'flex', justifyContent:'flex-end', paddingTop:12, borderTop:'1px solid var(--border)'}},
-                    h('button', {className:'btn btn-primary', onClick:handleInspSubmit}, ico('ti-send'), ' Submit Inspection')
-                  )
-                )
-          ),
-
-          inspSubmitted && h('div', null,
-            h('div', {style:{display:'flex', alignItems:'center', gap:12, padding:'16px', background:'rgba(34,197,94,.06)', borderRadius:9, border:'1px solid rgba(34,197,94,.2)', marginBottom:16}},
-              ico('ti-circle-check', {fontSize:22, color:'var(--green)'}),
-              h('div', null,
-                h('div', {style:{fontWeight:600}}, 'Inspection submitted — '+acct.name),
-                h('div', {style:{fontSize:11, color:'var(--muted)'}},
-                  Object.values(inspScores).filter(v=>v<=2).length + ' issues found · Synced to HubSpot'
-                )
-              ),
-              h('button', {className:'btn btn-ghost btn-sm', style:{marginLeft:'auto'},
-                onClick:()=>{setInspType('');setInspScores({});setInspSubmitted(false);setCustomItems([]);}},
-                ico('ti-refresh'), ' New Inspection'
-              )
-            ),
-            Object.entries(inspScores).filter(([,v])=>v<=2).map(([key,val]) => {
-              const [area,item] = key.split('::');
-              return h('div', {key, style:{display:'flex', alignItems:'center', gap:10, padding:'9px 0', borderTop:'1px solid var(--border)'}},
-                h('div', {style:{width:3, height:32, borderRadius:99, background:val===1?'var(--red)':'var(--amber)', flexShrink:0}}),
-                h('div', {style:{flex:1}},
-                  h('div', {style:{fontSize:12, fontWeight:500}}, area+' — '+item+': '+val+'/5'),
-                  h('div', {style:{fontSize:10, color:'var(--muted)'}}, acct.name+' · Auto-ticket created')
-                ),
-                h(Badge, {cls:'red'}, 'Open')
-              );
-            })
-          )
-        ),
-
-        // WORKERS
-        tab==='workers' && h(Fragment, null,
-          h('div', {style:{marginBottom:12}},
-            h('div', {style:{fontSize:12, color:'var(--muted)', marginBottom:10}},
-              acctWorkers.length + ' assigned workers'
-            ),
-            acctWorkers.length === 0
-              ? h('div', {style:{fontSize:12, color:'var(--muted)', padding:'16px 0'}}, 'No workers assigned to this account')
-              : acctWorkers.map(w => h('div', {key:w.id, style:{display:'flex', alignItems:'center', gap:9, padding:'9px 0', borderTop:'1px solid var(--border)'}},
-                  h('div', {className:'worker-avatar', style:{background:w.color}}, w.name.split(' ').map(p=>p[0]).join('')),
-                  h('div', {style:{flex:1}},
-                    h('div', {style:{fontSize:13, fontWeight:500}}, w.name),
-                    h('div', {style:{fontSize:10, color:'var(--muted)'}}, w.role + (w.shift?' · '+w.shift:''))
-                  ),
-                  w.callouts > 0 && h(Badge, {cls:w.callouts>=3?'red':'amber'}, w.callouts+' CO'),
-                  h(Badge, {cls:w.status==='On Site'?'green':w.status==='Called Out'?'red':'muted'}, w.status)
-                ))
-          ),
-          // Bench workers trained on this account
-          h('div', {style:{borderTop:'1px solid var(--border)', paddingTop:14, marginTop:4}},
-            h('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10}},
-              h('div', {style:{fontSize:12, color:'var(--muted)'}}, 'Available bench workers trained for this account'),
-              h('button', {className:'btn btn-green btn-sm',
-                onClick:()=>onToast('Coverage request sent to all available bench workers')},
-                ico('ti-send'), ' Request Coverage — All'
-              )
-            ),
-            getWorkers().filter(w => w.bench && (Array.isArray(w.trained) ? w.trained.includes(acct.id) : true))
-              .map(w => h('div', {key:w.id, style:{display:'flex', alignItems:'center', gap:9, padding:'8px 0', borderTop:'1px solid var(--border)'}},
-                h('div', {className:'worker-avatar', style:{background:w.color, width:28, height:28, fontSize:10}}, w.name.split(' ').map(p=>p[0]).join('')),
-                h('div', {style:{flex:1}},
-                  h('div', {style:{fontSize:12, fontWeight:500}}, w.name),
-                  h('div', {style:{fontSize:10, color:'var(--muted)'}}, w.role+' · Flex')
-                ),
-                h(Badge, {cls:'green'}, 'Available'),
-                h('button', {className:'btn btn-green btn-sm',
-                  onClick:()=>onToast('Coverage request sent to '+w.name)},
-                  ico('ti-send'), ' Request'
-                )
-              ))
-          )
-        )
-
-      ) // end content
-    ) // end modal
-  );
-}
+</html>
