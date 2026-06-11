@@ -1,7 +1,7 @@
 // api/setup.js — One-time admin seeding
 // Visit /api/setup once to create the admin account, then delete this file
 
-import { createHash } from 'crypto';
+const { createHash } = require('crypto');
 
 const KV_URL = process.env.KV_REST_API_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN;
@@ -23,7 +23,7 @@ async function kvGet(key) {
   return data.result ? JSON.parse(data.result) : null;
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   const secret = process.env.AUTH_SECRET;
 
   // Diagnostic — check env vars
