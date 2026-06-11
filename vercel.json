@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "routes": [
     { "src": "/api/hubspot-auth/callback", "dest": "/api/hubspot-auth" },
     { "src": "/api/(.*)", "dest": "/api/$1" },
