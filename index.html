@@ -240,9 +240,9 @@ let _ACCOUNTS = null;
 let _TICKETS  = null;
 let _WORKERS  = null;
 
-function getAccounts() { return _getAccounts() || getAccounts(); }
-function getTickets()  { return _TICKETS  || getTickets(); }
-function getWorkers()  { return _WORKERS  || getWorkers(); }
+function getAccounts() { return _ACCOUNTS || ACCOUNTS; }
+function getTickets()  { return _TICKETS  || INIT_TICKETS; }
+function getWorkers()  { return _WORKERS  || INIT_WORKERS; }
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 const pc=p=>p==='High'?'#EF4444':p==='Medium'?'#F59E0B':'#7B7F99';
