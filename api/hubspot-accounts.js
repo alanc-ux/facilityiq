@@ -1,3 +1,11 @@
+const POD_INTERNAL = {
+  'Strategic Accounts':        'true',
+  'Route/Low Touch':           'false',
+  'Multi-Family/Multi-Tenant': 'Multi-Family/Multi-Tenant',
+  'Grounds & Exterior':        'Grounds & Exterior',
+  'Launch and Recovery':       'Launch and Recovery',
+};
+
 // api/hubspot-accounts.js
 // Pulls companies, tickets, and workers from HubSpot for FacilityIQ
 // Only returns name + address for companies, no personal contact data except workers
@@ -50,7 +58,7 @@ async function fetchAccounts(podValue) {
       filters: [{
         propertyName: 'pod',
         operator: 'EQ',
-        value: podValue,
+        value: POD_INTERNAL[podValue] || podValue,
       }]
     }],
     properties: ['name', 'address', 'city', 'state', 'hs_object_id', 'account_health'],
