@@ -1,8 +1,9 @@
 {
   "name": "facilityiq",
-  "version": "1.0.0",
-  "description": "Inperium by DSC Solutions — Facilities Intelligence Platform",
-  "scripts": {
-    "start": "npx serve ."
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "18.x"
   }
 }
