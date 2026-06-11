@@ -1,5 +1,5 @@
 // api/auth.js — FacilityIQ Authentication
-import { createHash, randomBytes } from 'crypto';
+const { createHash, randomBytes } = require('crypto');
 
 const KV_URL = process.env.KV_REST_API_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN;
@@ -140,7 +140,7 @@ async function deleteUser({ token, email }) {
 }
 
 // ── HANDLER ───────────────────────────────────────────────────────────────────
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
