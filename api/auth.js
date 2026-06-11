@@ -1,19 +1,17 @@
 // api/auth.js — FacilityIQ Authentication
-// Handles login, logout, session validation, and admin user management
-// Uses Vercel KV (Upstash) for user storage
-
 import { createHash, randomBytes } from 'crypto';
 
 const KV_URL = process.env.KV_REST_API_URL;
 const KV_TOKEN = process.env.KV_REST_API_TOKEN;
 
-// ── KV HELPERS ────────────────────────────────────────────────────────────────
+// ── KV HELPERS — exact same pattern as setup.js ───────────────────────────────
 async function kvGet(key) {
   const res = await fetch(`${KV_URL}/get/${encodeURIComponent(key)}`, {
     headers: { Authorization: `Bearer ${KV_TOKEN}` },
   });
   const data = await res.json();
-  return data.result ? JSON.parse(data.result) : null;
+  if (!data.result) return null;
+  try { return JSON.parse(data.result); } catch(e) { return data.result; }
 }
 
 async function kvSet(key, value, exSeconds = null) {
@@ -42,41 +40,30 @@ async function kvKeys(pattern) {
   return data.result || [];
 }
 
-// ── CRYPTO HELPERS ────────────────────────────────────────────────────────────
+// ── CRYPTO — exact same as setup.js ──────────────────────────────────────────
 function hashPassword(password) {
-  return createHash('sha256').update(password + process.env.AUTH_SECRET).digest('hex');
+  return createHash('sha256')
+    .update(password + process.env.AUTH_SECRET)
+    .digest('hex');
 }
 
 function generateToken() {
   return randomBytes(32).toString('hex');
 }
 
-// ── SEED ADMIN ON FIRST RUN ───────────────────────────────────────────────────
-async function ensureAdminExists() {
-  const existing = await kvGet('user:alan_c@dscsolutionsfm.com');
-  if (!existing) {
-    await kvSet('user:alan_c@dscsolutionsfm.com', {
-      email: 'alan_c@dscsolutionsfm.com',
-      name: 'Alan K.',
-      role: 'admin',
-      pod: 'Strategic Accounts',
-      passwordHash: hashPassword('FacilityIQ2025!'),
-      createdAt: new Date().toISOString(),
-    });
-    console.log('Admin user seeded');
-  }
-}
-
 // ── ACTIONS ───────────────────────────────────────────────────────────────────
-
 async function login({ email, password }) {
-  await ensureAdminExists();
-  const user = await kvGet('user:' + email.toLowerCase());
+  if (!email || !password) return { success: false, error: 'Email and password required' };
+
+  const user = await kvGet('user:' + email.toLowerCase().trim());
+
   if (!user) return { success: false, error: 'Invalid email or password' };
-  if (user.passwordHash !== hashPassword(password)) {
+
+  const hash = hashPassword(password);
+  if (hash !== user.passwordHash) {
     return { success: false, error: 'Invalid email or password' };
   }
-  // Create session token — expires in 8 hours
+
   const token = generateToken();
   await kvSet('session:' + token, {
     email: user.email,
@@ -84,6 +71,7 @@ async function login({ email, password }) {
     role: user.role,
     pod: user.pod,
   }, 60 * 60 * 8);
+
   return {
     success: true,
     token,
@@ -92,7 +80,7 @@ async function login({ email, password }) {
 }
 
 async function logout({ token }) {
-  await kvDel('session:' + token);
+  if (token) await kvDel('session:' + token);
   return { success: true };
 }
 
@@ -119,10 +107,10 @@ async function listUsers({ token }) {
 async function createUser({ token, email, name, role, pod, password }) {
   const session = await kvGet('session:' + token);
   if (!session || session.role !== 'admin') return { success: false, error: 'Unauthorized' };
-  const existing = await kvGet('user:' + email.toLowerCase());
+  const existing = await kvGet('user:' + email.toLowerCase().trim());
   if (existing) return { success: false, error: 'User already exists' };
-  await kvSet('user:' + email.toLowerCase(), {
-    email: email.toLowerCase(),
+  await kvSet('user:' + email.toLowerCase().trim(), {
+    email: email.toLowerCase().trim(),
     name,
     role: role || 'pod_manager',
     pod,
@@ -135,19 +123,19 @@ async function createUser({ token, email, name, role, pod, password }) {
 async function updateUser({ token, email, name, role, pod, password }) {
   const session = await kvGet('session:' + token);
   if (!session || session.role !== 'admin') return { success: false, error: 'Unauthorized' };
-  const user = await kvGet('user:' + email.toLowerCase());
+  const user = await kvGet('user:' + email.toLowerCase().trim());
   if (!user) return { success: false, error: 'User not found' };
   const updated = { ...user, name: name || user.name, role: role || user.role, pod: pod || user.pod };
   if (password) updated.passwordHash = hashPassword(password);
-  await kvSet('user:' + email.toLowerCase(), updated);
+  await kvSet('user:' + email.toLowerCase().trim(), updated);
   return { success: true };
 }
 
 async function deleteUser({ token, email }) {
   const session = await kvGet('session:' + token);
   if (!session || session.role !== 'admin') return { success: false, error: 'Unauthorized' };
-  if (email === 'alan_c@dscsolutionsfm.com') return { success: false, error: 'Cannot delete admin' };
-  await kvDel('user:' + email.toLowerCase());
+  if (email.toLowerCase() === 'alan_c@dscsolutionsfm.com') return { success: false, error: 'Cannot delete admin' };
+  await kvDel('user:' + email.toLowerCase().trim());
   return { success: true };
 }
 
@@ -169,7 +157,7 @@ export default async function handler(req, res) {
       case 'create_user':      return res.json(await createUser(payload));
       case 'update_user':      return res.json(await updateUser(payload));
       case 'delete_user':      return res.json(await deleteUser(payload));
-      default: return res.status(400).json({ error: 'Unknown action' });
+      default: return res.status(400).json({ error: 'Unknown action: ' + action });
     }
   } catch (err) {
     console.error('Auth error:', err.message);
