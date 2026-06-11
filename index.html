@@ -233,10 +233,21 @@ async function hsPull(pod) {
   }
 }
 
+// ── LIVE DATA STORE ──────────────────────────────────────────────────────────
+// These are updated by App when HubSpot data loads
+// All components read from these instead of hardcoded constants
+let _ACCOUNTS = null;
+let _TICKETS  = null;
+let _WORKERS  = null;
+
+function getAccounts() { return _getAccounts() || getAccounts(); }
+function getTickets()  { return _TICKETS  || getTickets(); }
+function getWorkers()  { return _WORKERS  || getWorkers(); }
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 const pc=p=>p==='High'?'#EF4444':p==='Medium'?'#F59E0B':'#7B7F99';
 const ico=(cls,s)=>h('i',{className:'ti '+cls,style:s||{}});
-const acctName=id=>{const a=ACCOUNTS.find(x=>x.id===id);return a?a.name:'—';};
+const acctName=id=>{const a=getAccounts().find(x=>x.id===id);return a?a.name:'—';};
 
 function Badge({cls,children}){return h('span',{className:'badge badge-'+cls},children);}
 function Tag({t}){return h('span',{className:'tag'},t);}
@@ -254,7 +265,7 @@ function SparkBars({data}){
 function AccountFilter({value,onChange,label,all}){
   return h('select',{className:'filter-select',value,onChange:e=>onChange(e.target.value)},
     h('option',{value:''},(label||'All Accounts')),
-    ACCOUNTS.filter(a=>all||a.status==='Active').map(a=>h('option',{key:a.id,value:a.id},a.name))
+    getAccounts().filter(a=>all||a.status==='Active').map(a=>h('option',{key:a.id,value:a.id},a.name))
   );
 }
 
@@ -400,7 +411,7 @@ function AccountDetailModal({acct,tickets,workers,pm,onClose,onToast}){
             h('div',{style:{fontSize:12,color:'var(--muted)'}},'Available bench — trained on this account'),
             h('button',{className:'btn btn-primary btn-sm',onClick:()=>onToast('Coverage request sent to all available bench workers')},ico('ti-send'),' Request Coverage (All)')
           ),
-          INIT_WORKERS.filter(w=>w.bench&&w.trained.includes(acct.id)).map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'7px 0',borderTop:'1px solid var(--border)'}},
+          getWorkers().filter(w=>w.bench&&w.trained.includes(acct.id)).map(w=>h('div',{key:w.id,style:{display:'flex',alignItems:'center',gap:9,padding:'7px 0',borderTop:'1px solid var(--border)'}},
             h('div',{className:'worker-avatar',style:{background:w.color,width:28,height:28,fontSize:10}},w.name.split(' ').map(p=>p[0]).join('')),
             h('div',{style:{flex:1}},h('div',{style:{fontSize:12,fontWeight:500}},w.name),h('div',{style:{fontSize:10,color:'var(--muted)'}},w.role+' · Flex')),
             h('button',{className:'btn btn-green btn-sm',onClick:()=>onToast('Coverage request sent to '+w.name)},ico('ti-send'),' Request')
@@ -507,16 +518,16 @@ function AccountWalkthrough({acct,onToast}){
 // ── OVERVIEW ──────────────────────────────────────────────────────────────────
 function Overview(){
   const [acctFilter,setAcctFilter]=useState('');
-  const filteredTickets=acctFilter?INIT_TICKETS.filter(t=>t.acct===parseInt(acctFilter)):INIT_TICKETS;
-  const filteredWorkers=acctFilter?INIT_WORKERS.filter(w=>w.site===parseInt(acctFilter)&&w.status==='On Site'):INIT_WORKERS.filter(w=>w.status==='On Site');
+  const filteredTickets=acctFilter?getTickets().filter(t=>t.acct===parseInt(acctFilter)):getTickets();
+  const filteredWorkers=acctFilter?getWorkers().filter(w=>w.site===parseInt(acctFilter)&&w.status==='On Site'):getWorkers().filter(w=>w.status==='On Site');
   const satData=acctFilter
-    ?[{m:'Score',v:ACCOUNTS.find(a=>a.id===parseInt(acctFilter))?.score||0}]
+    ?[{m:'Score',v:getAccounts().find(a=>a.id===parseInt(acctFilter))?.score||0}]
     :SAT_TREND;
 
   const stats=[
     {label:'Active Accounts',value:'4',icon:'ti-building',color:'#4F7EFF',bg:'rgba(79,126,255,.12)',delta:'+1',dir:'up'},
-    {label:'Open Tickets',value:INIT_TICKETS.filter(t=>t.status==='Open'&&(!acctFilter||t.acct===parseInt(acctFilter))).length,icon:'ti-ticket',color:'#EF4444',bg:'rgba(239,68,68,.12)',delta:'',dir:'down'},
-    {label:'Workers On-Site',value:INIT_WORKERS.filter(w=>w.status==='On Site'&&(!acctFilter||w.site===parseInt(acctFilter))).length,icon:'ti-users',color:'#22C55E',bg:'rgba(34,197,94,.12)',delta:'',dir:'up'},
+    {label:'Open Tickets',value:getTickets().filter(t=>t.status==='Open'&&(!acctFilter||t.acct===parseInt(acctFilter))).length,icon:'ti-ticket',color:'#EF4444',bg:'rgba(239,68,68,.12)',delta:'',dir:'down'},
+    {label:'Workers On-Site',value:getWorkers().filter(w=>w.status==='On Site'&&(!acctFilter||w.site===parseInt(acctFilter))).length,icon:'ti-users',color:'#22C55E',bg:'rgba(34,197,94,.12)',delta:'',dir:'up'},
     {label:'Avg Satisfaction',value:'89',icon:'ti-star',color:'#F59E0B',bg:'rgba(245,158,11,.12)',delta:'+2 pts',dir:'up'},
     {label:'PM Compliance',value:'78%',icon:'ti-checklist',color:'#A78BFA',bg:'rgba(167,139,250,.12)',delta:'-4%',dir:'down'},
     {label:'QR Responses (7d)',value:'84',icon:'ti-qrcode',color:'#22D3EE',bg:'rgba(34,211,238,.12)',delta:'+12',dir:'up'},
@@ -576,11 +587,11 @@ function Overview(){
   );
 }
 
-// ── ACCOUNTS ──────────────────────────────────────────────────────────────────
+// ── getAccounts() ──────────────────────────────────────────────────────────────────
 function Accounts({onToast}){
   const [sel,setSel]=useState(null);
-  const [tickets,setTickets]=useState(INIT_TICKETS);
-  const [workers]=useState(INIT_WORKERS);
+  const [tickets,setTickets]=useState(getTickets());
+  const [workers]=useState(getWorkers());
   const [pm]=useState(INIT_PM);
 
   return h(Fragment,null,
@@ -592,7 +603,7 @@ function Accounts({onToast}){
     h('div',{className:'card',style:{padding:0}},
       h('table',{className:'tbl'},
         h('thead',null,h('tr',null,['Account','Industry','Sq Ft','Tier','Status','Score','Trend',''].map(c=>h('th',{key:c},c)))),
-        h('tbody',null,ACCOUNTS.map(a=>h('tr',{key:a.id,style:{cursor:'pointer'},onClick:()=>setSel(a)},
+        h('tbody',null,getAccounts().map(a=>h('tr',{key:a.id,style:{cursor:'pointer'},onClick:()=>setSel(a)},
           h('td',null,h('div',{style:{fontWeight:600}},a.name),h('div',{style:{fontSize:10,color:'var(--muted)'}},a.addr)),
           h('td',null,h(Tag,{t:a.industry})),
           h('td',{style:{fontFamily:'monospace',color:'var(--muted)',fontSize:11}},a.sqft),
@@ -618,7 +629,7 @@ function QATasks({onToast}){
   const [toast2,setToast2]=useState(null);
   const [tasks,setTasks]=useState(()=>{
     const t=[];
-    ACCOUNTS.filter(a=>a.status==='Active').forEach(a=>{
+    getAccounts().filter(a=>a.status==='Active').forEach(a=>{
       const tmpl=QA_TEMPLATES[a.industry]||QA_TEMPLATES.Default;
       tmpl.forEach((task,i)=>t.push({id:a.id+'-'+i,acct:a.id,task,status:'Pending',due:'Today',priority:i<2?'High':'Medium'}));
     });
@@ -643,7 +654,7 @@ function QATasks({onToast}){
       )
     ),
     Object.entries(grouped).map(([aid,items])=>{
-      const acct=ACCOUNTS.find(a=>a.id===parseInt(aid));
+      const acct=getAccounts().find(a=>a.id===parseInt(aid));
       return h('div',{key:aid,className:'card',style:{marginBottom:14,padding:0}},
         h('div',{style:{padding:'12px 16px',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:8}},
           h('div',{style:{fontWeight:700,fontSize:13}},acct?acct.name:''),
@@ -659,7 +670,7 @@ function QATasks({onToast}){
             h('td',{style:{fontSize:11,color:'var(--muted)'}},t.due),
             h('td',null,t.status!=='Complete'&&h('button',{className:'btn btn-ghost btn-sm',onClick:async()=>{
             complete(t.id);setToast2('Task marked complete');
-            const acct=ACCOUNTS.find(a=>a.id===t.acct);
+            const acct=getAccounts().find(a=>a.id===t.acct);
             if(acct) await hsSync('push_qa_complete',{accountName:acct.name,task:t.task,completedBy:'Pod Manager'});
           }},ico('ti-check'),' Done'))
           )))
@@ -671,7 +682,7 @@ function QATasks({onToast}){
 
 // ── SATISFACTION ──────────────────────────────────────────────────────────────
 function BuildingSatisfaction(){
-  const active=ACCOUNTS.filter(a=>a.score>0);
+  const active=getAccounts().filter(a=>a.score>0);
   const byAcct=active.map(a=>({l:a.name.split(' ')[0],v:a.score}));
   return h(Fragment,null,
     h('div',{className:'grid g4',style:{marginBottom:16}},
@@ -711,7 +722,7 @@ function BuildingSatisfaction(){
 // ── WALKTHROUGH ───────────────────────────────────────────────────────────────
 function Walkthrough({onToast}){
   const [selectedAcct,setSelectedAcct]=useState('');
-  const acct=ACCOUNTS.find(a=>a.id===parseInt(selectedAcct));
+  const acct=getAccounts().find(a=>a.id===parseInt(selectedAcct));
 
   return h('div',null,
     h('div',{className:'filter-bar',style:{marginBottom:20}},
@@ -744,7 +755,7 @@ function QRFeedback({onToast}){
             h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'ACCOUNT'),
             h('select',{className:'field-input',value:newArea.acct,onChange:e=>setNewArea({...newArea,acct:e.target.value})},
               h('option',{value:''},'Select account...'),
-              ACCOUNTS.map(a=>h('option',{key:a.id,value:a.id},a.name))
+              getAccounts().map(a=>h('option',{key:a.id,value:a.id},a.name))
             )
           ),
           h('div',null,
@@ -754,7 +765,7 @@ function QRFeedback({onToast}){
           h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
             h('button',{className:'btn btn-ghost',onClick:()=>setShowCreate(false)},'Cancel'),
             h('button',{className:'btn btn-primary',disabled:!newArea.acct||!newArea.name,onClick:async()=>{
-              const acct=ACCOUNTS.find(a=>a.id===parseInt(newArea.acct));
+              const acct=getAccounts().find(a=>a.id===parseInt(newArea.acct));
               onToast('QR code created for '+newArea.name);
               setShowCreate(false);setNewArea({acct:'',name:''});
               if(acct) await hsSync('push_qr_zone',{accountName:acct.name,zoneName:newArea.name});
@@ -799,7 +810,7 @@ function QRFeedback({onToast}){
 
 // ── TICKETS ───────────────────────────────────────────────────────────────────
 function Tickets({onToast}){
-  const [tickets,setTickets]=useState(INIT_TICKETS);
+  const [tickets,setTickets]=useState(getTickets());
   const [acctFilter,setAcctFilter]=useState('');
   const [showNew,setShowNew]=useState(false);
   const [selTicket,setSelTicket]=useState(null);
@@ -811,7 +822,7 @@ function Tickets({onToast}){
   const filtered=filter==='All'?base:base.filter(t=>t.status===filter);
 
   async function create(){
-    const acct=ACCOUNTS.find(a=>a.id===parseInt(nw.acct));
+    const acct=getAccounts().find(a=>a.id===parseInt(nw.acct));
     const t={id:'TKT-'+(1042+tickets.length),...nw,acct:parseInt(nw.acct),status:'Open',created:'Just now',source:'Manual',hubspot:true,comments:[],hsTicketId:null};
     setTickets(p=>[t,...p]);
     setShowNew(false);setNw({title:'',acct:'',priority:'Medium',assigned:''});
@@ -859,8 +870,8 @@ function Tickets({onToast}){
         ),
         h('div',{style:{display:'flex',gap:8,marginTop:12,paddingTop:12,borderTop:'1px solid var(--border)'}},
           h('button',{className:'btn btn-primary',onClick:async()=>{
-            const workers=INIT_WORKERS.filter(w=>w.site===selTicket.acct);
-            const acct=ACCOUNTS.find(a=>a.id===selTicket.acct);
+            const workers=getWorkers().filter(w=>w.site===selTicket.acct);
+            const acct=getAccounts().find(a=>a.id===selTicket.acct);
             onToast('Dispatched to '+workers.length+' workers at '+acctName(selTicket.acct));
             await hsSync('create_note',{accountName:acct?acct.name:'',noteBody:'[FacilityIQ] Ticket '+selTicket.id+' dispatched to '+workers.length+' workers. Priority: '+selTicket.priority+'. Assigned: '+selTicket.assigned});
           }},ico('ti-send'),' Dispatch to Account Workers'),
@@ -882,7 +893,7 @@ function Tickets({onToast}){
               h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'ACCOUNT'),
               h('select',{className:'field-input',value:nw.acct,onChange:e=>setNw({...nw,acct:e.target.value})},
                 h('option',{value:''},'Select account...'),
-                ACCOUNTS.map(a=>h('option',{key:a.id,value:a.id},a.name))
+                getAccounts().map(a=>h('option',{key:a.id,value:a.id},a.name))
               )
             ),
             h('div',null,
@@ -896,7 +907,7 @@ function Tickets({onToast}){
             h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5}},'DISPATCH TO'),
             h('select',{className:'field-input',value:nw.assigned,onChange:e=>setNw({...nw,assigned:e.target.value})},
               h('option',{value:''},'Assign to employee...'),
-              INIT_WORKERS.filter(w=>!w.bench).map(w=>h('option',{key:w.id,value:w.name},w.name+(w.site?' ('+acctName(w.site)+')':'')))
+              getWorkers().filter(w=>!w.bench).map(w=>h('option',{key:w.id,value:w.name},w.name+(w.site?' ('+acctName(w.site)+')':'')))
             )
           ),
           h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
@@ -940,7 +951,7 @@ function Tickets({onToast}){
 
 // ── WORKERS ───────────────────────────────────────────────────────────────────
 function Workers({onToast}){
-  const [workers,setWorkers]=useState(INIT_WORKERS);
+  const [workers,setWorkers]=useState(getWorkers());
   const [showCO,setShowCO]=useState(null);
   const [acctFilter,setAcctFilter]=useState('');
   const [tab,setTab]=useState('assigned');
@@ -955,7 +966,7 @@ function Workers({onToast}){
 
   async function markCO(id){
     const w=workers.find(x=>x.id===id);
-    const site=ACCOUNTS.find(a=>a.id===w?.site);
+    const site=getAccounts().find(a=>a.id===w?.site);
     setWorkers(p=>p.map(x=>x.id===id?{...x,status:'Called Out',callouts:x.callouts+1}:x));
     setShowCO(null);
     onToast('Call-out recorded. Syncing to HubSpot...');
@@ -990,7 +1001,7 @@ function Workers({onToast}){
 
     h('div',{className:'filter-bar'},
       h(AccountFilter,{value:acctFilter,onChange:setAcctFilter}),
-      tab==='bench'&&acctFilter&&h('button',{className:'btn btn-green',onClick:async()=>{const acct=ACCOUNTS.find(a=>a.id===parseInt(acctFilter));onToast('Coverage request sent to '+bench.length+' bench workers');if(acct)await hsSync('push_coverage_request',{accountName:acct.name,requestedWorkers:bench.map(w=>w.name),shift:'Current shift'});}},ico('ti-send'),' Request Coverage — All Bench')
+      tab==='bench'&&acctFilter&&h('button',{className:'btn btn-green',onClick:async()=>{const acct=getAccounts().find(a=>a.id===parseInt(acctFilter));onToast('Coverage request sent to '+bench.length+' bench workers');if(acct)await hsSync('push_coverage_request',{accountName:acct.name,requestedWorkers:bench.map(w=>w.name),shift:'Current shift'});}},ico('ti-send'),' Request Coverage — All Bench')
     ),
     h('div',{className:'grid g4',style:{marginBottom:16}},
       [
@@ -1044,7 +1055,7 @@ function PreventivePM({onToast}){
   const [acctFilter,setAcctFilter]=useState('');
   const done=async id=>{
     const item=items.find(x=>x.id===id);
-    const acct=ACCOUNTS.find(a=>a.id===item?.acct);
+    const acct=getAccounts().find(a=>a.id===item?.acct);
     setItems(p=>p.map(x=>x.id===id?{...x,status:'Completed',last:'Today'}:x));
     onToast('PM item marked complete');
     if(item&&acct&&item.status==='Overdue'){
@@ -1054,7 +1065,7 @@ function PreventivePM({onToast}){
   useEffect(()=>{
     // Push overdue PM items to HubSpot on load
     items.filter(i=>i.status==='Overdue'&&!i.hsSynced).forEach(async item=>{
-      const acct=ACCOUNTS.find(a=>a.id===item.acct);
+      const acct=getAccounts().find(a=>a.id===item.acct);
       if(acct){
         const res=await hsSync('create_pm_ticket',{task:item.task,accountName:acct.name,due:item.due,freq:item.freq,pmId:item.id});
         if(res?.hsTicketId) setItems(p=>p.map(x=>x.id===item.id?{...x,hsSynced:true,hsTicketId:res.hsTicketId}:x));
@@ -1415,7 +1426,13 @@ function App(){
   function loadHubSpot(pod,token){
     setHsLoading(true);
     hsPull(pod).then(data=>{
-      if(data&&data.accounts&&data.accounts.length>0) setHsData(data);
+      if(data&&data.accounts&&data.accounts.length>0){
+        // Update module-level live data so all components use it
+        _ACCOUNTS = data.accounts;
+        _TICKETS  = data.tickets;
+        _WORKERS  = data.workers;
+        setHsData(data);
+      }
       setHsLoading(false);
     }).catch(()=>setHsLoading(false));
   }
@@ -1441,9 +1458,9 @@ function App(){
   // Not logged in — show login screen
   if(!user) return h(LoginScreen,{onLogin:handleLogin});
 
-  const liveAccounts = hsData ? hsData.accounts : ACCOUNTS;
-  const liveTickets  = hsData ? hsData.tickets  : INIT_TICKETS;
-  const liveWorkers  = hsData ? hsData.workers  : INIT_WORKERS;
+  const liveAccounts = hsData ? hsData.accounts : getAccounts();
+  const liveTickets  = hsData ? hsData.tickets  : getTickets();
+  const liveWorkers  = hsData ? hsData.workers  : getWorkers();
 
   const props={onToast:setToast,setPage,liveAccounts,liveTickets,liveWorkers};
 
