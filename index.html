@@ -1173,27 +1173,273 @@ const NAV=[
 ];
 const LABELS={overview:'Overview',accounts:'Accounts',qa:'QA Tasks',satisfaction:'Building Satisfaction',walkthrough:'Building Walkthrough',qr:'QR Feedback',tickets:'Tickets & Dispatch',workers:'Workers',pm:'Preventive PM',ai:'Alan AI'};
 
+
+// ── AUTH & SESSION ────────────────────────────────────────────────────────────
+const PODS = [
+  'Strategic Accounts',
+  'Route/Low Touch',
+  'Multi-Family/Multi-Tenant',
+  'Grounds & Exterior',
+  'Launch and Recovery',
+];
+
+async function authCall(action, payload) {
+  const res = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...payload }),
+  });
+  return res.json();
+}
+
+// ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
+function LoginScreen({ onLogin }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleLogin() {
+    if (!email || !password) return;
+    setLoading(true); setError('');
+    const res = await authCall('login', { email, password });
+    if (res.success) {
+      localStorage.setItem('fiq_token', res.token);
+      localStorage.setItem('fiq_user', JSON.stringify(res.user));
+      onLogin(res.user, res.token);
+    } else {
+      setError(res.error || 'Login failed');
+    }
+    setLoading(false);
+  }
+
+  return h('div', { style: { display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'var(--bg)', flexDirection:'column', gap:0 } },
+    h('div', { style: { width:380, padding:32, background:'var(--card)', border:'1px solid var(--border)', borderRadius:16 } },
+      h('div', { style: { display:'flex', alignItems:'center', gap:10, marginBottom:28 } },
+        h('div', { style: { width:36, height:36, borderRadius:9, background:'linear-gradient(135deg,var(--accent),var(--purple))', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:700, color:'#fff' } }, 'F'),
+        h('div', null,
+          h('div', { style: { fontSize:18, fontWeight:700, color:'var(--text)', letterSpacing:'-.3px' } },
+            'Facility', h('span', { style: { color:'var(--accent2)' } }, 'IQ')
+          ),
+          h('div', { style: { fontSize:10, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'.5px' } }, 'DSC Solutions')
+        )
+      ),
+      h('div', { style: { fontSize:14, fontWeight:600, color:'var(--text)', marginBottom:20 } }, 'Sign in to your pod'),
+      h('div', { style: { marginBottom:12 } },
+        h('div', { style: { fontSize:11, color:'var(--muted)', marginBottom:5, fontWeight:600 } }, 'EMAIL'),
+        h('input', { className:'field-input', type:'email', placeholder:'you@dscsolutionsfm.com', value:email,
+          onChange:e=>setEmail(e.target.value),
+          onKeyDown:e=>e.key==='Enter'&&handleLogin() })
+      ),
+      h('div', { style: { marginBottom:20 } },
+        h('div', { style: { fontSize:11, color:'var(--muted)', marginBottom:5, fontWeight:600 } }, 'PASSWORD'),
+        h('input', { className:'field-input', type:'password', placeholder:'••••••••', value:password,
+          onChange:e=>setPassword(e.target.value),
+          onKeyDown:e=>e.key==='Enter'&&handleLogin() })
+      ),
+      error && h('div', { style: { fontSize:12, color:'var(--red)', marginBottom:12, padding:'8px 12px', background:'rgba(239,68,68,.08)', borderRadius:7, border:'1px solid rgba(239,68,68,.2)' } }, error),
+      h('button', { className:'btn btn-primary', style:{ width:'100%', justifyContent:'center', padding:'10px' }, onClick:handleLogin, disabled:loading||!email||!password },
+        loading ? 'Signing in...' : ico('ti-login') + ' Sign In'
+      ),
+      h('div', { style: { marginTop:16, fontSize:11, color:'var(--muted2)', textAlign:'center' } }, 'FacilityIQ v2 · DSC Solutions')
+    )
+  );
+}
+
+// ── ADMIN PANEL ───────────────────────────────────────────────────────────────
+function AdminPanel({ token, onClose, onToast }) {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editUser, setEditUser] = useState(null);
+  const [form, setForm] = useState({ email:'', name:'', pod:'Strategic Accounts', role:'pod_manager', password:'' });
+
+  useEffect(() => {
+    authCall('list_users', { token }).then(res => {
+      if (res.success) setUsers(res.users);
+      setLoading(false);
+    });
+  }, []);
+
+  async function handleCreate() {
+    const res = await authCall('create_user', { token, ...form });
+    if (res.success) {
+      onToast('User ' + form.email + ' created');
+      setShowCreate(false);
+      setForm({ email:'', name:'', pod:'Strategic Accounts', role:'pod_manager', password:'' });
+      const refreshed = await authCall('list_users', { token });
+      if (refreshed.success) setUsers(refreshed.users);
+    } else {
+      onToast('Error: ' + res.error);
+    }
+  }
+
+  async function handleUpdate() {
+    const res = await authCall('update_user', { token, ...editUser });
+    if (res.success) {
+      onToast('User updated');
+      setEditUser(null);
+      const refreshed = await authCall('list_users', { token });
+      if (refreshed.success) setUsers(refreshed.users);
+    } else {
+      onToast('Error: ' + res.error);
+    }
+  }
+
+  async function handleDelete(email) {
+    if (!confirm('Delete user ' + email + '?')) return;
+    const res = await authCall('delete_user', { token, email });
+    if (res.success) {
+      onToast('User deleted');
+      setUsers(p => p.filter(u => u.email !== email));
+    }
+  }
+
+  const UserForm = ({ data, setData, onSubmit, onCancel, submitLabel }) =>
+    h('div', { style:{ display:'flex', flexDirection:'column', gap:12 } },
+      h('div', { className:'grid g2' },
+        h('div', null,
+          h('div', { style:{ fontSize:11, color:'var(--muted)', marginBottom:5 } }, 'FULL NAME'),
+          h('input', { className:'field-input', placeholder:'Full name', value:data.name, onChange:e=>setData({...data,name:e.target.value}) })
+        ),
+        h('div', null,
+          h('div', { style:{ fontSize:11, color:'var(--muted)', marginBottom:5 } }, 'EMAIL'),
+          h('input', { className:'field-input', placeholder:'email@dscsolutionsfm.com', value:data.email, onChange:e=>setData({...data,email:e.target.value}), disabled:!!editUser })
+        )
+      ),
+      h('div', { className:'grid g2' },
+        h('div', null,
+          h('div', { style:{ fontSize:11, color:'var(--muted)', marginBottom:5 } }, 'POD ASSIGNMENT'),
+          h('select', { className:'field-input', value:data.pod, onChange:e=>setData({...data,pod:e.target.value}) },
+            PODS.map(p => h('option', { key:p, value:p }, p))
+          )
+        ),
+        h('div', null,
+          h('div', { style:{ fontSize:11, color:'var(--muted)', marginBottom:5 } }, 'ROLE'),
+          h('select', { className:'field-input', value:data.role, onChange:e=>setData({...data,role:e.target.value}) },
+            h('option', { value:'pod_manager' }, 'Pod Manager'),
+            h('option', { value:'supervisor' }, 'Supervisor'),
+            h('option', { value:'admin' }, 'Admin')
+          )
+        )
+      ),
+      h('div', null,
+        h('div', { style:{ fontSize:11, color:'var(--muted)', marginBottom:5 } }, submitLabel==='Update User' ? 'NEW PASSWORD (leave blank to keep current)' : 'TEMPORARY PASSWORD'),
+        h('input', { className:'field-input', type:'password', placeholder:'••••••••', value:data.password||'', onChange:e=>setData({...data,password:e.target.value}) })
+      ),
+      h('div', { style:{ display:'flex', gap:8, justifyContent:'flex-end' } },
+        h('button', { className:'btn btn-ghost', onClick:onCancel }, 'Cancel'),
+        h('button', { className:'btn btn-primary', onClick:onSubmit, disabled:!data.name||!data.email||(!editUser&&!data.password) }, ico('ti-check'), ' ', submitLabel)
+      )
+    );
+
+  return h('div', { className:'modal-backdrop', onClick:onClose },
+    h('div', { className:'modal', style:{ width:700 }, onClick:e=>e.stopPropagation() },
+      h('div', { className:'modal-title' },
+        ico('ti-users-group', { color:'var(--accent2)' }), ' User Management',
+        h('button', { className:'btn btn-ghost btn-sm', style:{ marginLeft:'auto' }, onClick:onClose }, ico('ti-x'))
+      ),
+
+      showCreate && h('div', { style:{ marginBottom:20, padding:16, background:'var(--surface)', borderRadius:10, border:'1px solid var(--border)' } },
+        h('div', { style:{ fontSize:13, fontWeight:600, marginBottom:12 } }, 'Create New User'),
+        h(UserForm, { data:form, setData:setForm, onSubmit:handleCreate, onCancel:()=>setShowCreate(false), submitLabel:'Create User' })
+      ),
+
+      editUser && h('div', { style:{ marginBottom:20, padding:16, background:'var(--surface)', borderRadius:10, border:'1px solid var(--border)' } },
+        h('div', { style:{ fontSize:13, fontWeight:600, marginBottom:12 } }, 'Edit User — ' + editUser.email),
+        h(UserForm, { data:editUser, setData:setEditUser, onSubmit:handleUpdate, onCancel:()=>setEditUser(null), submitLabel:'Update User' })
+      ),
+
+      !showCreate && !editUser && h('div', { style:{ display:'flex', justifyContent:'flex-end', marginBottom:12 } },
+        h('button', { className:'btn btn-primary btn-sm', onClick:()=>setShowCreate(true) }, ico('ti-plus'), ' Add User')
+      ),
+
+      loading ? h('div', { style:{ fontSize:12, color:'var(--muted)', padding:'20px 0' } }, 'Loading users...') :
+      h('div', { className:'card', style:{ padding:0 } },
+        h('table', { className:'tbl' },
+          h('thead', null, h('tr', null, ['Name','Email','Pod','Role','Created',''].map(c=>h('th',{key:c},c)))),
+          h('tbody', null, users.map(u =>
+            h('tr', { key:u.email },
+              h('td', { style:{ fontWeight:500 } }, u.name),
+              h('td', { style:{ fontSize:11, color:'var(--muted)', fontFamily:'monospace' } }, u.email),
+              h('td', null, h(Badge, { cls:'blue' }, u.pod)),
+              h('td', null, h(Badge, { cls:u.role==='admin'?'purple':u.role==='supervisor'?'amber':'muted' }, u.role)),
+              h('td', { style:{ fontSize:11, color:'var(--muted)' } }, u.createdAt ? new Date(u.createdAt).toLocaleDateString() : '—'),
+              h('td', null,
+                h('div', { style:{ display:'flex', gap:5 } },
+                  h('button', { className:'btn btn-ghost btn-sm', onClick:()=>setEditUser({...u,password:''}) }, ico('ti-pencil')),
+                  u.email !== 'alan_c@dscsolutionsfm.com' &&
+                  h('button', { className:'btn btn-danger btn-sm', onClick:()=>handleDelete(u.email) }, ico('ti-trash'))
+                )
+              )
+            )
+          ))
+        )
+      )
+    )
+  );
+}
+
 function App(){
   const [page,setPage]=useState('overview');
   const [toast,setToast]=useState(null);
   const [hsData,setHsData]=useState(null);
   const [hsLoading,setHsLoading]=useState(true);
-  const [hsError,setHsError]=useState(null);
+  const [showAdmin,setShowAdmin]=useState(false);
 
+  // Auth state
+  const [user,setUser]=useState(null);
+  const [authChecked,setAuthChecked]=useState(false);
+
+  // Check for existing session on load
   useEffect(()=>{
-    hsPull('Pod 3').then(data=>{
-      if(data&&data.accounts&&data.accounts.length>0){
-        setHsData(data);
-        setHsLoading(false);
-      } else {
-        setHsError('Using local data — HubSpot not connected');
-        setHsLoading(false);
-      }
-    }).catch(()=>{
-      setHsError('Using local data — HubSpot not connected');
+    const token=localStorage.getItem('fiq_token');
+    const savedUser=localStorage.getItem('fiq_user');
+    if(token&&savedUser){
+      authCall('validate_session',{token}).then(res=>{
+        if(res.success){
+          setUser(res.user);
+          loadHubSpot(res.user.pod,token);
+        } else {
+          localStorage.removeItem('fiq_token');
+          localStorage.removeItem('fiq_user');
+        }
+        setAuthChecked(true);
+      });
+    } else {
+      setAuthChecked(true);
       setHsLoading(false);
-    });
+    }
   },[]);
+
+  function loadHubSpot(pod,token){
+    setHsLoading(true);
+    hsPull(pod).then(data=>{
+      if(data&&data.accounts&&data.accounts.length>0) setHsData(data);
+      setHsLoading(false);
+    }).catch(()=>setHsLoading(false));
+  }
+
+  function handleLogin(userData,token){
+    setUser(userData);
+    loadHubSpot(userData.pod,token);
+  }
+
+  async function handleLogout(){
+    const token=localStorage.getItem('fiq_token');
+    if(token) await authCall('logout',{token});
+    localStorage.removeItem('fiq_token');
+    localStorage.removeItem('fiq_user');
+    setUser(null);setHsData(null);setHsLoading(false);
+  }
+
+  // Not checked yet — blank screen
+  if(!authChecked) return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'var(--bg)'}},
+    h('div',{style:{color:'var(--muted)',fontSize:13}},'Loading...')
+  );
+
+  // Not logged in — show login screen
+  if(!user) return h(LoginScreen,{onLogin:handleLogin});
 
   const liveAccounts = hsData ? hsData.accounts : ACCOUNTS;
   const liveTickets  = hsData ? hsData.tickets  : INIT_TICKETS;
@@ -1220,12 +1466,16 @@ function App(){
       ),
       h('div',{className:'sidebar-footer'},
         h('div',{className:'user-chip'},
-          h('div',{className:'avatar'},'AK'),
-          h('div',null,h('div',{className:'user-name'},'Alan K.'),h('div',{className:'user-role'},'Managing Director')),
+          h('div',{className:'avatar'},user.name.split(' ').map(p=>p[0]).join('').slice(0,2)),
+          h('div',null,
+            h('div',{className:'user-name'},user.name),
+            h('div',{className:'user-role'},user.pod)
+          ),
           ico('ti-dots-vertical',{marginLeft:'auto',color:'var(--muted)',fontSize:15})
         )
       )
     ),
+    showAdmin&&h(AdminPanel,{token:localStorage.getItem('fiq_token'),onClose:()=>setShowAdmin(false),onToast:setToast}),
     h('div',{className:'main'},
       h('div',{className:'topbar'},
         h('div',{className:'topbar-bread'},
@@ -1235,13 +1485,17 @@ function App(){
         ),
         h('div',{className:'topbar-actions'},
           h('span',{className:'live-pill'},ico('ti-circle-filled',{fontSize:6}),' Live'),
+          h('span',{style:{fontSize:11,color:'var(--muted)',background:'var(--surface)',border:'1px solid var(--border)',padding:'3px 10px',borderRadius:99,display:'inline-flex',alignItems:'center',gap:5}},
+            ico('ti-map-pin',{fontSize:11}),user.pod
+          ),
           hsLoading
-            ? h('span',{style:{fontSize:10,color:'var(--muted)',display:'flex',alignItems:'center',gap:4}},ico('ti-refresh',{fontSize:12}),' Syncing HubSpot...')
+            ? h('span',{style:{fontSize:10,color:'var(--muted)',display:'flex',alignItems:'center',gap:4}},ico('ti-refresh',{fontSize:12}),' Syncing...')
             : hsData
-              ? h('span',{style:{fontSize:10,background:'rgba(34,197,94,.1)',color:'var(--green)',border:'1px solid rgba(34,197,94,.2)',padding:'2px 8px',borderRadius:99,fontWeight:700,display:'inline-flex',alignItems:'center',gap:4}},ico('ti-brand-hubspot',{fontSize:11}),' HubSpot Live')
-              : h('span',{style:{fontSize:10,color:'var(--amber)',display:'flex',alignItems:'center',gap:4}},ico('ti-alert-triangle',{fontSize:12}),' Local Data'),
+              ? h('span',{style:{fontSize:10,background:'rgba(34,197,94,.1)',color:'var(--green)',border:'1px solid rgba(34,197,94,.2)',padding:'2px 8px',borderRadius:99,fontWeight:700,display:'inline-flex',alignItems:'center',gap:4}},ico('ti-brand-hubspot',{fontSize:11}),' HS Live')
+              : h('span',{style:{fontSize:10,color:'var(--amber)',display:'flex',alignItems:'center',gap:4}},ico('ti-alert-triangle',{fontSize:12}),' Local'),
+          user.role==='admin'&&h('button',{className:'topbar-icon-btn',onClick:()=>setShowAdmin(true),title:'User Management'},ico('ti-users-group')),
           h('button',{className:'topbar-icon-btn'},ico('ti-bell')),
-          h('button',{className:'topbar-icon-btn'},ico('ti-settings'))
+          h('button',{className:'topbar-icon-btn',onClick:handleLogout,title:'Sign Out'},ico('ti-logout'))
         )
       ),
       h('div',{className:'content'},
