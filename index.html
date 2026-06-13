@@ -341,6 +341,25 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
   ]);
   const [showAddSched, setShowAddSched] = useState(false);
   const [schedForm, setSchedForm] = useState({type:'cleaning',task:'',crew:'',time:'',days:[],date:'',notes:''});
+  // AI Assistant state
+  const [aiOpen, setAiOpen] = useState(false);
+  const [aiMsgs, setAiMsgs] = useState([{role:'assistant',text:'Hi — I\'m Alan AI. I have context on this account\'s operations, PM schedule, and cleaning protocols. Ask me anything or say "create inspection for [area]" to generate a QA survey.'}]);
+  const [aiInput, setAiInput] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const aiEndRef = useRef(null);
+  // Documents state
+  const [docs, setDocs] = useState([
+    {id:1,name:'Scope of Work — 2025.pdf',type:'pdf',size:'2.4 MB',uploaded:'Jan 15, 2025',uploadedBy:'Alan K.'},
+    {id:2,name:'Building Access Protocol.pdf',type:'pdf',size:'890 KB',uploaded:'Mar 3, 2025',uploadedBy:'Sharlene T.'},
+    {id:3,name:'Chemical Safety Data Sheet.pdf',type:'pdf',size:'1.1 MB',uploaded:'Apr 12, 2025',uploadedBy:'Alan K.'},
+  ]);
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadName, setUploadName] = useState('');
+  const fileInputRef = useRef(null);
+  // Calendar selected day
+  const [calSelectedDay, setCalSelectedDay] = useState(null);
+  // Selected PM item for editing from overview/calendar
+  const [quickEditPM, setQuickEditPM] = useState(null);
 
   const acctTickets = tickets.filter(t => t.acct === acct.id);
   const acctWorkers = workers.filter(w => w.site === acct.id);
@@ -355,6 +374,7 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
     {id:'schedule', label:'Schedule'},
     {id:'qa', label:'Quality Assurance'},
     {id:'workers', label:'Workers'},
+    {id:'documents', label:'Documents', badge: docs.length},
   ];
 
   // Schedule data
@@ -405,11 +425,82 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
   const typeColor = t => t === 'cleaning' ? 'var(--accent2)' : t === 'pm' ? 'var(--amber)' : t === 'landscaping' ? 'var(--green)' : 'var(--muted)';
   const typeBg = t => t === 'cleaning' ? 'rgba(79,126,255,.1)' : t === 'pm' ? 'rgba(245,158,11,.1)' : t === 'landscaping' ? 'rgba(34,197,94,.1)' : 'rgba(123,127,153,.08)';
 
+  // AI send function
+  async function sendAI(inputText) {
+    const txt = (inputText || aiInput).trim();
+    if (!txt || aiLoading) return;
+    setAiInput('');
+    const nm = [...aiMsgs, {role:'user', text:txt}];
+    setAiMsgs(nm); setAiLoading(true);
+
+    // Check if user wants to create an inspection
+    const inspMatch = txt.toLowerCase().match(/create\s+(?:an?\s+)?(?:inspection|survey|qa|checklist)\s+(?:for\s+)?(.+)/i);
+
+    const systemPrompt = `You are Alan AI, an intelligent facilities operations assistant embedded in FacilityIQ for DSC Solutions.
+
+You have full context on this specific account:
+- Account: ${acct.name}
+- Address: ${acct.addr}
+- Industry: ${acct.industry || 'General'}
+- Areas: ${(acct.areas||[]).join(', ') || 'Not specified'}
+- Assigned Workers: ${acctWorkers.map(w=>w.name+' ('+w.role+')').join(', ') || 'None assigned'}
+- PM Schedule: ${pmItems.map(p=>p.task+' ('+p.freq+', assigned to '+p.assignee+')').join('; ') || 'No PM items'}
+- Open Complaints: ${acctTickets.filter(t=>t.status==='Open').length}
+
+You have access to the account's documents including Scope of Work. Answer questions about cleaning frequencies, protocols, and procedures based on DSC Solutions standards and the account context above.
+
+If the user asks to CREATE an inspection or QA survey for specific areas, respond with a JSON block at the end of your message like this:
+{"CREATE_INSPECTION": true, "areas": ["Bathroom 3", "Bathroom 4"], "items": ["Floors", "Toilets", "Sinks", "Mirrors", "Paper products restocked", "Odor check", "Trash removal"]}
+
+Keep responses concise and operational.`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514', max_tokens:800, system:systemPrompt,
+          messages:nm.map(m=>({role:m.role==='assistant'?'assistant':'user', content:m.text}))
+        })
+      });
+      const data = await res.json();
+      const reply = data.content?.find(b=>b.type==='text')?.text || 'No response.';
+
+      // Check if AI wants to create an inspection
+      const jsonMatch = reply.match(/\{"CREATE_INSPECTION"[\s\S]*?\}/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.CREATE_INSPECTION) {
+            // Auto-populate custom inspection and switch tab
+            setInspType('custom');
+            setCustomItems(parsed.items || []);
+            setInspScores({});
+            setInspSubmitted(false);
+            // Override areas for this inspection
+            setTab('qa');
+            const cleanReply = reply.replace(jsonMatch[0], '').trim();
+            setAiMsgs(p=>[...p, {role:'assistant', text:cleanReply + '\n\n✓ Custom inspection created — switched to Quality Assurance tab.'}]);
+            setAiLoading(false);
+            return;
+          }
+        } catch(e) {}
+      }
+
+      setAiMsgs(p=>[...p, {role:'assistant', text:reply}]);
+    } catch(e) {
+      setAiMsgs(p=>[...p, {role:'assistant', text:'Connection error.'}]);
+    }
+    setAiLoading(false);
+  }
+
+  useEffect(()=>{if(aiEndRef.current&&aiOpen)aiEndRef.current.scrollIntoView({behavior:'smooth'});},[aiMsgs,aiLoading,aiOpen]);
+
   return h('div', {className:'modal-backdrop', onClick:onClose},
-    h('div', {className:'modal', style:{width:920, maxWidth:'96vw', padding:0, overflow:'hidden', display:'flex', flexDirection:'column', maxHeight:'88vh'}, onClick:e=>e.stopPropagation()},
+    h('div', {className:'modal', style:{width:920, maxWidth:'96vw', padding:0, overflow:'hidden', display:'flex', flexDirection:'column', maxHeight:'90vh'}, onClick:e=>e.stopPropagation()},
 
       // ── HEADER ──
-      h('div', {style:{padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:12, flexShrink:0}},
+      h('div', {style:{padding:'14px 20px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:12, flexShrink:0, flexWrap:'wrap'}},
         h('div', {style:{display:'flex', alignItems:'center', gap:8, flex:1, minWidth:0}},
           h('div', {style:{width:34, height:34, borderRadius:8, background:'rgba(79,126,255,.12)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0}},
             ico('ti-building', {color:'var(--accent2)', fontSize:17})
@@ -419,23 +510,56 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
             h('div', {style:{fontSize:11, color:'var(--muted)'}}, acct.addr)
           )
         ),
-        // Stats row
         h('div', {style:{display:'flex', gap:16, flexShrink:0}},
-          [{l:'Building Health', v: acct.score > 0 ? acct.score+'%' : 'N/A', c: acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'},
-           {l:'Open Complaints', v: openComplaints.length, c:'var(--red)'},
-           {l:'PM Due', v: acctPM.filter(p=>p.status==='Due Soon'||p.status==='Overdue').length, c:'var(--amber)'},
+          [{l:'Health', v: acct.score > 0 ? acct.score+'%' : 'N/A', c: acct.score>=85?'var(--green)':acct.score>=70?'var(--amber)':'var(--red)'},
+           {l:'Complaints', v: openComplaints.length, c:'var(--red)'},
+           {l:'PM Due', v: pmItems.filter(p=>p.status==='Due Soon'||p.status==='Overdue').length, c:'var(--amber)'},
            {l:'Workers', v: acctWorkers.length, c:'var(--accent2)'},
           ].map(s => h('div', {key:s.l, style:{textAlign:'center'}},
-            h('div', {style:{fontSize:16, fontWeight:700, color:s.c}}, s.v),
+            h('div', {style:{fontSize:15, fontWeight:700, color:s.c}}, s.v),
             h('div', {style:{fontSize:9, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'.5px'}}, s.l)
           ))
         ),
-        // AI active pill
-        h('div', {style:{display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderRadius:99, border:'1px solid var(--purple)', background:'rgba(167,139,250,.08)', color:'var(--purple)', fontSize:11, fontWeight:600, flexShrink:0}},
-          h('div', {style:{width:6, height:6, borderRadius:99, background:'var(--purple)', boxShadow:'0 0 6px var(--purple)'}}),
-          'AI active'
+        h('button', {
+          style:{display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderRadius:99,
+            border:'1px solid '+(aiOpen?'var(--purple)':'var(--border2)'),
+            background:aiOpen?'rgba(167,139,250,.12)':'transparent',
+            color:aiOpen?'var(--purple)':'var(--muted)', fontSize:11, fontWeight:600, cursor:'pointer', flexShrink:0},
+          onClick:()=>setAiOpen(p=>!p)},
+          h('div', {style:{width:6, height:6, borderRadius:99, background:'var(--purple)', boxShadow:aiOpen?'0 0 6px var(--purple)':''}}),
+          'Alan AI'
         ),
-        h('button', {className:'btn btn-ghost btn-sm', style:{marginLeft:8}, onClick:onClose}, ico('ti-x'))
+        h('button', {className:'btn btn-ghost btn-sm', style:{marginLeft:4}, onClick:onClose}, ico('ti-x'))
+      ),
+
+      // ── AI PANEL (collapsible) ──
+      aiOpen && h('div', {style:{borderBottom:'1px solid var(--border)', background:'rgba(10,11,18,.6)', flexShrink:0}},
+        h('div', {style:{padding:'12px 20px', maxHeight:240, display:'flex', flexDirection:'column'}},
+          h('div', {style:{flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:8, marginBottom:8, minHeight:80}},
+            aiMsgs.map((m,i)=>h('div',{key:i, style:{display:'flex', gap:8, maxWidth:'90%', alignSelf:m.role==='user'?'flex-end':'flex-start', flexDirection:m.role==='user'?'row-reverse':'row'}},
+              m.role==='assistant'&&h('div',{style:{width:22,height:22,borderRadius:6,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}},'A'),
+              h('div',{style:{background:m.role==='user'?'rgba(79,126,255,.15)':'var(--surface)',border:'1px solid '+(m.role==='user'?'rgba(79,126,255,.3)':'var(--border)'),borderRadius:9,padding:'7px 11px',fontSize:11.5,lineHeight:1.5,whiteSpace:'pre-wrap'}},m.text)
+            )),
+            aiLoading&&h('div',{style:{display:'flex',gap:8}},
+              h('div',{style:{width:22,height:22,borderRadius:6,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff'}},'A'),
+              h('div',{style:{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:9,padding:'7px 11px'}},
+                h('div',{className:'typing-dots'},h('span'),h('span'),h('span')))
+            ),
+            h('div',{ref:aiEndRef})
+          ),
+          h('div',{style:{display:'flex',gap:6}},
+            h('div',{style:{flex:1,display:'flex',gap:4,flexWrap:'wrap',marginRight:4}},
+              ['How often do we clean windows here?','What\'s in the scope of work?','Create inspection for restrooms'].map(q=>
+                h('button',{key:q,onClick:()=>sendAI(q),style:{fontSize:10,padding:'3px 8px',borderRadius:99,border:'1px solid var(--border)',background:'transparent',color:'var(--muted)',cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},q)
+              )
+            ),
+            h('input',{style:{flex:1,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:7,padding:'6px 10px',color:'var(--text)',fontFamily:'inherit',fontSize:11.5,outline:'none',minWidth:0},
+              placeholder:'Ask about this account or create an inspection...',
+              value:aiInput, onChange:e=>setAiInput(e.target.value),
+              onKeyDown:e=>e.key==='Enter'&&sendAI()}),
+            h('button',{className:'btn btn-primary btn-sm',onClick:()=>sendAI(),disabled:!aiInput.trim()||aiLoading},ico('ti-send'))
+          )
+        )
       ),
 
       // ── TAB BAR ──
@@ -477,14 +601,17 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
             ),
             h('div', {className:'card'},
               h('div', {className:'card-title'}, ico('ti-clock'), ' Upcoming Preventive PM'),
-              acctPM.length === 0
+              pmItems.length === 0
                 ? h('div', {style:{fontSize:12, color:'var(--muted)'}}, 'No PM items scheduled')
-                : acctPM.slice(0,5).map(p => h('div', {key:p.id, style:{display:'flex', alignItems:'center', gap:10, padding:'8px 0', borderTop:'1px solid var(--border)'}},
+                : pmItems.filter(p=>p.status!=='Completed').slice(0,5).map(p => h('div', {key:p.id,
+                    style:{display:'flex', alignItems:'center', gap:10, padding:'8px 0', borderTop:'1px solid var(--border)', cursor:'pointer'},
+                    onClick:()=>{setEditPM(p);setPmForm({task:p.task,freq:p.freq,assignee:p.assignee||'',startDate:p.startDate||p.due||'',notes:p.notes||''});setShowAddPM(true);setTab('pm');}},
                     h('div', {style:{flex:1}},
                       h('div', {style:{fontSize:12, fontWeight:500}}, p.task),
-                      h('div', {style:{fontSize:10, color:'var(--muted)'}}, 'Due: '+p.due+' · '+p.freq)
+                      h('div', {style:{fontSize:10, color:'var(--muted)'}}, 'Due: '+p.due+' · '+p.freq+' · '+p.assignee)
                     ),
-                    h(Badge, {cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':'blue'}, p.status)
+                    h(Badge, {cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':'blue'}, p.status),
+                    ico('ti-chevron-right', {fontSize:12, color:'var(--muted2)'})
                   ))
             )
           ),
@@ -610,6 +737,9 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
                             hsSync('create_note',{accountName:acct.name,noteBody:'[FacilityIQ PM] Completed: '+p.task+' — assigned to '+p.assignee});
                             onToast(p.task+' marked complete');
                           }},ico('ti-check')),
+                        p.status==='Completed'&&h('button',{className:'btn btn-ghost btn-sm',title:'Revert to Scheduled',
+                          onClick:()=>{setPmItems(prev=>prev.map(x=>x.id===p.id?{...x,status:'Scheduled',last:x.last}:x));onToast('Reverted to Scheduled');}},
+                          ico('ti-arrow-back'),' Revert'),
                         h('button',{className:'btn btn-ghost btn-sm',title:'Dispatch',
                           onClick:()=>{
                             hsSync('create_note',{accountName:acct.name,noteBody:'[FacilityIQ PM] Dispatched: '+p.task+' to '+p.assignee+'. Due: '+p.due});
@@ -625,6 +755,197 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
                     )
                   )))
                 )
+          )
+        ),
+
+
+        // SATISFACTION
+        tab==='satisfaction' && h('div', {className:'grid g2'},
+          h('div', {className:'card'},
+            h('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14}},
+              h('div', {style:{fontSize:14, fontWeight:600}}, 'Occupant satisfaction survey'),
+              h('div', {style:{fontSize:11, color:'var(--muted)'}}, 'Sent via QR · email · kiosk')
+            ),
+            surveySubmitted
+              ? h('div', {style:{textAlign:'center', padding:'28px 0'}},
+                  ico('ti-circle-check', {fontSize:36, color:'var(--green)', display:'block', marginBottom:10}),
+                  h('div', {style:{fontSize:14, fontWeight:600, marginBottom:6}}, 'Feedback submitted!'),
+                  h('button', {className:'btn btn-ghost btn-sm', onClick:()=>{setSurveySubmitted(false);setSurveyScores({q1:0,q2:0,q3:0});setSurveyResolved('');setSurveyComment('');}}, ico('ti-refresh'), ' New Survey')
+                )
+              : h(Fragment, null,
+                  h('div', {style:{marginBottom:14}},
+                    h('div', {style:{fontSize:12.5, marginBottom:8}}, 'How would you rate the overall cleanliness today?'),
+                    h('div', {style:{display:'flex', gap:6}},
+                      [1,2,3,4,5].map(n=>h('button',{key:n,style:{flex:1,padding:'10px 0',borderRadius:7,border:'1px solid var(--border2)',background:surveyScores.q1===n?'var(--green)':'var(--surface)',color:surveyScores.q1===n?'#fff':'var(--muted)',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:14,display:'flex',flexDirection:'column',alignItems:'center',gap:1},onClick:()=>setSurveyScores(p=>({...p,q1:n}))},
+                        n, n===1&&h('span',{style:{fontSize:8,fontWeight:400}},'Poor'), n===5&&h('span',{style:{fontSize:8,fontWeight:400}},'Excellent')
+                      ))
+                    )
+                  ),
+                  h('div', {style:{marginBottom:14}},
+                    h('div', {style:{fontSize:12.5, marginBottom:8}}, 'How satisfied are you with restroom cleanliness?'),
+                    h('div', {style:{display:'flex', gap:6}},
+                      [1,2,3,4,5].map(n=>h('button',{key:n,style:{flex:1,padding:'10px 0',borderRadius:7,border:'1px solid var(--border2)',background:surveyScores.q2===n?'var(--green)':'var(--surface)',color:surveyScores.q2===n?'#fff':'var(--muted)',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:14},onClick:()=>setSurveyScores(p=>({...p,q2:n}))},n))
+                    )
+                  ),
+                  h('div', {style:{marginBottom:14}},
+                    h('div', {style:{fontSize:12.5, marginBottom:8}}, 'Were issues reported promptly resolved?'),
+                    h('div', {style:{display:'flex', gap:6}},
+                      ['Yes','No','N/A'].map(opt=>h('button',{key:opt,style:{flex:1,padding:'9px 0',borderRadius:7,border:'1px solid var(--border2)',background:surveyResolved===opt?'var(--green)':'var(--surface)',color:surveyResolved===opt?'#fff':'var(--muted)',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:12.5},onClick:()=>setSurveyResolved(opt)},opt))
+                    )
+                  ),
+                  h('div', {style:{marginBottom:14}},
+                    h('textarea',{style:{width:'100%',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:7,padding:'8px 11px',color:'var(--text)',fontFamily:'inherit',fontSize:12,resize:'none',outline:'none',minHeight:60},placeholder:'Optional — describe any issues and location...',value:surveyComment,onChange:e=>setSurveyComment(e.target.value)})
+                  ),
+                  h('button',{className:'btn btn-primary',style:{width:'100%',justifyContent:'center',padding:'10px'},onClick:()=>{setSurveySubmitted(true);onToast('Survey submitted for '+acct.name);}}, 'Submit feedback')
+                )
+          ),
+          h('div', {style:{display:'flex', flexDirection:'column', gap:12}},
+            h('div', {className:'card'},
+              h('div', {style:{fontSize:13, fontWeight:600, marginBottom:12}}, 'Survey distribution'),
+              [{icon:'ti-qrcode',label:'QR codes',desc:'Posted in each restroom, lobby, and common area.',count:'Scans this month: 31'},
+               {icon:'ti-mail',label:'Email campaign',desc:'Monthly email to all tenant contacts.',count:'Responses this month: 12'},
+               {icon:'ti-device-tablet',label:'Lobby kiosk',desc:'iPad kiosk at building entrance.',count:'Responses this month: 4'},
+              ].map(item=>h('div',{key:item.label,style:{padding:'10px',background:'var(--surface)',borderRadius:7,border:'1px solid var(--border)',marginBottom:7}},
+                h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:3}},
+                  ico(item.icon,{color:'var(--muted)',fontSize:13}),
+                  h('span',{style:{fontWeight:600,fontSize:12.5}},item.label),
+                  h('span',{style:{marginLeft:'auto',fontSize:11,color:'var(--accent2)',fontWeight:600}},item.count)
+                ),
+                h('div',{style:{fontSize:11,color:'var(--muted)'}},item.desc)
+              )),
+              h('button',{className:'btn btn-ghost btn-sm',style:{width:'100%',justifyContent:'center'},onClick:()=>setShowQRGen(true)},ico('ti-qrcode'),' Generate QR Code for Area'),
+              showQRGen&&h('div',{style:{marginTop:8,display:'flex',gap:6}},
+                h('select',{className:'field-input',value:qrArea,onChange:e=>setQrArea(e.target.value)},
+                  h('option',{value:''},'Select area...'),
+                  AREAS.map(a=>h('option',{key:a,value:a},a))
+                ),
+                h('button',{className:'btn btn-primary btn-sm',disabled:!qrArea,onClick:()=>{onToast('QR code generated for '+qrArea);setShowQRGen(false);setQrArea('');}}, 'Generate')
+              )
+            ),
+            h('div',{style:{padding:'12px',background:'rgba(79,126,255,.06)',border:'1px solid rgba(79,126,255,.2)',borderRadius:9}},
+              h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:10}},
+                h('div',{style:{width:20,height:20,borderRadius:5,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:'#fff'}},'A'),
+                h('span',{style:{fontWeight:600,fontSize:12.5,color:'var(--accent2)'}},'AI response insight')
+              ),
+              h('div',{style:{fontSize:11.5,color:'var(--muted)',lineHeight:1.6}},
+                'QR scans spike on Tuesdays and Thursdays. ',
+                h('span',{style:{color:'var(--accent2)'}},'Consider adding a kiosk to floor 2'),
+                ' where scores are lowest this month.'
+              ),
+              h('div',{style:{marginTop:10}},
+                [{location:'Main Lobby',rating:4,comment:'Looks great!',time:'1h ago'},
+                 {location:'Restroom 2E',rating:2,comment:'Out of paper towels',time:'2h ago'},
+                 {location:'Break Room',rating:5,comment:'Very clean!',time:'3h ago'},
+                 {location:'Conference 201',rating:3,comment:'Could use a wipe-down',time:'5h ago'},
+                ].map((r,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:8,padding:'5px 0',borderTop:'1px solid var(--border)'}},
+                  h('span',{style:{fontSize:11,flex:1}},r.location),
+                  h('div',{style:{display:'flex',gap:1}},[1,2,3,4,5].map(n=>h('span',{key:n,style:{fontSize:10,color:n<=r.rating?'var(--amber)':'var(--border2)'}},'★'))),
+                  h('span',{style:{fontSize:10,color:'var(--muted)'}},r.time)
+                ))
+              )
+            )
+          )
+        ),
+
+        // COMPLAINTS
+        tab==='complaints' && h(Fragment, null,
+          h('div',{className:'grid g4',style:{marginBottom:14}},
+            [{l:'Open',v:acctTickets.filter(t=>t.status==='Open').length,c:'var(--red)'},
+             {l:'In Progress',v:acctTickets.filter(t=>t.status==='In Progress').length,c:'var(--amber)'},
+             {l:'Resolved',v:acctTickets.filter(t=>t.status==='Resolved').length,c:'var(--green)'},
+             {l:'Total',v:acctTickets.length,c:'var(--muted)'},
+            ].map(s=>h('div',{key:s.l,className:'stat-card'},h('div',{className:'stat-label'},s.l),h('div',{className:'stat-value',style:{color:s.c}},s.v)))
+          ),
+          h('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:12}},
+            h('button',{className:'btn btn-primary btn-sm'},ico('ti-plus'),' Log Complaint')
+          ),
+          acctTickets.length===0
+            ? h('div',{style:{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:12}},
+                ico('ti-circle-check',{fontSize:36,color:'var(--green)',display:'block',marginBottom:10}),
+                'No complaints for this account'
+              )
+            : h('div',{style:{display:'flex',flexDirection:'column',gap:8}},
+                acctTickets.map(t=>h('div',{key:t.id,className:'ticket-card'},
+                  h('div',{className:'priority-bar',style:{background:t.priority==='High'?'var(--red)':t.priority==='Medium'?'var(--amber)':'var(--muted)'}}),
+                  h('div',{style:{flex:1}},
+                    h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:4}},
+                      h('span',{style:{fontFamily:'monospace',fontSize:10,color:'var(--muted)'}},t.id),
+                      h(Badge,{cls:t.priority==='High'?'red':t.priority==='Medium'?'amber':'muted'},t.priority),
+                      t.hubspot&&h('span',{className:'hs-badge'},'HS'),
+                      h('span',{style:{marginLeft:'auto',fontSize:10,color:'var(--muted)'}},t.created)
+                    ),
+                    h('div',{style:{fontWeight:600,fontSize:12,marginBottom:3}},t.title),
+                    h('div',{style:{fontSize:10,color:'var(--muted)',display:'flex',gap:10}},
+                      h('span',null,ico('ti-user'),' ',t.assigned),
+                      h('span',null,ico('ti-source-code'),' ',t.source)
+                    )
+                  ),
+                  h('div',{style:{display:'flex',flexDirection:'column',gap:5,alignItems:'flex-end'}},
+                    h(Badge,{cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'},t.status),
+                    h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Dispatched '+t.id)},ico('ti-send'),' Dispatch')
+                  )
+                ))
+              )
+        ),
+
+        // DOCUMENTS
+        tab==='documents' && h(Fragment, null,
+          showUpload&&h('div',{style:{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:20}},
+            h('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,padding:24,width:460,maxWidth:'100%'}},
+              h('div',{style:{fontSize:15,fontWeight:700,marginBottom:16,display:'flex',alignItems:'center',gap:8}},
+                ico('ti-upload',{color:'var(--accent2)'}),' Upload Document',
+                h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>setShowUpload(false)},ico('ti-x'))
+              ),
+              h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+                h('div',{style:{border:'2px dashed var(--border2)',borderRadius:10,padding:'32px',textAlign:'center',cursor:'pointer',background:'var(--surface)'},
+                  onClick:()=>fileInputRef.current&&fileInputRef.current.click()},
+                  ico('ti-file-upload',{fontSize:32,color:'var(--muted)',display:'block',marginBottom:8}),
+                  h('div',{style:{fontSize:13,color:'var(--muted)'}},uploadName||'Click to select file'),
+                  h('div',{style:{fontSize:11,color:'var(--muted2)',marginTop:4}},'PDF, Word, Excel — max 25MB'),
+                  h('input',{ref:fileInputRef,type:'file',style:{display:'none'},accept:'.pdf,.doc,.docx,.xlsx,.xls',
+                    onChange:e=>{if(e.target.files[0])setUploadName(e.target.files[0].name);}})
+                ),
+                h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}},
+                  h('button',{className:'btn btn-ghost',onClick:()=>{setShowUpload(false);setUploadName('');}}, 'Cancel'),
+                  h('button',{className:'btn btn-primary',disabled:!uploadName,
+                    onClick:()=>{
+                      setDocs(p=>[...p,{id:Date.now(),name:uploadName,type:uploadName.split('.').pop(),size:'—',uploaded:new Date().toLocaleDateString(),uploadedBy:'You'}]);
+                      onToast(uploadName+' uploaded');setShowUpload(false);setUploadName('');
+                    }},
+                    ico('ti-upload'),' Upload'
+                  )
+                )
+              )
+            )
+          ),
+          h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}},
+            h('div',{style:{fontSize:12,color:'var(--muted)'}},docs.length+' documents for '+acct.name),
+            h('button',{className:'btn btn-primary btn-sm',onClick:()=>setShowUpload(true)},ico('ti-upload'),' Upload Document')
+          ),
+          h('div',{className:'card',style:{padding:0}},
+            h('table',{className:'tbl'},
+              h('thead',null,h('tr',null,['Document','Type','Size','Uploaded','By',''].map(c=>h('th',{key:c},c)))),
+              h('tbody',null,docs.map(d=>h('tr',{key:d.id},
+                h('td',null,
+                  h('div',{style:{display:'flex',alignItems:'center',gap:8}},
+                    h('div',{style:{width:28,height:28,borderRadius:6,background:d.type==='pdf'?'rgba(239,68,68,.12)':'rgba(79,126,255,.12)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}},
+                      ico(d.type==='pdf'?'ti-file-type-pdf':d.type==='xlsx'||d.type==='xls'?'ti-file-spreadsheet':'ti-file-text',{fontSize:14,color:d.type==='pdf'?'var(--red)':'var(--accent2)'})
+                    ),
+                    h('span',{style:{fontWeight:500,fontSize:12}},d.name)
+                  )
+                ),
+                h('td',null,h('span',{style:{textTransform:'uppercase',fontSize:10,fontWeight:700,color:'var(--muted)'}},d.type)),
+                h('td',{style:{fontSize:11,color:'var(--muted)'}},d.size),
+                h('td',{style:{fontSize:11,color:'var(--muted)'}},d.uploaded),
+                h('td',{style:{fontSize:11,color:'var(--muted)'}},d.uploadedBy),
+                h('td',null,
+                  h('div',{style:{display:'flex',gap:4}},
+                    h('button',{className:'btn btn-ghost btn-sm',onClick:()=>onToast('Downloading '+d.name)},ico('ti-download')),
+                    h('button',{className:'btn btn-danger btn-sm',onClick:()=>{setDocs(p=>p.filter(x=>x.id!==d.id));onToast('Document removed');}},ico('ti-trash'))
+                  )
+                )
+              )))
+            )
           )
         ),
 
@@ -798,7 +1119,9 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
                         (s.days&&s.days.includes(dayName))
                       )
                     );
-                    cells.push(h('div',{key:day,style:{minHeight:90,borderRight:'1px solid var(--border)',borderBottom:'1px solid var(--border)',padding:'6px 4px',verticalAlign:'top',position:'relative'}},
+                    cells.push(h('div',{key:day,
+                      style:{minHeight:90,borderRight:'1px solid var(--border)',borderBottom:'1px solid var(--border)',padding:'6px 4px',verticalAlign:'top',position:'relative',cursor:dayActivities.length>0?'pointer':'default'},
+                      onClick:()=>dayActivities.length>0&&setCalSelectedDay({day,dateStr,dayName,activities:dayActivities})},
                       h('div',{style:{fontSize:11,fontWeight:isToday?700:500,color:isToday?'var(--accent2)':'var(--text)',
                         width:22,height:22,borderRadius:99,background:isToday?'var(--accent)':'transparent',
                         display:'flex',alignItems:'center',justifyContent:'center',marginBottom:4}},day),
@@ -827,6 +1150,46 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
               ].map(item=>h('div',{key:item.t,style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:'var(--muted)'}},
                 h('div',{style:{width:10,height:10,borderRadius:3,background:item.bg,border:'1px solid '+item.c}}),
                 item.l
+              ))
+            ),
+
+            // Selected day panel
+            calSelectedDay&&h('div',{style:{marginTop:14,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'14px 16px'}},
+              h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}},
+                h('div',{style:{fontWeight:700,fontSize:13}},
+                  calSelectedDay.dayName+', '+new Date(calSelectedDay.dateStr+'T00:00').toLocaleDateString('en-US',{month:'long',day:'numeric'})
+                  +' — '+calSelectedDay.activities.length+' activit'+(calSelectedDay.activities.length===1?'y':'ies')
+                ),
+                h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setCalSelectedDay(null)},ico('ti-x'))
+              ),
+              calSelectedDay.activities.map((a,i)=>h('div',{key:i,
+                style:{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderTop:i?'1px solid var(--border)':'none'}},
+                h('span',{style:{
+                  background:a.type==='cleaning'?'rgba(79,126,255,.12)':a.type==='pm'?'rgba(245,158,11,.12)':a.type==='landscaping'?'rgba(34,197,94,.12)':'rgba(167,139,250,.12)',
+                  color:a.type==='cleaning'?'var(--accent2)':a.type==='pm'?'var(--amber)':a.type==='landscaping'?'var(--green)':'var(--purple)',
+                  padding:'2px 7px',borderRadius:99,fontSize:9,fontWeight:700,flexShrink:0}},
+                  a.type.charAt(0).toUpperCase()+a.type.slice(1)
+                ),
+                h('div',{style:{flex:1}},
+                  h('div',{style:{fontSize:12,fontWeight:500}},a.task),
+                  h('div',{style:{fontSize:10,color:'var(--muted)'}},a.crew+' · '+a.time)
+                ),
+                h(Badge,{cls:a.status==='Active'?'green':a.status==='Due Soon'?'amber':a.status==='Cancelled'?'muted':'blue'},a.status),
+                h('div',{style:{display:'flex',gap:4}},
+                  h('button',{className:'btn btn-ghost btn-sm',title:'Edit',
+                    onClick:()=>{
+                      // If it's a PM item, open PM edit
+                      const pmMatch=pmItems.find(p=>p.task===a.task);
+                      if(pmMatch){setEditPM(pmMatch);setPmForm({task:pmMatch.task,freq:pmMatch.freq,assignee:pmMatch.assignee||'',startDate:pmMatch.startDate||pmMatch.due||'',notes:pmMatch.notes||''});setShowAddPM(true);}
+                      else onToast('Edit: '+a.task);
+                    }},ico('ti-pencil')),
+                  h('button',{className:'btn btn-ghost btn-sm',title:'Dispatch',
+                    onClick:()=>{hsSync('create_note',{accountName:acct.name,noteBody:'[FacilityIQ] Dispatched: '+a.task+' to '+a.crew});onToast('Dispatched to '+a.crew);}},
+                    ico('ti-send')),
+                  a.status!=='Cancelled'&&h('button',{className:'btn btn-danger btn-sm',title:'Cancel',
+                    onClick:()=>{setSchedItems(p=>p.map(x=>x.id===a.id?{...x,status:'Cancelled'}:x));setCalSelectedDay(null);onToast('Activity cancelled');}},
+                    ico('ti-x'))
+                )
               ))
             )
           )
