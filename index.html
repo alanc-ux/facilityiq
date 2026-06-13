@@ -321,8 +321,26 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
   const [inspScores, setInspScores] = useState({});
   const [inspSubmitted, setInspSubmitted] = useState(false);
   const [schedFilter, setSchedFilter] = useState('all');
+  const [schedView, setSchedView] = useState('list');
+  const [calMonth, setCalMonth] = useState(new Date(2026,5,1));
   const [showQRGen, setShowQRGen] = useState(false);
   const [qrArea, setQrArea] = useState('');
+  const [pmItems, setPmItems] = useState(pm.filter(p=>p.acct===acct.id).map(p=>({...p,assignee:p.assignee||'Unassigned',startDate:p.startDate||'2026-06-01',notes:''})));
+  const [showAddPM, setShowAddPM] = useState(false);
+  const [editPM, setEditPM] = useState(null);
+  const [pmForm, setPmForm] = useState({task:'',freq:'Monthly',assignee:'',startDate:'',notes:''});
+  const [schedItems, setSchedItems] = useState([
+    {id:1,type:'cleaning',crew:'Marcus Johnson',task:'Daily Janitorial — All Floors',days:['Mon','Tue','Wed','Thu','Fri'],time:'6:00 AM',status:'Active',date:null},
+    {id:2,type:'cleaning',crew:'Dana Reyes',task:'Restroom Deep Clean',days:['Mon','Wed','Fri'],time:'7:00 AM',status:'Active',date:null},
+    {id:3,type:'pm',crew:'Priya Nair',task:'Floor Buffing & Polish',days:['Fri'],time:'8:00 PM',status:'Active',date:null},
+    {id:4,type:'cleaning',crew:'Sharlene Torres',task:'Lobby & Common Areas',days:['Mon','Tue','Wed','Thu','Fri','Sat'],time:'5:00 AM',status:'Active',date:null},
+    {id:5,type:'pm',crew:'PM Contractor',task:'HVAC Filter Check',days:['1st Mon'],time:'9:00 AM',status:'Due Soon',date:'2026-06-14'},
+    {id:6,type:'landscaping',crew:'Grounds Team',task:'Exterior Grounds Maintenance',days:['Tue','Fri'],time:'7:00 AM',status:'Active',date:null},
+    {id:7,type:'pm',crew:'PM Contractor',task:'Carpet Deep Extraction',days:['Last Fri'],time:'6:00 PM',status:'Scheduled',date:'2026-06-27'},
+    {id:8,type:'cleaning',crew:'Mia Santos',task:'Window Cleaning — Exterior',days:['Thu'],time:'9:00 AM',status:'Active',date:null},
+  ]);
+  const [showAddSched, setShowAddSched] = useState(false);
+  const [schedForm, setSchedForm] = useState({type:'cleaning',task:'',crew:'',time:'',days:[],date:'',notes:''});
 
   const acctTickets = tickets.filter(t => t.acct === acct.id);
   const acctWorkers = workers.filter(w => w.site === acct.id);
@@ -488,229 +506,328 @@ function AccountDetailModal({acct, tickets, workers, pm, onClose, onToast}){
 
         // PREVENTIVE PM
         tab==='pm' && h(Fragment, null,
-          h('div', {className:'grid g4', style:{marginBottom:16}},
-            [{l:'Overdue', v:acctPM.filter(p=>p.status==='Overdue').length, c:'var(--red)'},
-             {l:'Due Soon', v:acctPM.filter(p=>p.status==='Due Soon').length, c:'var(--amber)'},
-             {l:'Scheduled', v:acctPM.filter(p=>p.status==='Scheduled').length, c:'var(--accent2)'},
-             {l:'Completed', v:acctPM.filter(p=>p.status==='Completed').length, c:'var(--green)'},
-            ].map(s => h('div', {key:s.l, className:'stat-card'},
-              h('div', {className:'stat-label'}, s.l),
-              h('div', {className:'stat-value', style:{color:s.c}}, s.v)
-            ))
-          ),
-          h('div', {className:'card', style:{padding:0}},
-            h('table', {className:'tbl'},
-              h('thead', null, h('tr', null, ['Task','Frequency','Due','Last Done','Status',''].map(c=>h('th',{key:c},c)))),
-              h('tbody', null,
-                acctPM.length === 0
-                  ? h('tr', null, h('td', {colSpan:6, style:{textAlign:'center', color:'var(--muted)', padding:24}}, 'No PM items for this account'))
-                  : acctPM.map(p => h('tr', {key:p.id},
-                      h('td', {style:{fontWeight:500, fontSize:12}}, p.task),
-                      h('td', null, h(Tag, {t:p.freq})),
-                      h('td', {style:{fontWeight:700, color:p.status==='Overdue'?'var(--red)':p.status==='Due Soon'?'var(--amber)':'var(--text)', fontSize:12}}, p.due),
-                      h('td', {style:{color:'var(--muted)', fontSize:11}}, p.last),
-                      h('td', null, h(Badge, {cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'}, p.status)),
-                      h('td', null, p.status!=='Completed' && h('button', {className:'btn btn-ghost btn-sm', onClick:()=>onToast('PM item marked complete')}, ico('ti-check'), ' Done'))
-                    ))
-              )
-            )
-          )
-        ),
-
-        // SATISFACTION
-        tab==='satisfaction' && h('div', {className:'grid g2'},
-          // Left — survey form
-          h('div', {className:'card'},
-            h('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}},
-              h('div', {style:{fontSize:14, fontWeight:600}}, 'Occupant satisfaction survey'),
-              h('div', {style:{fontSize:11, color:'var(--muted)'}}, 'Sent via QR · email · kiosk')
-            ),
-            surveySubmitted
-              ? h('div', {style:{textAlign:'center', padding:'32px 0'}},
-                  ico('ti-circle-check', {fontSize:40, color:'var(--green)', display:'block', marginBottom:12}),
-                  h('div', {style:{fontSize:14, fontWeight:600, marginBottom:6}}, 'Feedback submitted!'),
-                  h('div', {style:{fontSize:12, color:'var(--muted)', marginBottom:16}}, 'Thank you for your response.'),
-                  h('button', {className:'btn btn-ghost btn-sm', onClick:()=>{setSurveySubmitted(false);setSurveyScores({q1:0,q2:0,q3:0});setSurveyResolved('');setSurveyComment('');}}, ico('ti-refresh'), ' New Survey')
-                )
-              : h(Fragment, null,
-                  // Q1
-                  h('div', {style:{marginBottom:18}},
-                    h('div', {style:{fontSize:13, marginBottom:10}}, 'How would you rate the overall cleanliness of the building today?'),
-                    h('div', {style:{display:'flex', gap:8}},
-                      [1,2,3,4,5].map(n => h('button', {key:n,
-                        style:{flex:1, padding:'12px 0', borderRadius:8, border:'1px solid var(--border2)',
-                          background: surveyScores.q1===n ? 'var(--green)' : 'var(--surface)',
-                          color: surveyScores.q1===n ? '#fff' : 'var(--muted)',
-                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:14,
-                          display:'flex', flexDirection:'column', alignItems:'center', gap:2},
-                        onClick:()=>setSurveyScores(p=>({...p,q1:n}))},
-                        n,
-                        n===1 && h('span',{style:{fontSize:9, fontWeight:400}}, 'Poor'),
-                        n===5 && h('span',{style:{fontSize:9, fontWeight:400}}, 'Excellent')
-                      ))
+          // Add/Edit PM Modal
+          showAddPM && h('div', {style:{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:20}},
+            h('div', {style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,padding:24,width:520,maxWidth:'100%'}},
+              h('div', {style:{fontSize:15,fontWeight:700,marginBottom:16,display:'flex',alignItems:'center',gap:8}},
+                ico('ti-tool',{color:'var(--amber)'}), editPM ? 'Edit PM Task' : 'Add PM Task',
+                h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>{setShowAddPM(false);setEditPM(null);setPmForm({task:'',freq:'Monthly',assignee:'',startDate:'',notes:''});}},ico('ti-x'))
+              ),
+              h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+                h('div',null,
+                  h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'TASK NAME'),
+                  h('input',{className:'field-input',placeholder:'e.g. HVAC Filter Replacement',value:pmForm.task,onChange:e=>setPmForm(p=>({...p,task:e.target.value}))})
+                ),
+                h('div',{className:'grid g2'},
+                  h('div',null,
+                    h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'FREQUENCY'),
+                    h('select',{className:'field-input',value:pmForm.freq,onChange:e=>setPmForm(p=>({...p,freq:e.target.value}))},
+                      ['Daily','Weekly','Bi-weekly','Monthly','Quarterly','Semi-annual','Annual','As Needed'].map(f=>h('option',{key:f},f))
                     )
                   ),
-                  // Q2
-                  h('div', {style:{marginBottom:18}},
-                    h('div', {style:{fontSize:13, marginBottom:10}}, 'How satisfied are you with restroom cleanliness?'),
-                    h('div', {style:{display:'flex', gap:8}},
-                      [1,2,3,4,5].map(n => h('button', {key:n,
-                        style:{flex:1, padding:'12px 0', borderRadius:8, border:'1px solid var(--border2)',
-                          background: surveyScores.q2===n ? 'var(--green)' : 'var(--surface)',
-                          color: surveyScores.q2===n ? '#fff' : 'var(--muted)',
-                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:14},
-                        onClick:()=>setSurveyScores(p=>({...p,q2:n}))},
-                        n
-                      ))
-                    )
-                  ),
-                  // Q3 yes/no
-                  h('div', {style:{marginBottom:18}},
-                    h('div', {style:{fontSize:13, marginBottom:10}}, 'Were any issues reported promptly resolved?'),
-                    h('div', {style:{display:'flex', gap:8}},
-                      ['Yes','No','N/A'].map(opt => h('button', {key:opt,
-                        style:{flex:1, padding:'11px 0', borderRadius:8, border:'1px solid var(--border2)',
-                          background: surveyResolved===opt ? 'var(--green)' : 'var(--surface)',
-                          color: surveyResolved===opt ? '#fff' : 'var(--muted)',
-                          cursor:'pointer', fontFamily:'inherit', fontWeight:600, fontSize:13},
-                        onClick:()=>setSurveyResolved(opt)},
-                        opt
-                      ))
-                    )
-                  ),
-                  // Comment
-                  h('div', {style:{marginBottom:16}},
-                    h('div', {style:{fontSize:13, marginBottom:8}}, 'Any specific feedback or complaints?'),
-                    h('textarea', {style:{width:'100%', background:'var(--surface)', border:'1px solid var(--border)', borderRadius:8,
-                      padding:'10px 12px', color:'var(--text)', fontFamily:'inherit', fontSize:12, resize:'none', outline:'none', minHeight:80},
-                      placeholder:'Optional — describe the issue and location...',
-                      value:surveyComment, onChange:e=>setSurveyComment(e.target.value)})
-                  ),
-                  h('button', {className:'btn btn-primary', style:{width:'100%', justifyContent:'center', padding:'11px'},
-                    onClick:()=>{setSurveySubmitted(true);onToast('Survey submitted for '+acct.name);}},
-                    'Submit feedback'
+                  h('div',null,
+                    h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'START DATE'),
+                    h('input',{className:'field-input',type:'date',value:pmForm.startDate,onChange:e=>setPmForm(p=>({...p,startDate:e.target.value}))})
+                  )
+                ),
+                h('div',null,
+                  h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'ASSIGN TO'),
+                  h('select',{className:'field-input',value:pmForm.assignee,onChange:e=>setPmForm(p=>({...p,assignee:e.target.value}))},
+                    h('option',{value:''},'Select worker...'),
+                    getWorkers().map(w=>h('option',{key:w.id,value:w.name},w.name+' ('+w.role+')'))
+                  )
+                ),
+                h('div',null,
+                  h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'NOTES (OPTIONAL)'),
+                  h('textarea',{style:{width:'100%',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:7,padding:'7px 11px',color:'var(--text)',fontFamily:'inherit',fontSize:12.5,resize:'none',outline:'none',minHeight:60},
+                    placeholder:'Special instructions, vendor info, etc.',
+                    value:pmForm.notes,onChange:e=>setPmForm(p=>({...p,notes:e.target.value}))})
+                ),
+                h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',paddingTop:4}},
+                  h('button',{className:'btn btn-ghost',onClick:()=>{setShowAddPM(false);setEditPM(null);}}, 'Cancel'),
+                  h('button',{className:'btn btn-primary',disabled:!pmForm.task||!pmForm.assignee||!pmForm.startDate,
+                    onClick:()=>{
+                      if(editPM){
+                        setPmItems(p=>p.map(x=>x.id===editPM.id?{...x,...pmForm,status:'Scheduled'}:x));
+                        onToast('PM task updated');
+                      } else {
+                        const newItem={id:'PM-'+Date.now(),acct:acct.id,...pmForm,status:'Scheduled',last:'Never',due:pmForm.startDate};
+                        setPmItems(p=>[...p,newItem]);
+                        hsSync('create_pm_ticket',{task:pmForm.task,accountName:acct.name,due:pmForm.startDate,freq:pmForm.freq,pmId:newItem.id});
+                        onToast('PM task added & dispatched to '+pmForm.assignee);
+                      }
+                      setShowAddPM(false);setEditPM(null);setPmForm({task:'',freq:'Monthly',assignee:'',startDate:'',notes:''});
+                    }},
+                    ico('ti-send'), editPM ? ' Update Task' : ' Add & Dispatch'
                   )
                 )
-          ),
-
-          // Right — distribution + AI insight
-          h('div', {style:{display:'flex', flexDirection:'column', gap:12}},
-            h('div', {className:'card'},
-              h('div', {style:{fontSize:14, fontWeight:600, marginBottom:14}}, 'Survey distribution'),
-              [
-                {icon:'ti-qrcode', label:'QR codes', desc:'Posted in each restroom, lobby, and common area.', count:'Scans this month: 31'},
-                {icon:'ti-mail', label:'Email campaign', desc:'Monthly email to all tenant contacts.', count:'Responses this month: 12'},
-                {icon:'ti-device-tablet', label:'Lobby kiosk', desc:'iPad kiosk at building entrance.', count:'Responses this month: 4'},
-              ].map(item => h('div', {key:item.label, style:{padding:'12px', background:'var(--surface)', borderRadius:8, border:'1px solid var(--border)', marginBottom:8}},
-                h('div', {style:{display:'flex', alignItems:'center', gap:8, marginBottom:4}},
-                  h('div', {style:{width:16, height:16, borderRadius:3, border:'1px solid var(--border2)', flexShrink:0}}),
-                  ico(item.icon, {color:'var(--muted)', fontSize:14}),
-                  h('span', {style:{fontWeight:600, fontSize:13}}, item.label)
-                ),
-                h('div', {style:{fontSize:11, color:'var(--muted)', paddingLeft:24}}, item.desc),
-                h('div', {style:{fontSize:11, color:'var(--muted)', paddingLeft:24}}, item.count)
-              )),
-              // Generate QR
-              h('button', {className:'btn btn-ghost btn-sm', style:{width:'100%', justifyContent:'center'},
-                onClick:()=>setShowQRGen(true)},
-                ico('ti-qrcode'), ' Generate QR Code for Area'
-              ),
-              showQRGen && h('div', {style:{marginTop:10, display:'flex', gap:6}},
-                h('select', {className:'field-input', value:qrArea, onChange:e=>setQrArea(e.target.value)},
-                  h('option', {value:''}, 'Select area...'),
-                  AREAS.map(a => h('option', {key:a, value:a}, a))
-                ),
-                h('button', {className:'btn btn-primary btn-sm', disabled:!qrArea,
-                  onClick:()=>{onToast('QR code generated for '+qrArea+' — '+acct.name);setShowQRGen(false);setQrArea('');}},
-                  'Generate'
-                )
-              )
-            ),
-            // AI insight
-            h('div', {style:{padding:'14px', background:'rgba(79,126,255,.06)', border:'1px solid rgba(79,126,255,.2)', borderRadius:10}},
-              h('div', {style:{display:'flex', alignItems:'center', gap:8, marginBottom:10}},
-                h('div', {style:{width:16, height:16, borderRadius:3, border:'1px solid var(--accent)', flexShrink:0}}),
-                h('span', {style:{fontWeight:600, fontSize:13, color:'var(--accent2)'}}, 'AI response insight')
-              ),
-              h('div', {style:{fontSize:12, color:'var(--muted)', lineHeight:1.6}},
-                'QR scans spike on Tuesdays and Thursdays — likely after morning checks. ',
-                h('span', {style:{color:'var(--accent2)'}}, 'Consider adding a kiosk to floor 2'),
-                ' where satisfaction scores are lowest this month.'
               )
             )
-          )
-        ),
+          ),
 
-        // COMPLAINTS
-        tab==='complaints' && h(Fragment, null,
-          h('div', {className:'grid g4', style:{marginBottom:16}},
-            [{l:'Open', v:acctTickets.filter(t=>t.status==='Open').length, c:'var(--red)'},
-             {l:'In Progress', v:acctTickets.filter(t=>t.status==='In Progress').length, c:'var(--amber)'},
-             {l:'Resolved', v:acctTickets.filter(t=>t.status==='Resolved').length, c:'var(--green)'},
-             {l:'Total', v:acctTickets.length, c:'var(--muted)'},
-            ].map(s => h('div', {key:s.l, className:'stat-card'},
-              h('div', {className:'stat-label'}, s.l),
-              h('div', {className:'stat-value', style:{color:s.c}}, s.v)
+          h('div',{className:'grid g4',style:{marginBottom:16}},
+            [{l:'Overdue',v:pmItems.filter(p=>p.status==='Overdue').length,c:'var(--red)'},
+             {l:'Due Soon',v:pmItems.filter(p=>p.status==='Due Soon').length,c:'var(--amber)'},
+             {l:'Scheduled',v:pmItems.filter(p=>p.status==='Scheduled').length,c:'var(--accent2)'},
+             {l:'Completed',v:pmItems.filter(p=>p.status==='Completed').length,c:'var(--green)'},
+            ].map(s=>h('div',{key:s.l,className:'stat-card'},
+              h('div',{className:'stat-label'},s.l),
+              h('div',{className:'stat-value',style:{color:s.c}},s.v)
             ))
           ),
-          h('div', {style:{display:'flex', flexDirection:'column', gap:8}},
-            acctTickets.length === 0
-              ? h('div', {style:{textAlign:'center', padding:'40px', color:'var(--muted)', fontSize:12}}, 'No complaints for this account')
-              : acctTickets.map(t => h('div', {key:t.id, className:'ticket-card'},
-                  h('div', {className:'priority-bar', style:{background:t.priority==='High'?'var(--red)':t.priority==='Medium'?'var(--amber)':'var(--muted)'}}),
-                  h('div', {style:{flex:1}},
-                    h('div', {style:{display:'flex', alignItems:'center', gap:7, marginBottom:5}},
-                      h('span', {style:{fontFamily:'monospace', fontSize:10, color:'var(--muted)'}}, t.id),
-                      h(Badge, {cls:t.priority==='High'?'red':t.priority==='Medium'?'amber':'muted'}, t.priority),
-                      t.hubspot && h('span', {className:'hs-badge'}, 'HS'),
-                      h('span', {style:{marginLeft:'auto', fontSize:10, color:'var(--muted)'}}, t.created)
+
+          h('div',{style:{display:'flex',justifyContent:'flex-end',marginBottom:12}},
+            h('button',{className:'btn btn-primary btn-sm',onClick:()=>setShowAddPM(true)},ico('ti-plus'),' Add PM Task')
+          ),
+
+          h('div',{className:'card',style:{padding:0}},
+            pmItems.length === 0
+              ? h('div',{style:{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:12}},'No PM tasks yet — add one above')
+              : h('table',{className:'tbl'},
+                  h('thead',null,h('tr',null,['Task','Frequency','Assigned To','Due','Last Done','Status',''].map(c=>h('th',{key:c},c)))),
+                  h('tbody',null, pmItems.map(p=>h('tr',{key:p.id},
+                    h('td',null,
+                      h('div',{style:{fontWeight:500,fontSize:12}},p.task),
+                      p.notes&&h('div',{style:{fontSize:10,color:'var(--muted)',marginTop:2}},p.notes)
                     ),
-                    h('div', {style:{fontWeight:600, fontSize:12, marginBottom:4}}, t.title),
-                    h('div', {style:{fontSize:10, color:'var(--muted)', display:'flex', gap:10}},
-                      h('span', null, ico('ti-user'), ' ', t.assigned),
-                      h('span', null, ico('ti-source-code'), ' ', t.source)
+                    h('td',null,h(Tag,{t:p.freq})),
+                    h('td',null,
+                      h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+                        h('div',{style:{width:20,height:20,borderRadius:99,background:'var(--accent)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:700,color:'#fff',flexShrink:0}},
+                          (p.assignee||'?').charAt(0)
+                        ),
+                        h('span',{style:{fontSize:11}},p.assignee||'Unassigned')
+                      )
+                    ),
+                    h('td',{style:{fontWeight:700,fontSize:12,color:p.status==='Overdue'?'var(--red)':p.status==='Due Soon'?'var(--amber)':'var(--text)'}},p.due),
+                    h('td',{style:{fontSize:11,color:'var(--muted)'}},p.last||'Never'),
+                    h('td',null,h(Badge,{cls:p.status==='Overdue'?'red':p.status==='Due Soon'?'amber':p.status==='Completed'?'green':'blue'},p.status)),
+                    h('td',null,
+                      h('div',{style:{display:'flex',gap:4}},
+                        p.status!=='Completed'&&h('button',{className:'btn btn-ghost btn-sm',title:'Mark Complete',
+                          onClick:()=>{
+                            setPmItems(prev=>prev.map(x=>x.id===p.id?{...x,status:'Completed',last:new Date().toLocaleDateString()}:x));
+                            hsSync('create_note',{accountName:acct.name,noteBody:'[FacilityIQ PM] Completed: '+p.task+' — assigned to '+p.assignee});
+                            onToast(p.task+' marked complete');
+                          }},ico('ti-check')),
+                        h('button',{className:'btn btn-ghost btn-sm',title:'Dispatch',
+                          onClick:()=>{
+                            hsSync('create_note',{accountName:acct.name,noteBody:'[FacilityIQ PM] Dispatched: '+p.task+' to '+p.assignee+'. Due: '+p.due});
+                            onToast('Dispatched to '+p.assignee);
+                          }},ico('ti-send')),
+                        h('button',{className:'btn btn-ghost btn-sm',title:'Edit',
+                          onClick:()=>{setEditPM(p);setPmForm({task:p.task,freq:p.freq,assignee:p.assignee||'',startDate:p.startDate||p.due||'',notes:p.notes||''});setShowAddPM(true);}},
+                          ico('ti-pencil')),
+                        h('button',{className:'btn btn-danger btn-sm',title:'Delete',
+                          onClick:()=>{setPmItems(prev=>prev.filter(x=>x.id!==p.id));onToast('PM task removed');}},
+                          ico('ti-trash'))
+                      )
                     )
-                  ),
-                  h('div', {style:{display:'flex', flexDirection:'column', gap:6, alignItems:'flex-end'}},
-                    h(Badge, {cls:t.status==='Resolved'?'green':t.status==='In Progress'?'blue':'red'}, t.status),
-                    h('button', {className:'btn btn-ghost btn-sm', onClick:()=>onToast('Dispatched '+t.id+' to account workers')}, ico('ti-send'), ' Dispatch')
-                  )
-                ))
+                  )))
+                )
           )
         ),
 
         // SCHEDULE
         tab==='schedule' && h(Fragment, null,
-          h('div', {style:{display:'flex', gap:8, marginBottom:16, flexWrap:'wrap'}},
-            ['all','cleaning','pm','landscaping'].map(f =>
-              h('button', {key:f, className:'btn btn-sm '+(schedFilter===f?'btn-primary':'btn-ghost'),
-                onClick:()=>setSchedFilter(f)},
-                f === 'all' ? 'All Activities' : f.charAt(0).toUpperCase()+f.slice(1)
+          // Add Activity Modal
+          showAddSched && h('div',{style:{position:'fixed',inset:0,background:'rgba(0,0,0,.7)',zIndex:600,display:'flex',alignItems:'center',justifyContent:'center',padding:20}},
+            h('div',{style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:14,padding:24,width:540,maxWidth:'100%'}},
+              h('div',{style:{fontSize:15,fontWeight:700,marginBottom:16,display:'flex',alignItems:'center',gap:8}},
+                ico('ti-calendar-plus',{color:'var(--accent2)'}), 'Add Schedule Activity',
+                h('button',{className:'btn btn-ghost btn-sm',style:{marginLeft:'auto'},onClick:()=>setShowAddSched(false)},ico('ti-x'))
+              ),
+              h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+                h('div',{className:'grid g2'},
+                  h('div',null,
+                    h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'TYPE'),
+                    h('select',{className:'field-input',value:schedForm.type,onChange:e=>setSchedForm(p=>({...p,type:e.target.value}))},
+                      ['cleaning','pm','landscaping','inspection','vendor'].map(t=>h('option',{key:t,value:t},t.charAt(0).toUpperCase()+t.slice(1)))
+                    )
+                  ),
+                  h('div',null,
+                    h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'ASSIGNED TO'),
+                    h('select',{className:'field-input',value:schedForm.crew,onChange:e=>setSchedForm(p=>({...p,crew:e.target.value}))},
+                      h('option',{value:''},'Select worker...'),
+                      getWorkers().map(w=>h('option',{key:w.id,value:w.name},w.name))
+                    )
+                  )
+                ),
+                h('div',null,
+                  h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'TASK / DESCRIPTION'),
+                  h('input',{className:'field-input',placeholder:'e.g. Deep clean restrooms',value:schedForm.task,onChange:e=>setSchedForm(p=>({...p,task:e.target.value}))})
+                ),
+                h('div',{className:'grid g2'},
+                  h('div',null,
+                    h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'DATE'),
+                    h('input',{className:'field-input',type:'date',value:schedForm.date,onChange:e=>setSchedForm(p=>({...p,date:e.target.value}))})
+                  ),
+                  h('div',null,
+                    h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'TIME'),
+                    h('input',{className:'field-input',type:'time',value:schedForm.time,onChange:e=>setSchedForm(p=>({...p,time:e.target.value}))})
+                  )
+                ),
+                h('div',null,
+                  h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:8,fontWeight:600}},'REPEAT ON DAYS (optional)'),
+                  h('div',{style:{display:'flex',gap:6,flexWrap:'wrap'}},
+                    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>h('button',{key:d,
+                      style:{padding:'4px 10px',borderRadius:6,border:'1px solid var(--border2)',
+                        background:schedForm.days.includes(d)?'var(--accent)':'var(--surface)',
+                        color:schedForm.days.includes(d)?'#fff':'var(--muted)',
+                        cursor:'pointer',fontSize:11,fontFamily:'inherit',fontWeight:600},
+                      onClick:()=>setSchedForm(p=>({...p,days:p.days.includes(d)?p.days.filter(x=>x!==d):[...p.days,d]}))},
+                      d
+                    ))
+                  )
+                ),
+                h('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',paddingTop:4}},
+                  h('button',{className:'btn btn-ghost',onClick:()=>setShowAddSched(false)},'Cancel'),
+                  h('button',{className:'btn btn-primary',disabled:!schedForm.task||!schedForm.crew,
+                    onClick:()=>{
+                      const newSched={id:Date.now(),type:schedForm.type,crew:schedForm.crew,task:schedForm.task,
+                        days:schedForm.days,time:schedForm.time||'TBD',status:'Active',date:schedForm.date||null};
+                      setSchedItems(p=>[...p,newSched]);
+                      hsSync('create_note',{accountName:acct.name,noteBody:'[FacilityIQ Schedule] Added: '+schedForm.task+' assigned to '+schedForm.crew+(schedForm.date?' on '+schedForm.date:'')});
+                      onToast('Activity added & dispatched to '+schedForm.crew);
+                      setShowAddSched(false);setSchedForm({type:'cleaning',task:'',crew:'',time:'',days:[],date:'',notes:''});
+                    }},
+                    ico('ti-send'),' Add & Dispatch'
+                  )
+                )
               )
-            ),
-            h('button', {className:'btn btn-primary btn-sm', style:{marginLeft:'auto'}}, ico('ti-plus'), ' Add Activity')
+            )
           ),
-          h('div', {className:'card', style:{padding:0}},
-            h('table', {className:'tbl'},
-              h('thead', null, h('tr', null, ['Type','Task','Crew','Days','Time','Status'].map(c=>h('th',{key:c},c)))),
-              h('tbody', null,
-                filteredSchedule.map(s => h('tr', {key:s.id},
-                  h('td', null,
-                    h('span', {style:{background:typeBg(s.type), color:typeColor(s.type), padding:'2px 8px', borderRadius:99, fontSize:10, fontWeight:700}},
+
+          // View toggle + filters
+          h('div',{style:{display:'flex',gap:8,marginBottom:16,flexWrap:'wrap',alignItems:'center'}},
+            // Type filter (list view)
+            schedView==='list'&&h(Fragment,null,
+              ['all','cleaning','pm','landscaping'].map(f=>h('button',{key:f,className:'btn btn-sm '+(schedFilter===f?'btn-primary':'btn-ghost'),onClick:()=>setSchedFilter(f)},
+                f==='all'?'All':f.charAt(0).toUpperCase()+f.slice(1)
+              ))
+            ),
+            h('div',{style:{marginLeft:'auto',display:'flex',gap:6}},
+              h('button',{className:'btn btn-sm '+(schedView==='list'?'btn-primary':'btn-ghost'),onClick:()=>setSchedView('list')},ico('ti-list'),' List'),
+              h('button',{className:'btn btn-sm '+(schedView==='calendar'?'btn-primary':'btn-ghost'),onClick:()=>setSchedView('calendar')},ico('ti-calendar'),' Calendar'),
+              h('button',{className:'btn btn-primary btn-sm',onClick:()=>setShowAddSched(true)},ico('ti-plus'),' Add Activity')
+            )
+          ),
+
+          // LIST VIEW
+          schedView==='list' && h('div',{className:'card',style:{padding:0}},
+            h('table',{className:'tbl'},
+              h('thead',null,h('tr',null,['Type','Task','Assigned To','Days/Date','Time','Status',''].map(c=>h('th',{key:c},c)))),
+              h('tbody',null,
+                (schedFilter==='all'?schedItems:schedItems.filter(s=>s.type===schedFilter)).map(s=>h('tr',{key:s.id},
+                  h('td',null,
+                    h('span',{style:{
+                      background:s.type==='cleaning'?'rgba(79,126,255,.1)':s.type==='pm'?'rgba(245,158,11,.1)':s.type==='landscaping'?'rgba(34,197,94,.1)':'rgba(167,139,250,.1)',
+                      color:s.type==='cleaning'?'var(--accent2)':s.type==='pm'?'var(--amber)':s.type==='landscaping'?'var(--green)':'var(--purple)',
+                      padding:'2px 8px',borderRadius:99,fontSize:10,fontWeight:700}},
                       s.type.charAt(0).toUpperCase()+s.type.slice(1)
                     )
                   ),
-                  h('td', {style:{fontWeight:500, fontSize:12}}, s.task),
-                  h('td', {style:{fontSize:11, color:'var(--muted)'}}, s.crew),
-                  h('td', null,
-                    h('div', {style:{display:'flex', gap:3, flexWrap:'wrap'}},
-                      s.days.map(d => h('span', {key:d, style:{background:'var(--border)', borderRadius:4, padding:'1px 5px', fontSize:9, color:'var(--muted)', fontWeight:600}}, d))
+                  h('td',{style:{fontWeight:500,fontSize:12}},s.task),
+                  h('td',null,
+                    h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+                      h('div',{style:{width:20,height:20,borderRadius:99,background:'var(--accent)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:8,fontWeight:700,color:'#fff',flexShrink:0}},s.crew.charAt(0)),
+                      h('span',{style:{fontSize:11}},s.crew)
                     )
                   ),
-                  h('td', {style:{fontSize:11, color:'var(--muted)', whiteSpace:'nowrap'}}, s.time),
-                  h('td', null, h(Badge, {cls:s.status==='Active'?'green':s.status==='Due Soon'?'amber':'blue'}, s.status))
+                  h('td',null,
+                    s.date
+                      ? h('span',{style:{fontSize:11,fontWeight:600,color:'var(--amber)'}},new Date(s.date+'T00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}))
+                      : h('div',{style:{display:'flex',gap:3,flexWrap:'wrap'}},
+                          s.days.map(d=>h('span',{key:d,style:{background:'var(--border)',borderRadius:4,padding:'1px 5px',fontSize:9,color:'var(--muted)',fontWeight:600}},d))
+                        )
+                  ),
+                  h('td',{style:{fontSize:11,color:'var(--muted)',whiteSpace:'nowrap'}},s.time),
+                  h('td',null,h(Badge,{cls:s.status==='Active'?'green':s.status==='Due Soon'?'amber':s.status==='Cancelled'?'muted':'blue'},s.status)),
+                  h('td',null,
+                    h('div',{style:{display:'flex',gap:4}},
+                      s.status!=='Cancelled'&&h('button',{className:'btn btn-ghost btn-sm',title:'Dispatch',
+                        onClick:()=>{hsSync('create_note',{accountName:acct.name,noteBody:'[FacilityIQ] Dispatched: '+s.task+' to '+s.crew});onToast('Dispatched to '+s.crew);}},
+                        ico('ti-send')),
+                      s.status!=='Cancelled'&&h('button',{className:'btn btn-danger btn-sm',title:'Cancel',
+                        onClick:()=>{setSchedItems(p=>p.map(x=>x.id===s.id?{...x,status:'Cancelled'}:x));onToast('Activity cancelled');}},
+                        ico('ti-x')),
+                      h('button',{className:'btn btn-ghost btn-sm',title:'Remove',
+                        onClick:()=>setSchedItems(p=>p.filter(x=>x.id!==s.id))},
+                        ico('ti-trash'))
+                    )
+                  )
                 ))
               )
+            )
+          ),
+
+          // CALENDAR VIEW
+          schedView==='calendar' && h(Fragment,null,
+            // Month nav
+            h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
+              h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setCalMonth(p=>{const d=new Date(p);d.setMonth(d.getMonth()-1);return d;})},ico('ti-chevron-left')),
+              h('div',{style:{fontWeight:700,fontSize:14,color:'var(--text)'}},
+                calMonth.toLocaleDateString('en-US',{month:'long',year:'numeric'})
+              ),
+              h('button',{className:'btn btn-ghost btn-sm',onClick:()=>setCalMonth(p=>{const d=new Date(p);d.setMonth(d.getMonth()+1);return d;})},ico('ti-chevron-right'))
+            ),
+
+            h('div',{className:'card',style:{padding:0,overflow:'hidden'}},
+              // Day headers
+              h('div',{style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)',borderBottom:'1px solid var(--border)'}},
+                ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>h('div',{key:d,style:{padding:'8px 4px',textAlign:'center',fontSize:10,fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.5px'}},d))
+              ),
+              // Calendar grid
+              h('div',{style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)'}},
+                (()=>{
+                  const year=calMonth.getFullYear(), month=calMonth.getMonth();
+                  const firstDay=new Date(year,month,1).getDay();
+                  const daysInMonth=new Date(year,month+1,0).getDate();
+                  const cells=[];
+                  // Empty cells before month starts
+                  for(let i=0;i<firstDay;i++) cells.push(h('div',{key:'e'+i,style:{minHeight:90,borderRight:'1px solid var(--border)',borderBottom:'1px solid var(--border)',background:'var(--surface)',opacity:.5}}));
+                  // Day cells
+                  for(let day=1;day<=daysInMonth;day++){
+                    const dateStr=year+'-'+(String(month+1).padStart(2,'0'))+'-'+(String(day).padStart(2,'0'));
+                    const dayName=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(year,month,day).getDay()];
+                    const isToday=dateStr===new Date().toISOString().slice(0,10);
+                    // Activities on this day
+                    const dayActivities=schedItems.filter(s=>
+                      s.status!=='Cancelled'&&(
+                        s.date===dateStr||
+                        (s.days&&s.days.includes(dayName))
+                      )
+                    );
+                    cells.push(h('div',{key:day,style:{minHeight:90,borderRight:'1px solid var(--border)',borderBottom:'1px solid var(--border)',padding:'6px 4px',verticalAlign:'top',position:'relative'}},
+                      h('div',{style:{fontSize:11,fontWeight:isToday?700:500,color:isToday?'var(--accent2)':'var(--text)',
+                        width:22,height:22,borderRadius:99,background:isToday?'var(--accent)':'transparent',
+                        display:'flex',alignItems:'center',justifyContent:'center',marginBottom:4}},day),
+                      dayActivities.slice(0,3).map((a,i)=>h('div',{key:i,style:{
+                        fontSize:9,fontWeight:600,padding:'2px 4px',borderRadius:4,marginBottom:2,
+                        background:a.type==='cleaning'?'rgba(79,126,255,.2)':a.type==='pm'?'rgba(245,158,11,.2)':a.type==='landscaping'?'rgba(34,197,94,.2)':'rgba(167,139,250,.2)',
+                        color:a.type==='cleaning'?'var(--accent2)':a.type==='pm'?'var(--amber)':a.type==='landscaping'?'var(--green)':'var(--purple)',
+                        overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',cursor:'pointer'},
+                        title:a.task+' — '+a.crew},
+                        a.task
+                      )),
+                      dayActivities.length>3&&h('div',{style:{fontSize:9,color:'var(--muted)',paddingLeft:4}},'+'+( dayActivities.length-3)+' more')
+                    ));
+                  }
+                  return cells;
+                })()
+              )
+            ),
+
+            // Legend
+            h('div',{style:{display:'flex',gap:12,marginTop:12,flexWrap:'wrap'}},
+              [{t:'cleaning',l:'Cleaning',c:'var(--accent2)',bg:'rgba(79,126,255,.2)'},
+               {t:'pm',l:'Preventive PM',c:'var(--amber)',bg:'rgba(245,158,11,.2)'},
+               {t:'landscaping',l:'Landscaping',c:'var(--green)',bg:'rgba(34,197,94,.2)'},
+               {t:'inspection',l:'Inspection',c:'var(--purple)',bg:'rgba(167,139,250,.2)'},
+              ].map(item=>h('div',{key:item.t,style:{display:'flex',alignItems:'center',gap:5,fontSize:11,color:'var(--muted)'}},
+                h('div',{style:{width:10,height:10,borderRadius:3,background:item.bg,border:'1px solid '+item.c}}),
+                item.l
+              ))
             )
           )
         ),
