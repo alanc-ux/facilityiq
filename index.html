@@ -2584,6 +2584,27 @@ function App(){
             : hsData
               ? h('span',{style:{fontSize:10,background:'rgba(34,197,94,.1)',color:'var(--green)',border:'1px solid rgba(34,197,94,.2)',padding:'2px 8px',borderRadius:99,fontWeight:700,display:'inline-flex',alignItems:'center',gap:4}},ico('ti-brand-hubspot',{fontSize:11}),' HS Live')
               : h('span',{style:{fontSize:10,color:'var(--amber)',display:'flex',alignItems:'center',gap:4}},ico('ti-alert-triangle',{fontSize:12}),' Local'),
+          // View switcher — admin only
+          user.role==='admin'&&h('div',{style:{display:'flex',alignItems:'center',gap:3,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:8,padding:'3px 4px'}},
+            h('span',{style:{fontSize:9,fontWeight:700,color:'var(--muted2)',textTransform:'uppercase',letterSpacing:'.5px',padding:'0 4px'}},'View:'),
+            h('button',{
+              style:{padding:'3px 8px',borderRadius:5,border:'1px solid var(--accent)',background:'rgba(79,126,255,.12)',color:'var(--accent2)',fontSize:10,fontWeight:700,cursor:'default',fontFamily:'inherit'},
+              title:'Current: Supervisor View'},
+              ico('ti-layout-dashboard',{fontSize:11}),' Supervisor'
+            ),
+            h('button',{
+              style:{padding:'3px 8px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--muted)',fontSize:10,fontWeight:600,cursor:'pointer',fontFamily:'inherit'},
+              title:'Switch to Employee View',
+              onClick:()=>window.open('/employee','_blank')},
+              ico('ti-hard-hat',{fontSize:11}),' Employee'
+            ),
+            h('button',{
+              style:{padding:'3px 8px',borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--muted)',fontSize:10,fontWeight:600,cursor:'pointer',fontFamily:'inherit'},
+              title:'Customer view — coming soon',
+              onClick:()=>alert('Customer view coming soon!')},
+              ico('ti-building',{fontSize:11}),' Customer'
+            )
+          ),
           user.role==='admin'&&h('button',{className:'topbar-icon-btn',onClick:()=>setShowAdmin(true),title:'User Management'},ico('ti-users-group')),
           h('button',{className:'topbar-icon-btn'},ico('ti-bell')),
           h('button',{className:'topbar-icon-btn',onClick:handleLogout,title:'Sign Out'},ico('ti-logout'))
