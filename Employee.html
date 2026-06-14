@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
+<title>FacilityIQ — Employee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0C0D12;--surface:#13141B;--card:#181922;--border:#252733;--border2:#2E3144;
+  --text:#E8EAF2;--muted:#7B7F99;--muted2:#4E5270;
+  --accent:#4F7EFF;--accent2:#6B96FF;
+  --green:#22C55E;--amber:#F59E0B;--red:#EF4444;--purple:#A78BFA;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;overflow:hidden}
+#root{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+
+/* Layout */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.app-body{flex:1;overflow-y:auto;padding:16px}
+.app-nav{background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;cursor:pointer;color:var(--muted);font-size:10px;font-weight:600;border:none;background:transparent;font-family:inherit;transition:color .12s}
+.nav-tab.active{color:var(--accent2)}
+.nav-tab .ti{font-size:20px}
+.nav-badge{background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:99px;min-width:16px;text-align:center;position:absolute;top:-4px;right:-4px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;display:flex;align-items:center;gap:5px}
+
+/* Task items */
+.task-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--border);cursor:pointer}
+.task-item:first-child{border-top:none;padding-top:4px}
+.task-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .12s}
+.task-check.done{background:var(--green);border-color:var(--green)}
+.task-check.blocked{background:rgba(239,68,68,.12);border-color:var(--red)}
+.task-label{flex:1;font-size:13px;font-weight:500}
+.task-label.done{color:var(--muted);text-decoration:line-through}
+.task-freq{font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
+.freq-daily{background:rgba(79,126,255,.12);color:var(--accent2)}
+.freq-weekly{background:rgba(167,139,250,.12);color:var(--purple)}
+.freq-monthly{background:rgba(245,158,11,.12);color:var(--amber)}
+.freq-flag{background:rgba(239,68,68,.12);color:var(--red)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .12s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.btn-green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.btn-red{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-block{width:100%;justify-content:center;padding:13px}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700}
+.badge-red{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.badge-green{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.badge-amber{background:rgba(245,158,11,.12);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.badge-blue{background:rgba(79,126,255,.12);color:var(--accent2);border:1px solid rgba(79,126,255,.25)}
+.badge-purple{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.badge-muted{background:rgba(123,127,153,.1);color:var(--muted);border:1px solid var(--border)}
+
+/* Form inputs */
+.field-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;width:100%}
+.field-input:focus{border-color:var(--accent)}
+textarea.field-input{resize:none;min-height:80px}
+
+/* Progress */
+.progress-bar{height:8px;border-radius:99px;background:var(--border2);overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:var(--green);transition:width .3s}
+
+/* Ticket card */
+.ticket-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:8px}
+.ticket-card.urgent{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.04)}
+
+/* Chat */
+.chat-bubble{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 13px;font-size:13px;line-height:1.55;margin-bottom:8px}
+.chat-bubble.user{background:rgba(79,126,255,.12);border-color:rgba(79,126,255,.25);margin-left:24px}
+.chat-bubble.ai{margin-right:24px}
+.typing-dots{display:flex;gap:4px;align-items:center;padding:3px 0}
+.typing-dots span{width:5px;height:5px;border-radius:99px;background:var(--muted);animation:db .9s infinite ease-in-out}
+.typing-dots span:nth-child(2){animation-delay:.15s}.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes db{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* Toast */
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:999;background:var(--card);border:1px solid var(--border);border-radius:9px;padding:10px 16px;display:flex;gap:8px;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.45);font-size:13px;font-weight:500;white-space:nowrap;animation:su .2s ease}
+@keyframes su{from{transform:translateX(-50%) translateY(-10px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
+/* Clock-in hero */
+.clockin-hero{text-align:center;padding:32px 20px}
+.facility-icon{width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px}
+.shift-timer{font-size:48px;font-weight:700;letter-spacing:-2px;color:var(--text);line-height:1}
+
+/* Modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:flex-end;padding:0}
+.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:85vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:var(--border2);border-radius:99px;margin:0 auto 16px}
+
+/* Login */
+.login-wrap{display:flex;align-items:center;justify-content:center;height:100vh;background:var(--bg);padding:20px}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:380px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+'use strict';
+const {createElement:h,useState,useEffect,useRef,Fragment} = React;
+
+const ico = (cls,s) => h('i',{className:'ti '+cls,style:s||{}});
+
+function Badge({cls,children}){return h('span',{className:'badge badge-'+cls},children);}
+
+function Toast({msg,onDone}){
+  useEffect(()=>{const t=setTimeout(onDone,3000);return()=>clearTimeout(t);},[]);
+  return h('div',{className:'toast'},ico('ti-check',{fontSize:15,color:'var(--green)'}),msg);
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+async function authCall(action, payload){
+  const res = await fetch('/api/auth',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action,...payload})
+  });
+  return res.json();
+}
+
+// ── HUBSPOT SYNC ──────────────────────────────────────────────────────────────
+async function hsSync(action, payload){
+  try{
+    const res = await fetch('/api/hubspot',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action,...payload})
+    });
+    return res.json();
+  }catch(e){return null;}
+}
+
+// ── DAYS ──────────────────────────────────────────────────────────────────────
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const today = () => DAYS[new Date().getDay()];
+const timeStr = () => new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+const dateStr = () => new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+// ── LOGIN SCREEN ──────────────────────────────────────────────────────────────
+function LoginScreen({onLogin}){
+  const [email,setEmail] = useState('');
+  const [password,setPassword] = useState('');
+  const [loading,setLoading] = useState(false);
+  const [error,setError] = useState('');
+
+  async function handleLogin(){
+    if(!email||!password) return;
+    setLoading(true);setError('');
+    const res = await authCall('login',{email,password});
+    if(res.success){
+      localStorage.setItem('fiq_emp_token',res.token);
+      localStorage.setItem('fiq_emp_user',JSON.stringify(res.user));
+      onLogin(res.user,res.token);
+    } else {
+      setError(res.error||'Login failed');
+    }
+    setLoading(false);
+  }
+
+  return h('div',{className:'login-wrap'},
+    h('div',{className:'login-card'},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:24}},
+        h('div',{style:{width:40,height:40,borderRadius:10,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,fontWeight:700,color:'#fff'}},'F'),
+        h('div',null,
+          h('div',{style:{fontSize:18,fontWeight:700,letterSpacing:'-.3px'}},'Facility',h('span',{style:{color:'var(--accent2)'}},'IQ')),
+          h('div',{style:{fontSize:10,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.5px'}},'Employee Portal')
+        )
+      ),
+      h('div',{style:{fontSize:14,fontWeight:600,marginBottom:18,color:'var(--text)'}},'Sign in to start your shift'),
+      h('div',{style:{marginBottom:10}},
+        h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:4,fontWeight:600}},'EMAIL'),
+        h('input',{className:'field-input',type:'email',placeholder:'you@dscsolutionsfm.com',
+          value:email,onChange:e=>setEmail(e.target.value),onKeyDown:e=>e.key==='Enter'&&handleLogin()})
+      ),
+      h('div',{style:{marginBottom:18}},
+        h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:4,fontWeight:600}},'PASSWORD'),
+        h('input',{className:'field-input',type:'password',placeholder:'••••••••',
+          value:password,onChange:e=>setPassword(e.target.value),onKeyDown:e=>e.key==='Enter'&&handleLogin()})
+      ),
+      error&&h('div',{style:{fontSize:12,color:'var(--red)',marginBottom:12,padding:'8px 12px',background:'rgba(239,68,68,.08)',borderRadius:7,border:'1px solid rgba(239,68,68,.2)'}},error),
+      h('button',{className:'btn btn-primary btn-block',onClick:handleLogin,disabled:loading||!email||!password},
+        loading?'Signing in...':'Sign In'
+      ),
+      h('div',{style:{marginTop:14,fontSize:11,color:'var(--muted2)',textAlign:'center'}},'FacilityIQ Employee · DSC Solutions')
+    )
+  );
+}
+
+// ── CLOCK-IN SCREEN ───────────────────────────────────────────────────────────
+function ClockInScreen({user,onClockedIn}){
+  const [loading,setLoading] = useState(false);
+  const [time,setTime] = useState(timeStr());
+  useEffect(()=>{const t=setInterval(()=>setTime(timeStr()),1000);return()=>clearInterval(t);},[]);
+
+  async function handleClockIn(){
+    setLoading(true);
+    // Log clock-in to HubSpot
+    await hsSync('create_note',{
+      accountName: user.facility||user.pod,
+      noteBody:'[FacilityIQ Employee] CLOCK-IN: '+user.name+' clocked in at '+timeStr()+' on '+dateStr()+'.'
+    });
+    onClockedIn(new Date());
+  }
+
+  return h('div',{style:{display:'flex',flexDirection:'column',height:'100vh',background:'var(--bg)'}},
+    h('div',{className:'app-header'},
+      h('div',{style:{width:32,height:32,borderRadius:8,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:700,color:'#fff'}},'F'),
+      h('div',{style:{flex:1}},
+        h('div',{style:{fontSize:14,fontWeight:700}},'FacilityIQ'),
+        h('div',{style:{fontSize:11,color:'var(--muted)'}},user.name)
+      ),
+      h('button',{className:'btn btn-ghost btn-sm',onClick:()=>{localStorage.removeItem('fiq_emp_token');localStorage.removeItem('fiq_emp_user');window.location.reload();}},
+        ico('ti-logout')
+      )
+    ),
+    h('div',{style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24}},
+      h('div',{className:'facility-icon'},ico('ti-building',{fontSize:36,color:'#fff'})),
+      h('div',{style:{fontSize:13,color:'var(--muted)',marginBottom:4,textAlign:'center'}},'Assigned Facility'),
+      h('div',{style:{fontSize:20,fontWeight:700,textAlign:'center',marginBottom:6}},user.facility||user.pod||'Your Facility'),
+      h('div',{style:{fontSize:13,color:'var(--muted)',marginBottom:32,textAlign:'center'}},dateStr()),
+      h('div',{style:{fontSize:56,fontWeight:700,letterSpacing:-2,marginBottom:8,color:'var(--accent2)'}},time),
+      h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:40}},today()),
+      h('button',{className:'btn btn-primary btn-block',style:{maxWidth:280,fontSize:16,padding:'16px',borderRadius:12},onClick:handleClockIn,disabled:loading},
+        loading ? ico('ti-refresh')+' Logging in...' : ico('ti-clock-play')+' Clock In & Start Shift'
+      ),
+      h('div',{style:{marginTop:16,fontSize:11,color:'var(--muted2)'}},
+        'Clocking in logs your start time and notifies your supervisor.'
+      )
+    )
+  );
+}
+
+// ── BRIEFING SCREEN ───────────────────────────────────────────────────────────
+function BriefingScreen({user,scopeText,tickets,onStart}){
+  const [briefing,setBriefing] = useState(null);
+  const [loading,setLoading] = useState(true);
+
+  useEffect(()=>{
+    generateBriefing();
+  },[]);
+
+  async function generateBriefing(){
+    const openTickets = tickets.filter(t=>t.status!=='Resolved'&&t.assignedTo===user.name);
+    const flaggedTickets = tickets.filter(t=>t.priority==='High'&&t.status!=='Resolved');
+
+    const prompt = `You are Alan AI, a gold-standard janitorial operations assistant for DSC Solutions.
+
+Today is ${dateStr()}, a ${today()}.
+
+Employee: ${user.name}
+Facility: ${user.facility||'Assigned Facility'}
+
+Scope of Work for this facility:
+${scopeText||'Standard commercial janitorial scope: daily cleaning, weekly deep cleans, monthly maintenance tasks.'}
+
+Open tickets assigned to this employee or flagged at this facility:
+${openTickets.map(t=>'- ['+t.priority+'] '+t.title).join('\n')||'None'}
+${flaggedTickets.length>0?'FLAGGED COMPLAINTS (must resolve before clock-out):\n'+flaggedTickets.map(t=>'- '+t.title+' ('+t.location+')').join('\n'):''}
+
+Based on the scope of work and today being ${today()}, generate a shift briefing. Return ONLY a JSON object with this exact structure:
+{
+  "greeting": "brief motivational opening line",
+  "daily": ["task1","task2","task3","task4","task5","task6","task7","task8"],
+  "weekly": ["task specific to ${today()}","another weekly task for today"],
+  "monthly": ["monthly task if due this week, else empty array"],
+  "flags": ["any complaint or issue that must be resolved today with location details"],
+  "tip": "one gold-standard janitorial tip for today"
+}
+
+Daily tasks should reflect the scope. Weekly tasks should be specific to ${today()} of the week. Be specific with areas and methods. If scope mentions specific areas, use them. Make this feel like a real shift briefing from a seasoned operations manager.`;
+
+    try{
+      const res = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-6',
+          max_tokens:1000,
+          messages:[{role:'user',content:prompt}]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.find(b=>b.type==='text')?.text||'';
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if(jsonMatch){
+        const parsed = JSON.parse(jsonMatch[0]);
+        setBriefing(parsed);
+      } else {
+        setBriefing(getDefaultBriefing());
+      }
+    }catch(e){
+      setBriefing(getDefaultBriefing());
+    }
+    setLoading(false);
+  }
+
+  function getDefaultBriefing(){
+    return {
+      greeting:"Good shift! Here's what needs to get done today.",
+      daily:['Trash removal & liner replacement — all areas','Restroom cleaning & restock (paper, soap, sanitizer)','Sweep & mop all hard floors','Wipe down high-touch surfaces (doors, switches, handles)','Clean glass & entrance doors','Vacuum carpeted areas','Spot clean walls & partitions','Report any maintenance issues'],
+      weekly:today()==='Monday'?['Deep clean break room appliances — inside microwave, coffee maker']:today()==='Tuesday'?['Elevator interiors & tracks — full detail']:today()==='Wednesday'?['Conference rooms — chairs wiped, whiteboards cleaned']:today()==='Thursday'?['Stairwells — sweep, mop, wipe rails']:today()==='Friday'?['Floor scrub & buff lobby — weekly shine']:['Exterior entrance — sweep, wipe signage'],
+      monthly:[],
+      flags:[],
+      tip:'Always restock supplies before leaving a restroom — the next occupant will notice.'
+    };
+  }
+
+  if(loading) return h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100vh',background:'var(--bg)',gap:16}},
+    h('div',{style:{width:60,height:60,borderRadius:16,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,fontWeight:700,color:'#fff'}},'A'),
+    h('div',{style:{fontSize:14,fontWeight:600}},'Alan AI is preparing your shift...'),
+    h('div',{style:{fontSize:12,color:'var(--muted)'}},'Analyzing scope of work & open tickets')
+  );
+
+  const allTasks = [
+    ...(briefing.daily||[]).map(t=>({text:t,freq:'daily',blocked:false})),
+    ...(briefing.weekly||[]).map(t=>({text:t,freq:'weekly',blocked:false})),
+    ...(briefing.monthly||[]).map(t=>({text:t,freq:'monthly',blocked:false})),
+    ...(briefing.flags||[]).map(t=>({text:t,freq:'flag',blocked:true})),
+  ];
+
+  return h('div',{style:{display:'flex',flexDirection:'column',height:'100vh',background:'var(--bg)',overflowY:'auto'}},
+    h('div',{style:{background:'linear-gradient(135deg,rgba(79,126,255,.15),rgba(167,139,250,.1))',borderBottom:'1px solid var(--border)',padding:'20px 16px'}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:16}},
+        h('div',{style:{width:36,height:36,borderRadius:9,background:'linear-gradient(135deg,var(--accent),var(--purple))',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,fontWeight:700,color:'#fff'}},'A'),
+        h('div',null,
+          h('div',{style:{fontSize:13,fontWeight:700,color:'var(--accent2)'}},'Alan AI · Shift Briefing'),
+          h('div',{style:{fontSize:11,color:'var(--muted)'}},dateStr())
+        )
+      ),
+      h('div',{style:{fontSize:15,fontWeight:600,lineHeight:1.4,marginBottom:12}},briefing.greeting),
+      briefing.flags&&briefing.flags.length>0&&h('div',{style:{background:'rgba(239,68,68,.1)',border:'1px solid rgba(239,68,68,.3)',borderRadius:9,padding:'10px 12px',marginBottom:8}},
+        h('div',{style:{fontSize:11,fontWeight:700,color:'var(--red)',marginBottom:6}},ico('ti-alert-triangle'),' MUST RESOLVE BEFORE CLOCK-OUT'),
+        briefing.flags.map((f,i)=>h('div',{key:i,style:{fontSize:12,color:'var(--red)',marginBottom:2}},'• '+f))
+      ),
+      briefing.tip&&h('div',{style:{background:'rgba(79,126,255,.08)',border:'1px solid rgba(79,126,255,.2)',borderRadius:9,padding:'9px 12px'}},
+        h('div',{style:{fontSize:11,fontWeight:700,color:'var(--accent2)',marginBottom:3}},'💡 PRO TIP'),
+        h('div',{style:{fontSize:12,color:'var(--muted)'}},briefing.tip)
+      )
+    ),
+
+    h('div',{style:{padding:'16px',flex:1}},
+      // Summary counts
+      h('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:16}},
+        [{l:'Daily',v:briefing.daily?.length||0,c:'var(--accent2)',cls:'daily'},
+         {l:'Weekly',v:briefing.weekly?.length||0,c:'var(--purple)',cls:'weekly'},
+         {l:'Flags',v:(briefing.flags?.length||0)+(briefing.monthly?.length||0),c:'var(--red)',cls:'flag'},
+        ].map(s=>h('div',{key:s.l,style:{background:'var(--card)',border:'1px solid var(--border)',borderRadius:10,padding:'10px',textAlign:'center'}},
+          h('div',{style:{fontSize:22,fontWeight:700,color:s.c}},s.v),
+          h('div',{style:{fontSize:10,color:'var(--muted)',fontWeight:600,textTransform:'uppercase',letterSpacing:'.5px'}},s.l+' Tasks')
+        ))
+      ),
+
+      // Task previews
+      h('div',{className:'card',style:{marginBottom:12}},
+        h('div',{className:'card-title'},ico('ti-sun'),' Today\'s Tasks — '+allTasks.length+' items'),
+        allTasks.slice(0,4).map((t,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:8,padding:'7px 0',borderTop:i?'1px solid var(--border)':'none'}},
+          h('div',{style:{width:8,height:8,borderRadius:99,background:t.freq==='daily'?'var(--accent2)':t.freq==='weekly'?'var(--purple)':t.freq==='flag'?'var(--red)':'var(--amber)',flexShrink:0}}),
+          h('div',{style:{fontSize:12,flex:1}},t.text),
+          h('span',{className:'task-freq freq-'+t.freq},t.freq)
+        )),
+        allTasks.length>4&&h('div',{style:{fontSize:11,color:'var(--muted)',paddingTop:8,borderTop:'1px solid var(--border)'}},
+          '+'+( allTasks.length-4)+' more tasks inside'
+        )
+      ),
+
+      h('button',{className:'btn btn-primary btn-block',style:{fontSize:15,padding:'14px',borderRadius:12},
+        onClick:()=>onStart(allTasks,briefing)},
+        ico('ti-player-play'),' Start Shift'
+      ),
+      h('div',{style:{textAlign:'center',marginTop:10,fontSize:11,color:'var(--muted2)'}},'Tasks will be logged and synced to your supervisor.')
+    )
+  );
+}
+
+// ── MAIN EMPLOYEE APP ─────────────────────────────────────────────────────────
+function EmployeeApp({user,clockInTime,tasks:initTasks,briefing,tickets:initTickets,scopeText,onClockOut}){
+  const [tab,setTab] = useState('tasks');
+  const [tasks,setTasks] = useState(initTasks.map((t,i)=>({...t,id:i,done:false,evidence:null})));
+  const [tickets,setTickets] = useState(initTickets);
+  const [toast,setToast] = useState(null);
+  const [elapsed,setElapsed] = useState('0:00');
+  const [showEvidenceModal,setShowEvidenceModal] = useState(null);
+  const [evidenceText,setEvidenceText] = useState('');
+  const [showReportModal,setShowReportModal] = useState(false);
+  const [reportForm,setReportForm] = useState({area:'',desc:'',severity:'Medium'});
+  const [showClockOut,setShowClockOut] = useState(false);
+  const [aiMsgs,setAiMsgs] = useState([{role:'ai',text:'Hi '+user.name.split(' ')[0]+'! I\'m Alan AI. I know your facility\'s scope of work and today\'s task list. Ask me anything — "what\'s next?", "how do I clean X?", "when was the last time we did Y?", or just say "help".'}]);
+  const [aiInput,setAiInput] = useState('');
+  const [aiLoading,setAiLoading] = useState(false);
+  const aiEndRef = useRef(null);
+
+  // Elapsed timer
+  useEffect(()=>{
+    const t = setInterval(()=>{
+      const diff = Math.floor((Date.now()-clockInTime.getTime())/1000);
+      const h2 = Math.floor(diff/3600);
+      const m = Math.floor((diff%3600)/60);
+      const s = diff%60;
+      setElapsed(h2>0?h2+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0'):m+':'+String(s).padStart(2,'0'));
+    },1000);
+    return()=>clearInterval(t);
+  },[clockInTime]);
+
+  useEffect(()=>{if(aiEndRef.current)aiEndRef.current.scrollIntoView({behavior:'smooth'});},[aiMsgs,aiLoading]);
+
+  const done = tasks.filter(t=>t.done).length;
+  const total = tasks.length;
+  const pct = total>0?Math.round(done/total*100):0;
+  const blockedTasks = tasks.filter(t=>t.freq==='flag'&&!t.done);
+  const openTickets = tickets.filter(t=>t.status!=='Resolved');
+  const canClockOut = blockedTasks.length===0&&openTickets.filter(t=>t.priority==='High').length===0;
+
+  function completeTask(id){
+    const task = tasks.find(t=>t.id===id);
+    if(task.freq==='flag'||task.blocked){
+      setShowEvidenceModal(id);
+      return;
+    }
+    setTasks(p=>p.map(t=>t.id===id?{...t,done:true}:t));
+    showToast('Task completed ✓');
+  }
+
+  function submitEvidence(){
+    setTasks(p=>p.map(t=>t.id===showEvidenceModal?{...t,done:true,evidence:evidenceText}:t));
+    const task = tasks.find(t=>t.id===showEvidenceModal);
+    hsSync('create_note',{
+      accountName:user.facility||user.pod,
+      noteBody:'[FacilityIQ Employee] RESOLVED: '+task.text+' — Resolution: '+evidenceText+' — By: '+user.name+' at '+timeStr()
+    });
+    setShowEvidenceModal(null);setEvidenceText('');
+    showToast('Issue resolved & logged ✓');
+  }
+
+  async function submitReport(){
+    const newTicket={id:'TKT-'+Date.now(),title:reportForm.desc,area:reportForm.area,priority:reportForm.severity,status:'Open',assignedTo:user.name,location:reportForm.area,created:'Just now'};
+    setTickets(p=>[newTicket,...p]);
+    await hsSync('create_ticket',{title:'[Employee Report] '+reportForm.desc,priority:reportForm.severity,status:'Open',accountName:user.facility||user.pod,source:'Employee App',ticketId:newTicket.id});
+    setReportForm({area:'',desc:'',severity:'Medium'});
+    setShowReportModal(false);
+    showToast('Issue reported to supervisor ✓');
+  }
+
+  function resolveTicket(id){
+    setTickets(p=>p.map(t=>t.id===id?{...t,status:'Resolved'}:t));
+    const ticket = tickets.find(t=>t.id===id);
+    hsSync('create_note',{accountName:user.facility||user.pod,noteBody:'[FacilityIQ Employee] TICKET RESOLVED: '+ticket.title+' — Resolved by '+user.name+' at '+timeStr()});
+    showToast('Ticket resolved ✓');
+  }
+
+  function showToast(msg){setToast(msg);setTimeout(()=>setToast(null),3000);}
+
+  async function sendAI(){
+    if(!aiInput.trim()||aiLoading) return;
+    const txt = aiInput.trim();setAiInput('');
+    const nm = [...aiMsgs,{role:'user',text:txt}];
+    setAiMsgs(nm);setAiLoading(true);
+
+    const completedTasks = tasks.filter(t=>t.done).map(t=>t.text);
+    const remainingTasks = tasks.filter(t=>!t.done).map(t=>t.text);
+
+    const sys = `You are Alan AI, a knowledgeable janitorial operations assistant for DSC Solutions.
+
+Employee: ${user.name}
+Facility: ${user.facility||user.pod}
+Today: ${dateStr()}
+Shift elapsed: ${elapsed}
+
+Scope of Work:
+${scopeText||'Standard commercial janitorial scope.'}
+
+Completed tasks: ${completedTasks.join(', ')||'None yet'}
+Remaining tasks: ${remainingTasks.join(', ')||'All done!'}
+Open tickets: ${openTickets.map(t=>t.title).join(', ')||'None'}
+
+Answer the employee's question directly and practically. If they ask what's next, tell them the next uncompleted task. If they ask how to do something, give clear step-by-step instructions. Be encouraging but professional. Keep responses concise — this is a mobile app during an active shift.`;
+
+    try{
+      const res = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:sys,messages:nm.map(m=>({role:m.role==='user'?'user':'assistant',content:m.text}))})
+      });
+      const data = await res.json();
+      const reply = data.content?.find(b=>b.type==='text')?.text||'Sorry, I couldn\'t connect.';
+      setAiMsgs(p=>[...p,{role:'ai',text:reply}]);
+    }catch(e){
+      setAiMsgs(p=>[...p,{role:'ai',text:'Connection error — please try again.'}]);
+    }
+    setAiLoading(false);
+  }
+
+  return h(Fragment,null,
+    toast&&h('div',{className:'toast'},ico('ti-check',{fontSize:14,color:'var(--green)'}),toast),
+
+    // Evidence modal (for flagged tasks)
+    showEvidenceModal!==null&&h('div',{className:'modal-backdrop',onClick:()=>setShowEvidenceModal(null)},
+      h('div',{className:'modal-sheet',onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-handle'}),
+        h('div',{style:{fontSize:15,fontWeight:700,marginBottom:6}},ico('ti-alert-triangle',{color:'var(--red)'}),' Resolution Required'),
+        h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:14}},'This is a flagged complaint. Describe how you resolved it before marking complete.'),
+        h('div',{style:{marginBottom:8}},
+          h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:5,fontWeight:600}},'WHAT DID YOU DO?'),
+          h('textarea',{className:'field-input',placeholder:'Describe the resolution — e.g. "Cleaned and restocked, notified supervisor of broken dispenser"...',value:evidenceText,onChange:e=>setEvidenceText(e.target.value),style:{minHeight:100}})
+        ),
+        h('div',{style:{display:'flex',gap:8}},
+          h('button',{className:'btn btn-ghost',style:{flex:1},onClick:()=>setShowEvidenceModal(null)},'Cancel'),
+          h('button',{className:'btn btn-primary',style:{flex:1},disabled:!evidenceText.trim(),onClick:submitEvidence},
+            ico('ti-check'),' Mark Resolved'
+          )
+        )
+      )
+    ),
+
+    // Report modal
+    showReportModal&&h('div',{className:'modal-backdrop',onClick:()=>setShowReportModal(false)},
+      h('div',{className:'modal-sheet',onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-handle'}),
+        h('div',{style:{fontSize:15,fontWeight:700,marginBottom:14}},ico('ti-flag',{color:'var(--amber)'}),' Report an Issue'),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+          h('div',null,
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:4,fontWeight:600}},'AREA / LOCATION'),
+            h('input',{className:'field-input',placeholder:'e.g. 3rd Floor Restroom East',value:reportForm.area,onChange:e=>setReportForm(p=>({...p,area:e.target.value}))})
+          ),
+          h('div',null,
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:4,fontWeight:600}},'DESCRIPTION'),
+            h('textarea',{className:'field-input',placeholder:'What did you find? Be specific...',value:reportForm.desc,onChange:e=>setReportForm(p=>({...p,desc:e.target.value}))})
+          ),
+          h('div',null,
+            h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:4,fontWeight:600}},'SEVERITY'),
+            h('div',{style:{display:'flex',gap:6}},
+              ['Low','Medium','High'].map(s=>h('button',{key:s,
+                style:{flex:1,padding:'8px',borderRadius:7,border:'1px solid var(--border)',
+                  background:reportForm.severity===s?(s==='High'?'var(--red)':s==='Medium'?'var(--amber)':'var(--accent)'):'var(--surface)',
+                  color:reportForm.severity===s?'#fff':'var(--muted)',cursor:'pointer',fontFamily:'inherit',fontWeight:600,fontSize:12},
+                onClick:()=>setReportForm(p=>({...p,severity:s}))},s
+              ))
+            )
+          ),
+          h('div',{style:{display:'flex',gap:8}},
+            h('button',{className:'btn btn-ghost',style:{flex:1},onClick:()=>setShowReportModal(false)},'Cancel'),
+            h('button',{className:'btn btn-primary',style:{flex:1},disabled:!reportForm.area||!reportForm.desc,onClick:submitReport},
+              ico('ti-send'),' Submit Report'
+            )
+          )
+        )
+      )
+    ),
+
+    // Clock-out modal
+    showClockOut&&h('div',{className:'modal-backdrop',onClick:()=>setShowClockOut(false)},
+      h('div',{className:'modal-sheet',onClick:e=>e.stopPropagation()},
+        h('div',{className:'modal-handle'}),
+        h('div',{style:{fontSize:15,fontWeight:700,marginBottom:6}},ico('ti-clock-stop',{color:'var(--accent2)'}),' End Shift'),
+        h('div',{style:{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:14,marginBottom:14}},
+          h('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:8}},
+            h('span',{style:{fontSize:12,color:'var(--muted)'}},'Shift Duration'),
+            h('span',{style:{fontSize:12,fontWeight:700}},elapsed)
+          ),
+          h('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:8}},
+            h('span',{style:{fontSize:12,color:'var(--muted)'}},'Tasks Completed'),
+            h('span',{style:{fontSize:12,fontWeight:700,color:pct===100?'var(--green)':'var(--amber)'}},done+' / '+total+' ('+pct+'%)')
+          ),
+          h('div',{style:{display:'flex',justifyContent:'space-between'}},
+            h('span',{style:{fontSize:12,color:'var(--muted)'}},'Issues Reported'),
+            h('span',{style:{fontSize:12,fontWeight:700}},tickets.filter(t=>t.status==='Open').length)
+          )
+        ),
+        !canClockOut&&h('div',{style:{background:'rgba(239,68,68,.08)',border:'1px solid rgba(239,68,68,.25)',borderRadius:9,padding:'10px 12px',marginBottom:14}},
+          h('div',{style:{fontSize:12,fontWeight:700,color:'var(--red)',marginBottom:4}},ico('ti-lock'),' Cannot Clock Out Yet'),
+          blockedTasks.length>0&&h('div',{style:{fontSize:11,color:'var(--red)'}},'• '+blockedTasks.length+' flagged issue'+(blockedTasks.length>1?'s':'')+' need resolution'),
+          openTickets.filter(t=>t.priority==='High').length>0&&h('div',{style:{fontSize:11,color:'var(--red)'}},'• '+openTickets.filter(t=>t.priority==='High').length+' high-priority ticket'+(openTickets.filter(t=>t.priority==='High').length>1?'s':'')+' unresolved')
+        ),
+        h('div',{style:{display:'flex',gap:8}},
+          h('button',{className:'btn btn-ghost',style:{flex:1},onClick:()=>setShowClockOut(false)},'Back to Shift'),
+          h('button',{
+            style:{flex:1,padding:'10px',borderRadius:8,border:'none',fontFamily:'inherit',fontSize:13,fontWeight:600,cursor:canClockOut?'pointer':'not-allowed',
+              background:canClockOut?'var(--green)':'var(--border)',color:canClockOut?'#fff':'var(--muted)'},
+            disabled:!canClockOut,
+            onClick:async()=>{
+              await hsSync('create_note',{accountName:user.facility||user.pod,noteBody:'[FacilityIQ Employee] CLOCK-OUT: '+user.name+' completed shift. Duration: '+elapsed+'. Tasks: '+done+'/'+total+' ('+pct+'%). Clocked out at '+timeStr()});
+              onClockOut();
+            }},
+            ico('ti-clock-stop'),' Clock Out'
+          )
+        )
+      )
+    ),
+
+    // HEADER
+    h('div',{className:'app-header'},
+      h('div',{style:{flex:1}},
+        h('div',{style:{fontSize:13,fontWeight:700}},user.facility||user.pod),
+        h('div',{style:{fontSize:11,color:'var(--muted)'}},user.name+' · '+timeStr())
+      ),
+      // Progress pill
+      h('div',{style:{display:'flex',alignItems:'center',gap:6,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:99,padding:'4px 10px'}},
+        h('div',{style:{width:8,height:8,borderRadius:99,background:pct===100?'var(--green)':pct>50?'var(--amber)':'var(--accent)'}},),
+        h('span',{style:{fontSize:11,fontWeight:700}},pct+'%'),
+        h('span',{style:{fontSize:10,color:'var(--muted)'}},'done')
+      ),
+      h('div',{style:{fontSize:12,fontWeight:600,color:'var(--accent2)',marginLeft:8}},elapsed),
+      h('button',{className:'btn btn-red btn-sm',style:{marginLeft:8},onClick:()=>setShowClockOut(true)},ico('ti-clock-stop'),' Out')
+    ),
+
+    // CONTENT
+    h('div',{className:'app-body'},
+
+      // TASKS TAB
+      tab==='tasks'&&h(Fragment,null,
+        // Progress bar
+        h('div',{style:{marginBottom:16}},
+          h('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:6}},
+            h('span',{style:{fontSize:12,fontWeight:600}},'Shift Progress'),
+            h('span',{style:{fontSize:12,color:'var(--muted)'}},done+' of '+total+' tasks')
+          ),
+          h('div',{className:'progress-bar',style:{height:10}},
+            h('div',{className:'progress-fill',style:{width:pct+'%',background:pct===100?'var(--green)':'var(--accent)'}})
+          )
+        ),
+
+        // Flagged tasks first
+        tasks.filter(t=>t.freq==='flag').length>0&&h('div',{className:'card',style:{border:'1px solid rgba(239,68,68,.3)',marginBottom:12}},
+          h('div',{className:'card-title',style:{color:'var(--red)'}},ico('ti-alert-triangle'),' Must Resolve Before Clock-Out'),
+          tasks.filter(t=>t.freq==='flag').map(task=>h('div',{key:task.id,className:'task-item',onClick:()=>!task.done&&completeTask(task.id)},
+            h('div',{className:'task-check '+(task.done?'done':'blocked')},
+              task.done&&ico('ti-check',{fontSize:13,color:'#fff'})
+            ),
+            h('div',{style:{flex:1}},
+              h('div',{className:'task-label '+(task.done?'done':''),style:{color:task.done?'var(--muted)':'var(--red)'}},task.text),
+              task.done&&task.evidence&&h('div',{style:{fontSize:10,color:'var(--green)',marginTop:2}},ico('ti-check'),' '+task.evidence.slice(0,50)+'...')
+            ),
+            !task.done&&h('span',{className:'task-freq freq-flag'},'REQUIRED')
+          ))
+        ),
+
+        // Daily tasks
+        h('div',{className:'card',style:{marginBottom:12}},
+          h('div',{className:'card-title'},ico('ti-sun'),' Daily Tasks'),
+          tasks.filter(t=>t.freq==='daily').map(task=>h('div',{key:task.id,className:'task-item',onClick:()=>!task.done&&completeTask(task.id)},
+            h('div',{className:'task-check '+(task.done?'done':'')},
+              task.done&&ico('ti-check',{fontSize:13,color:'#fff'})
+            ),
+            h('div',{style:{flex:1}},
+              h('div',{className:'task-label '+(task.done?'done':'')},task.text)
+            ),
+            !task.done&&h('span',{className:'task-freq freq-daily'},'daily')
+          ))
+        ),
+
+        // Weekly tasks
+        tasks.filter(t=>t.freq==='weekly').length>0&&h('div',{className:'card',style:{marginBottom:12}},
+          h('div',{className:'card-title'},ico('ti-calendar-week'),' '+today()+'\'s Weekly Tasks'),
+          tasks.filter(t=>t.freq==='weekly').map(task=>h('div',{key:task.id,className:'task-item',onClick:()=>!task.done&&completeTask(task.id)},
+            h('div',{className:'task-check '+(task.done?'done':'')},
+              task.done&&ico('ti-check',{fontSize:13,color:'#fff'})
+            ),
+            h('div',{style:{flex:1}},
+              h('div',{className:'task-label '+(task.done?'done':'')},task.text)
+            ),
+            !task.done&&h('span',{className:'task-freq freq-weekly'},'weekly')
+          ))
+        ),
+
+        // Monthly tasks
+        tasks.filter(t=>t.freq==='monthly').length>0&&h('div',{className:'card',style:{marginBottom:12}},
+          h('div',{className:'card-title'},ico('ti-calendar-month'),' Monthly Tasks Due'),
+          tasks.filter(t=>t.freq==='monthly').map(task=>h('div',{key:task.id,className:'task-item',onClick:()=>!task.done&&completeTask(task.id)},
+            h('div',{className:'task-check '+(task.done?'done':'')},
+              task.done&&ico('ti-check',{fontSize:13,color:'#fff'})
+            ),
+            h('div',{style:{flex:1}},
+              h('div',{className:'task-label '+(task.done?'done':'')},task.text)
+            ),
+            !task.done&&h('span',{className:'task-freq freq-monthly'},'monthly')
+          ))
+        ),
+
+        pct===100&&h('div',{style:{textAlign:'center',padding:'24px',background:'rgba(34,197,94,.06)',border:'1px solid rgba(34,197,94,.2)',borderRadius:12}},
+          ico('ti-circle-check',{fontSize:40,color:'var(--green)',display:'block',marginBottom:8}),
+          h('div',{style:{fontSize:16,fontWeight:700,marginBottom:4}},'All tasks complete!'),
+          h('div',{style:{fontSize:12,color:'var(--muted)',marginBottom:14}},'Great work. You can now clock out.'),
+          h('button',{className:'btn btn-green btn-block',onClick:()=>setShowClockOut(true)},ico('ti-clock-stop'),' Clock Out')
+        )
+      ),
+
+      // TICKETS TAB
+      tab==='tickets'&&h(Fragment,null,
+        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}},
+          h('div',{style:{fontSize:13,fontWeight:600}},openTickets.length+' open ticket'+(openTickets.length!==1?'s':'')),
+          h('button',{className:'btn btn-primary btn-sm',onClick:()=>setShowReportModal(true)},ico('ti-plus'),' Report Issue')
+        ),
+        tickets.length===0&&h('div',{style:{textAlign:'center',padding:'40px',color:'var(--muted)'}},
+          ico('ti-circle-check',{fontSize:36,color:'var(--green)',display:'block',marginBottom:10}),
+          'No tickets — nice work!'
+        ),
+        tickets.map(t=>h('div',{key:t.id,className:'ticket-card '+(t.priority==='High'&&t.status!=='Resolved'?'urgent':'')},
+          h('div',{style:{display:'flex',alignItems:'center',gap:6,marginBottom:6}},
+            h(Badge,{cls:t.priority==='High'?'red':t.priority==='Medium'?'amber':'muted'},t.priority),
+            h(Badge,{cls:t.status==='Resolved'?'green':'blue'},t.status),
+            t.priority==='High'&&t.status!=='Resolved'&&h('span',{style:{marginLeft:'auto',fontSize:10,fontWeight:700,color:'var(--red)'}},'RESOLVE BEFORE CLOCK-OUT')
+          ),
+          h('div',{style:{fontSize:13,fontWeight:600,marginBottom:3}},t.title),
+          t.area&&h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:8}},ico('ti-map-pin'),' '+t.area),
+          t.status!=='Resolved'&&h('button',{
+            className:'btn btn-green btn-sm',style:{width:'100%',justifyContent:'center'},
+            onClick:()=>resolveTicket(t.id)},
+            ico('ti-check'),' Mark Resolved'
+          )
+        ))
+      ),
+
+      // REPORT TAB
+      tab==='report'&&h(Fragment,null,
+        h('div',{className:'card'},
+          h('div',{className:'card-title'},ico('ti-flag'),' Report an Issue'),
+          h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
+            h('div',null,
+              h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:4,fontWeight:600}},'AREA / LOCATION'),
+              h('input',{className:'field-input',placeholder:'e.g. 3rd Floor Restroom',value:reportForm.area,onChange:e=>setReportForm(p=>({...p,area:e.target.value}))})
+            ),
+            h('div',null,
+              h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:4,fontWeight:600}},'DESCRIPTION'),
+              h('textarea',{className:'field-input',placeholder:'What did you find? What needs attention?',value:reportForm.desc,onChange:e=>setReportForm(p=>({...p,desc:e.target.value})),style:{minHeight:100}})
+            ),
+            h('div',null,
+              h('div',{style:{fontSize:11,color:'var(--muted)',marginBottom:6,fontWeight:600}},'SEVERITY'),
+              h('div',{style:{display:'flex',gap:6}},
+                ['Low','Medium','High'].map(s=>h('button',{key:s,
+                  style:{flex:1,padding:'10px',borderRadius:8,border:'1px solid var(--border)',
+                    background:reportForm.severity===s?(s==='High'?'var(--red)':s==='Medium'?'var(--amber)':'var(--accent)'):'var(--surface)',
+                    color:reportForm.severity===s?'#fff':'var(--muted)',cursor:'pointer',fontFamily:'inherit',fontWeight:600},
+                  onClick:()=>setReportForm(p=>({...p,severity:s}))},s
+                ))
+              )
+            ),
+            h('button',{className:'btn btn-primary btn-block',disabled:!reportForm.area||!reportForm.desc,onClick:submitReport},
+              ico('ti-send'),' Submit Report'
+            )
+          )
+        ),
+        // Recent reports this shift
+        tickets.filter(t=>t.created==='Just now').length>0&&h('div',{className:'card'},
+          h('div',{className:'card-title'},ico('ti-history'),' Reported This Shift'),
+          tickets.filter(t=>t.created==='Just now').map(t=>h('div',{key:t.id,style:{padding:'8px 0',borderTop:'1px solid var(--border)'}},
+            h('div',{style:{fontSize:12,fontWeight:500}},t.title),
+            h('div',{style:{fontSize:10,color:'var(--muted)'}},t.area+' · '+t.priority)
+          ))
+        )
+      ),
+
+      // AI TAB
+      tab==='ai'&&h('div',{style:{display:'flex',flexDirection:'column',height:'calc(100vh - 160px)'}},
+        h('div',{style:{flex:1,overflowY:'auto',paddingBottom:8}},
+          aiMsgs.map((m,i)=>h('div',{key:i,className:'chat-bubble '+(m.role==='user'?'user':'ai')},
+            m.role==='ai'&&h('div',{style:{fontSize:10,fontWeight:700,color:'var(--accent2)',marginBottom:4}},'ALAN AI'),
+            m.text
+          )),
+          aiLoading&&h('div',{className:'chat-bubble ai'},
+            h('div',{style:{fontSize:10,fontWeight:700,color:'var(--accent2)',marginBottom:4}},'ALAN AI'),
+            h('div',{className:'typing-dots'},h('span'),h('span'),h('span'))
+          ),
+          h('div',{ref:aiEndRef})
+        ),
+        // Quick prompts
+        h('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}},
+          ['What\'s my next task?','How do I clean the floor buffer?','Did we do windows this week?','Any complaints I need to know about?'].map(q=>
+            h('button',{key:q,onClick:()=>setAiInput(q),
+              style:{fontSize:10,padding:'4px 8px',borderRadius:99,border:'1px solid var(--border)',background:'var(--surface)',color:'var(--muted)',cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}},q)
+          )
+        ),
+        h('div',{style:{display:'flex',gap:8}},
+          h('input',{className:'field-input',placeholder:'Ask Alan AI...',value:aiInput,
+            onChange:e=>setAiInput(e.target.value),
+            onKeyDown:e=>e.key==='Enter'&&sendAI()}),
+          h('button',{className:'btn btn-primary',onClick:sendAI,disabled:!aiInput.trim()||aiLoading},ico('ti-send'))
+        )
+      )
+    ),
+
+    // BOTTOM NAV
+    h('div',{className:'app-nav'},
+      [{id:'tasks',icon:'ti-checklist',label:'Tasks',badge:tasks.filter(t=>!t.done).length>0?tasks.filter(t=>!t.done).length:null},
+       {id:'tickets',icon:'ti-ticket',label:'Tickets',badge:openTickets.length>0?openTickets.length:null},
+       {id:'report',icon:'ti-flag',label:'Report',badge:null},
+       {id:'ai',icon:'ti-sparkles',label:'Alan AI',badge:null},
+      ].map(n=>h('button',{key:n.id,className:'nav-tab '+(tab===n.id?'active':''),onClick:()=>setTab(n.id)},
+        h('div',{style:{position:'relative'}},
+          ico(n.icon),
+          n.badge&&h('span',{className:'nav-badge'},n.badge)
+        ),
+        n.label
+      ))
+    )
+  );
+}
+
+// ── ROOT APP ──────────────────────────────────────────────────────────────────
+function App(){
+  const [user,setUser] = useState(null);
+  const [authChecked,setAuthChecked] = useState(false);
+  const [clockedIn,setClockedIn] = useState(false);
+  const [clockInTime,setClockInTime] = useState(null);
+  const [briefingDone,setBriefingDone] = useState(false);
+  const [tasks,setTasks] = useState([]);
+  const [briefing,setBriefing] = useState(null);
+
+  // Sample scope text — in production this comes from the account's uploaded scope doc
+  const scopeText = `DAILY TASKS:
+- Empty all trash receptacles and replace liners
+- Clean and sanitize all restrooms (toilets, sinks, mirrors, floors, restock paper/soap)
+- Sweep and mop all hard surface floors
+- Vacuum all carpeted areas
+- Wipe all high-touch surfaces (door handles, light switches, elevator buttons, countertops)
+- Clean entrance glass doors inside and out
+- Spot clean walls and partitions
+- Check and restock all supply closets
+
+WEEKLY TASKS (by day):
+- Monday: Deep clean break room — microwave inside, coffee maker, refrigerator exterior, table and chairs
+- Tuesday: Elevator interiors — walls, floors, doors, ceiling vents; stairwell handrails
+- Wednesday: Conference rooms — wipe chairs and tables, clean AV equipment, clean whiteboards
+- Thursday: High-dust all horizontal surfaces above 6ft — vents, ledges, tops of cabinets
+- Friday: Scrub and buff all lobby and corridor hard floors; detail entrance matting
+- Saturday: Exterior building entrance sweep, cigarette disposal areas, exterior glass
+
+MONTHLY TASKS:
+- Carpet deep extraction — all carpeted zones
+- Strip and wax hard floors as needed
+- Drain treatment — all floor drains in restrooms and kitchen areas
+- Window cleaning — interior glass throughout building
+- Pressure wash loading dock and exterior service areas`;
+
+  // Sample tickets assigned to this employee
+  const [tickets] = useState([
+    {id:'TKT-1041',title:'Restroom 2E — out of paper towels, odor complaint',area:'Restroom 2E',priority:'High',status:'Open',assignedTo:'Employee',location:'2nd Floor East Restroom',created:'2h ago'},
+    {id:'TKT-1039',title:'Break room microwave needs cleaning',area:'Break Room',priority:'Medium',status:'Open',assignedTo:'Employee',location:'Break Room',created:'4h ago'},
+  ]);
+
+  useEffect(()=>{
+    const token = localStorage.getItem('fiq_emp_token');
+    const savedUser = localStorage.getItem('fiq_emp_user');
+    if(token&&savedUser){
+      authCall('validate_session',{token}).then(res=>{
+        if(res.success) setUser(res.user);
+        else{localStorage.removeItem('fiq_emp_token');localStorage.removeItem('fiq_emp_user');}
+        setAuthChecked(true);
+      });
+    } else {
+      setAuthChecked(true);
+    }
+  },[]);
+
+  if(!authChecked) return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh',background:'var(--bg)',color:'var(--muted)',fontSize:13}},'Loading...');
+
+  if(!user) return h(LoginScreen,{onLogin:(u)=>setUser(u)});
+
+  if(!clockedIn) return h(ClockInScreen,{user,onClockedIn:(t)=>{setClockInTime(t);setClockedIn(true);}});
+
+  if(!briefingDone) return h(BriefingScreen,{user,scopeText,tickets,
+    onStart:(t,b)=>{setTasks(t);setBriefing(b);setBriefingDone(true);}
+  });
+
+  return h(EmployeeApp,{
+    user,clockInTime,tasks,briefing,tickets,scopeText,
+    onClockOut:()=>{setClockedIn(false);setBriefingDone(false);setTasks([]);setBriefing(null);}
+  });
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App,null));
+</script>
+</body>
+</html>
