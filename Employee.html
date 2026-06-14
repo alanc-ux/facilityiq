@@ -222,6 +222,11 @@ function ClockInScreen({user,onClockedIn}){
         h('div',{style:{fontSize:14,fontWeight:700}},'FacilityIQ'),
         h('div',{style:{fontSize:11,color:'var(--muted)'}},user.name)
       ),
+      h('button',{
+        style:{fontSize:10,fontWeight:600,padding:'4px 9px',borderRadius:6,border:'1px solid var(--border)',background:'var(--surface)',color:'var(--muted)',cursor:'pointer',fontFamily:'inherit',marginRight:6},
+        onClick:()=>window.location.href='/'},
+        ico('ti-arrow-left',{fontSize:11}),' Supervisor'
+      ),
       h('button',{className:'btn btn-ghost btn-sm',onClick:()=>{localStorage.removeItem('fiq_emp_token');localStorage.removeItem('fiq_emp_user');window.location.reload();}},
         ico('ti-logout')
       )
